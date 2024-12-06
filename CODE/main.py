@@ -1,5 +1,4 @@
 import tkinter as tk
-import os
 from tkinter import messagebox, font
 from tkcalendar import Calendar
 from datetime import date
@@ -27,19 +26,17 @@ except Exception:
 """Pantalla de Carga"""
 def loading_screen():
     try:
-        pasa_iso = os.path.join(os.path.dirname(__file__), "../IMAGES/iso.png")
+        pasa_iso = "../IMAGES/iso.png"
         image = Image.open(pasa_iso)
-        image = image.resize((200, 200), Image.Resampling.LANCZOS) 
+        image = image.resize((200, 200), Image.LANCZOS) 
         photo = ImageTk.PhotoImage(image)
         iso_label = tk.Label(loading_frame, image=photo, bg="#7732FF")
         iso_label.image = photo  
         iso_label.pack(expand=True)
-    except FileNotFoundError:
-        print(f"Archivo no encontrado: {pasa_iso}")
     except Exception:
         print(f"Error al cargar el isotipo: {Exception}")
 
-    window.after(1500, lambda: show_frame(start_frame))
+    window.after(2500, lambda: show_frame(start_frame))
 
 loading_frame = tk.Frame(window, bg="#7732FF")
 loading_frame.pack(fill="both", expand=True)
@@ -54,8 +51,8 @@ action_bar.pack(side="top", fill="x")
 try:
     pasa_logo = "../IMAGES/logo.png"
     image = Image.open(pasa_logo)
-    image_resized = image.resize((56, 20), Image.LANCZOS)
-    photo = ImageTk.PhotoImage(image_resized)
+    image = image.resize((56, 20), Image.LANCZOS)
+    photo = ImageTk.PhotoImage(image)
     logo_label = tk.Label(action_bar, image=photo, bg="#F1F2F6")
     logo_label.image = photo
     logo_label.place(relx=0.5, rely=0.5, anchor="center")
@@ -68,7 +65,7 @@ except Exception:
 def show_frame(frame_to_show):
     for frame in all_frames:
         frame.pack_forget()
-    frame_to_show.pack(pady=20, padx=20, expand=True)
+    frame_to_show.pack(expand=True)
 
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -107,7 +104,7 @@ def login():
     password = login_password_entry.get().strip()
     
     if not all([id_card, password]):
-        messagebox.showerror("Error", "Todos los campos son obligatorios.")
+        messagebox.showerror("Error", "Todos los campos son obligatorios")
         return
     
     login_id_card_entry.delete(0, tk.END)
@@ -407,7 +404,7 @@ def validate_passengers_input(input_value):
     if input_value.isdigit() and 1 <= int(input_value) <= 60:
         return True
     else:
-        messagebox.showerror("Error", "El número de pasajeros debe estar entre 1 y 60.")
+        messagebox.showerror("Error", "El número de pasajeros debe estar entre 1 y 60")
         passengers_entry.delete(0, tk.END)
         return False
 
@@ -417,7 +414,7 @@ passengers_label = tk.Label(passengers_frame, text="Numero de Pasajeros:", bg="#
 passengers_label.pack(side="left", padx=10)
 passengers_entry = CTkEntry(
     passengers_frame,
-    placeholder_text="Ingresar",
+    placeholder_text="Ingresa",
     border_color="#7732FF", 
     corner_radius=32
 )
