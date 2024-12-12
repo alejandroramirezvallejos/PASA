@@ -1,6 +1,6 @@
 <!-- Markdown -->
-<div style="display: flex; justify-content: space-between;">
-  <h1 style="margin: 0;">PASA "Viajar nunca fue más simple" <img src="IMAGES/iso.png" width="50"/></h1>
+<div style="display: flex; justify-content: ">
+  <h1 style="margin: 0;">PASA "Viajar nunca fue más simple" <img src="IMAGES/iso.png" width="50" style="margin-left: auto;/></h1>
 </div>
 
 Este proyecto implementa un sistema de migración y gestión de datos para una empresa de buses, permitiendo la transición desde un sistema heredado en SQL Server a una nueva implementación en MySQL además con una interfaz gráfica que complementa al proyecto.</p>
