@@ -1,6 +1,6 @@
 <!-- Markdown -->
 <p align="right">
-  <img src="images/iso.png" width="150"/>
+  <img src="IMAGES/iso.png" width="100"/>
 </p>
 
 # PASA "Viajar nunca fue más simple"
