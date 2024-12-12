@@ -1,5 +1,5 @@
 <!-- Markdown -->
-<div style="display: flex; justify-content:">
+<div style="display: flex; justify-content: space-between;">
   <h1 style="margin: 0;">PASA "Viajar nunca fue más simple" <img src="IMAGES/iso.png" width="50"/></h1>
 </div>
 
