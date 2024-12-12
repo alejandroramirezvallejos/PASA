@@ -1,6 +1,6 @@
 <!-- Markdown -->
-<div style="display: flex; align-items: center; justify-content: space-between;">
-  <h1>PASA "Viajar nunca fue más simple"</h1>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+  <h1 style="margin: 0;">PASA "Viajar nunca fue más simple"</h1>
   <img src="IMAGES/iso.png" width="100" alt="Descripción de la Imagen" style="margin-left: 20px;"/>
 </div>
 
