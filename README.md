@@ -12,7 +12,6 @@ El sistema moderniza la gestión de datos de una empresa de buses, facilitando:
 
 ## ✨ Funcionalidades
 
-### Implementadas
 - Migración completa de esquemas
 - Preservación de relaciones
 - Validación de datos
@@ -22,6 +21,9 @@ El sistema moderniza la gestión de datos de una empresa de buses, facilitando:
 - Agregar registros
 - Modificar y eliminar registros
 - Adaptable a las dos bases de datos
+- Interfaz de usuario 
+- Interfaz de admin
+
 ## 🗄️ Estructura del Proyecto
 
 ```
@@ -96,14 +98,16 @@ password=''
 ## 🔄 Funcionalidades de Migración
 
 ### Proceso
-1. Verificación de base destino
+1. Obtencion de informacion de destino
 2. Creación de esquema
 3. Migración de datos
-4. Validación de integridad
+4. Traslado a la nueva base de datos
+
 
 ### Validaciones
 - Verificación de tablas
 - Verificacion contra duplicacion
+- Validación de integridad
 ### Pseudocodigo
 
 
@@ -119,12 +123,12 @@ password=''
 ### Pseudocodigo
 
 
-## 🧪 Testing
+## 🧪 Pruebas
 
 ### Tests Implementados
 - Verificación de migración
 - Validación de datos
-- [Otros tests implementados...]
+- Uso de ```assert``` para asegurar consistencia de datos.
 
 
 ## 👥 Equipo y Contribuciones
