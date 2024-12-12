@@ -1,6 +1,6 @@
 # PASA "Viajar nunca fue más simple"
 
-Este proyecto implementa un sistema de migración y gestión de datos para una empresa de buses, permitiendo la transición desde un sistema heredado en SQL Server a una nueva implementación en MySQL,ademas con una interfaz grafica que complementa al proyecto.
+Este proyecto implementa un sistema de migración y gestión de datos para una empresa de buses, permitiendo la transición desde un sistema heredado en SQL Server a una nueva implementación en MySQL ademas con una interfaz grafica que complementa al proyecto.
 
 ## 🚌 Descripción del Proyecto
 
@@ -9,6 +9,7 @@ El sistema moderniza la gestión de datos de una empresa de buses, facilitando:
 - Preservación de la integridad de datos
 - Manejo eficiente de registros
 - Interfaz para agregar informacion en dos partes admin y usuario
+- Interfaz comoda y facil de usar
 
 ## ✨ Funcionalidades
 
@@ -399,12 +400,16 @@ EXISTE_BASE = "Seleccionar nombre de esquema desde el esquema de información de
 ## 🎯 Interfaz de Usuario 
 
 ### Características Implementadas
-- [ ] [A completar funcionalidades...]
+- Interfaz amigable siendo facil de usar
+- Mostrar datos almacenados
+- Editar la base de datos si es admin
+- El usuario solo puede agregar registros
 
 ### Validaciones
-```
-[A completar con diseños...]
-```
+- Validacion de datos antes de enviarlos a la base de usuario
+- Mensaje de confirmacion
+- Confirmar las entradas
+- Ver la integridad
 ### Pseudocodigo
 
 ## 🧪 Pruebas
@@ -413,6 +418,10 @@ EXISTE_BASE = "Seleccionar nombre de esquema desde el esquema de información de
 - Verificación de migración
 - Validación de datos
 - Uso de ```assert``` para asegurar consistencia de datos.
+- Verficar la edicion en la base de datos
+- Mostrar mensajes claros en caso de errores
+- Ver que la base de datos se mantenga consistente
+- Cierre de conexion 
 
 
 ## 👥 Equipo y Contribuciones
