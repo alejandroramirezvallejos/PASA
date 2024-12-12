@@ -1,7 +1,8 @@
 <!-- Markdown -->
 <p align="right">
-  <img src="images/iso.png" alt="Descripción de la Imagen" width="150"/>
+  <img src="images/iso.png" width="150"/>
 </p>
+
 # PASA "Viajar nunca fue más simple"
 
 Este proyecto implementa un sistema de migración y gestión de datos para una empresa de buses, permitiendo la transición desde un sistema heredado en SQL Server a una nueva implementación en MySQL ademas con una interfaz grafica que complementa al proyecto.
