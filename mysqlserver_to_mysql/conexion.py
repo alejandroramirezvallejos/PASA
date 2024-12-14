@@ -10,8 +10,8 @@ def conectar_mysqlserver():
     conexion=pyodbc.connect('''
         DRIVER={ODBC Driver 17 for SQL Server};
         SERVER=;
-        DATABASE=;
-        Trusted_Connection=;
+        DATABASE=pasa;
+        Trusted_Connection=yes;
     ''')
     print("conexion exitosa mysqlserver")
     return conexion
@@ -20,7 +20,7 @@ def conectar_mysql():
       Returns: 
       conexion (mysql.connector.connection.MySQLConnection): Objeto de conexión a MySQL. 
     """
-    conexion= mysql.connector.connect( host=''
+    conexion= mysql.connector.connect( host='localhost'
                                    , user='', 
                                    password='')
     print("conexion exitosa mysql")
