@@ -922,99 +922,6 @@ def make_option_frame(parent, title_name):
     create_input_field(scrollable_frame, "Nombre del Bus:", "Ingresar")
     create_input_field(scrollable_frame, "Chofer ID:", "Ingresar")
     create_input_field(scrollable_frame, "Ruta ID:", "Ingresar")
-    # Calendario
-    def open_calendar(min_date, max_date, callback):
-        calendar_window = tk.Toplevel(window)
-        calendar_window.title("Selecciona la Fecha")
-        calendar_window.configure(bg="#09090A")
-        calendar_window.geometry("320x250+150+85")
-        try:
-            calendar_window.iconbitmap("../../ASSETS/icon_admin.ico")
-        except Exception:
-            print(f"Error al cargar el icono: {Exception}")
-        calendar_frame = tk.Frame(calendar_window, bg="#C8BCF6", relief="flat", bd=1)
-        calendar_frame.pack(padx=10, pady=10, fill="both", expand=True)
-        calendar = Calendar(
-            calendar_frame,
-            mindate=min_date,
-            maxdate=max_date,
-            date_pattern="yyyy-mm-dd",
-            selectmode="day",
-            background="#FFFFFF",
-            foreground="#7732FF",
-            headersbackground="#F1F2F6",
-            headersforeground="#7732FF",
-            selectbackground="#7732FF",
-            selectforeground="#FFFFFF",
-            weekendforeground="#A9A9A9",
-            bordercolor="#F1F2F6"
-        )
-        calendar.pack(padx=10, pady=10)
-        calendar.bind("<<CalendarSelected>>", lambda _: [callback(calendar.get_date()), calendar_window.destroy()])
-    # Fecha de Partida
-    departure_date_frame = tk.Frame(scrollable_frame, bg="#09090A")
-    departure_date_frame.pack(side="top", pady=10, fill="x", padx=10)
-    departure_date_label = tk.Label(departure_date_frame, text="Fecha de Partida:", bg="#09090A", fg="#C8BCF6")
-    departure_date_label.pack(side="left", padx=10)
-    departure_date_button = CTkButton(
-        departure_date_frame,
-        text="Seleccionar",
-        corner_radius=32,
-        fg_color="#09090A",
-        text_color="#C8BCF6",
-        hover_color="#E1E1E1",
-        border_color="#C8BCF6",
-        border_width=2,
-        command=lambda: open_calendar(
-            date.today(),
-            date(2025, 12, 31),
-            lambda d: departure_date_button.configure(text=d)
-        )
-    )
-    departure_date_button.pack(side="left", padx=10, fill="x", expand=True)
-    # Fecha de Regreso
-    return_date_frame = tk.Frame(scrollable_frame, bg="#09090A")
-    return_date_frame.pack(side="top", pady=10, fill="x", padx=10)
-    return_date_label = tk.Label(return_date_frame, text="Fecha de Regreso:", bg="#09090A", fg="#C8BCF6")
-    return_date_label.pack(side="left", padx=10)
-    # Verificando el correcto orden de selección de Fecha de Regreso
-    def enable_return_date_selection():
-        departure_date = departure_date_button.cget("text")  
-        if departure_date == "Seleccionar":
-            messagebox.showerror("Error", "Primero selecciona la Fecha de Partida")
-        else:
-            try:
-                # Convertir la fecha de partida a un objeto datetime
-                min_date = date.fromisoformat(departure_date)
-                open_calendar(
-                    min_date, 
-                    date(2025, 12, 31),  
-                    lambda selected_date: validate_return_date(min_date, selected_date)
-                )
-            except ValueError:
-                messagebox.showerror("Error", "Fecha de Partida invalida")
-    # Verificando que a Fecha de Regreso sea posterior a la Fecha de Partida
-    def validate_return_date(departure_date, return_date):
-        try:
-            return_date_obj = date.fromisoformat(return_date)
-            if return_date_obj <= departure_date:
-                messagebox.showerror("Error", "La Fecha de Regreso debe ser posterior a la Fecha de Partida")
-            else:
-                return_date_button.configure(text=return_date)  
-        except ValueError:
-            messagebox.showerror("Error", "Fecha de Regreso invalida")
-    return_date_button = CTkButton(
-        return_date_frame,
-        text="Seleccionar",
-        corner_radius=32,
-        fg_color="#09090A",
-        text_color="#C8BCF6",
-        hover_color="#E1E1E1",
-        border_color="#C8BCF6",
-        border_width=2,
-        command=enable_return_date_selection
-    )
-    return_date_button.pack(side="left", padx=10, fill="x", expand=True)
     # Boton de Bus
     bus_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
     bus_frame.pack(side="top", pady=20, fill="x", padx=10)
@@ -1025,96 +932,8 @@ def make_option_frame(parent, title_name):
         corner_radius=32,
         fg_color=bus_button_color,
         hover_color="#5A23CC",
-        command=queries_option
     )
     bus_available.pack(pady=10)
-    # Título para Chofer
-    title_label_2 = tk.Label(
-        scrollable_frame,
-        text=f"{title_name} un Chofer",  
-        font=title_font,
-        bg="#09090A",
-        fg="#7732FF",
-        wraplength=350,
-        justify="center",
-    )
-    title_label_2.pack(pady=20)
-    create_input_field(scrollable_frame, "ID:", "Ingresar")
-    create_input_field(scrollable_frame, "Nombre:", "Ingresar")
-    create_input_field(scrollable_frame, "Carnet:", "Ingresar")
-    create_input_field(scrollable_frame, "Edad", "Ingresar")
-    # Boton de Chofer
-    driver_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
-    driver_frame.pack(side="top", pady=20, fill="x", padx=10)
-    driver_button_color = "#7732FF"
-    driver_available = CTkButton(
-        driver_frame,
-        text=f"{title_name} Chofer",
-        corner_radius=32,
-        fg_color=bus_button_color,
-        hover_color="#5A23CC",
-        command=queries_option
-    )
-    driver_available.pack(pady=10)
-    # Título para Ruta
-    title_label_2 = tk.Label(
-        scrollable_frame,
-        text=f"{title_name} una Ruta",  
-        font=title_font,
-        bg="#09090A",
-        fg="#7732FF",
-        wraplength=350,
-        justify="center",
-    )
-    title_label_2.pack(pady=20)
-    create_input_field(scrollable_frame, "Ruta ID", "Ingresar")
-    # Punto de origen
-    origin_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
-    origin_frame.pack(side="top", pady=10, fill="x", padx=10)
-    point_origin_txt = tk.Label(origin_frame, text="Punto de Partida:", bg="#F1F2F6")
-    point_origin_input = CTkComboBox(
-        origin_frame,
-        values=["Santa Cruz", "La Paz", "Cochabamba", "Potosí", "Chuquisaca", "Oruro", "Tarija", "Beni", "Pando"],
-        fg_color="#E1E1E1",
-        button_color="#C8BCF6",
-        border_color="#C8BCF6",
-        corner_radius=32,
-        state="readonly"
-    )
-    point_origin_input.set("Seleccionar")
-    point_origin_txt.pack(side="left", padx=10)
-    point_origin_input.pack(side="left", padx=10)
-    # Punto de destino
-    destination_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
-    destination_frame.pack(side="top", pady=10, fill="x", padx=10)
-    point_destination_txt = tk.Label(destination_frame, text="Punto de Destino:", bg="#F1F2F6")
-    point_destination_input = CTkComboBox(
-        destination_frame,
-        values=["Santa Cruz", "La Paz", "Cochabamba", "Potosí", "Chuquisaca", "Oruro", "Tarija", "Beni", "Pando"],
-        fg_color="#E1E1E1",
-        button_color="#C8BCF6",
-        border_color="#C8BCF6",
-        corner_radius=32,
-        state="readonly"
-    )
-    point_destination_input.set("Seleccionar")
-    point_destination_txt.pack(side="left", padx=10)
-    point_destination_input.pack(side="left", padx=10)
-    create_input_field(scrollable_frame, "Costo Economico", "Ingresar")
-    create_input_field(scrollable_frame, "Costo VIP", "Ingresar")
-    # Boton de Ruta
-    route_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
-    route_frame.pack(side="top", pady=20, fill="x", padx=10)
-    route_button_color = "#7732FF"
-    route_available = CTkButton(
-        route_frame,
-        text=f"{title_name} ruta",
-        corner_radius=32,
-        fg_color=bus_button_color,
-        hover_color="#5A23CC",
-        command=queries_option
-    )
-    route_available.pack(pady=10)
     return option_frame
 
 """Frame para Agregar Datos"""
@@ -1197,6 +1016,7 @@ def show_frame(frame_to_show):
             hide_log_out_button()
             navigation_bar.pack_forget()
         else:
+            hide_option()
             action_bar.pack(side="top", fill="x")
             hide_back_button()
             show_log_out_button()
