@@ -25,9 +25,15 @@ def valores_filas(fila:list)->str:
     Cadena de texto con los valores de la fila formateados para una inserción SQL. """
     valores:str=""
     for valor in fila:
-        if valor==True:
+        if valor==None:
+            valor="NULL"
+            valores=valores+f"{str(valor)}"+","
+        elif valor==True:
             valor=1
+            valores=valores+f"'{str(valor)}'"+","
         elif valor==False:
             valor=0
-        valores=valores+f"'{str(valor)}'"+","
+            valores=valores+f"'{str(valor)}'"+","
+        else:
+            valores=valores+f"'{str(valor)}'"+","
     return valores[:-1]
