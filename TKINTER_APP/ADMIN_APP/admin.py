@@ -934,7 +934,7 @@ def make_option_frame(parent, title_name):
                 text=label_text,
                 corner_radius=32,
                 fg_color="#7732FF",
-                hover_color="#5A23CC",
+                hover_color="#5A23CC"
             )
             available.pack(pady=10, fill="x")  
     create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
@@ -942,6 +942,39 @@ def make_option_frame(parent, title_name):
     create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
     create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
     create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
+    # Titulo de Chofer
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} un Chofer",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(pady=20)
+    create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Nombre del Chofer:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Edad:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Carnet:", "Ingresar", 1)
+    create_input_field(scrollable_frame, f"{title_name} Chofer", "Ingresar", 2)
+    # Titulo de Ruta
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} una Ruta",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(pady=20)
+    create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Costo Economico:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
+    create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
     return option_frame
 
 """Frame para Agregar Datos"""
