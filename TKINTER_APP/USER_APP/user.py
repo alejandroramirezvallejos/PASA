@@ -17,9 +17,9 @@ window = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'LENOVO'  
+server = 'JOSUEPC'  
 database = 'pasa'
-username = 'LENOVO\\user' 
+username = 'JOSUEPC\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -47,6 +47,10 @@ def make_connection():
 def obtain_pk(cursor,tabla:str)->str:
     cursor.execute(f"SELECT {tabla}_id FROM {tabla} ORDER BY {tabla}_id DESC ")
     return cursor.fetchone()[0]+1
+#obtener llave
+def obtain_userid(cursor):
+    cursor.execute(f"""select usuario_id from usuario where carnet={id_card}""")
+    return cursor.fetchone()[0]
 
 """Guardar Datos al Crear una Cuenta"""
 def create_account():
@@ -114,7 +118,8 @@ def create_account():
 def login():
     # Entrada de Datos
     global content_frame
-    id_card = login_id_card_entry.get().strip()
+    global id_card 
+    id_card=login_id_card_entry.get().strip()
     password = login_password_entry.get().strip()
     # Verificar la correcta Entrada de Datos
     if not all([id_card]):
@@ -212,7 +217,7 @@ def search_buses():
             buses_2 = cursor.fetchall()
 
         # Mostrar Resultados
-        results_frame = make_show_results(buses, buses_2, passengers, origin, destination)
+        results_frame = make_show_results(buses, buses_2, passengers, origin, destination,passenger_class)
         show_frame(results_frame)
 
     except pyodbc.Error as e:
@@ -827,38 +832,125 @@ def make_content_frame():
     return content_frame
 
 """Frame de los Resultados de la busqueda"""
-def make_show_results(buses, buses_2, passengers, origin, destination):
-    global results_frame, return_date
+def make_show_results(buses, buses_2, passengers, origin, destination,passenger_class):
+    global results_frame, return_date, selected_buses
     return_date = return_date_button.cget("text")
+    selected_buses = []  # Track selected buses
+    
     # Creación del Frame principal
     results_frame = tk.Frame(window, bg="#F1F2F6")
     results_frame.name = "results"
     results_frame.pack(fill="both", expand=True, padx=0, pady=10)
+    
     # Botón de Regreso y Cerrar Sesión en la parte superior
     show_back_button(results_frame)
     show_log_out_button(results_frame)
+    
     # Crear el sistema de Scroll
     scrollbar = tk.Scrollbar(results_frame)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     canvas = tk.Canvas(results_frame, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0)
     canvas.pack(side=tk.LEFT, fill="both", expand=True)
     scrollbar.config(command=canvas.yview)
+    
     # Frame contenedor para todo el contenido
     content_frame = tk.Frame(canvas, bg="#F1F2F6")
     canvas.create_window((0, 0), window=content_frame, anchor="nw")
-    # Configurar el resize del canvas
+    
     def resize_canvas(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
     content_frame.bind("<Configure>", resize_canvas)
+
+    def confirm_booking():
+        
+        # Create confirmation window
+        confirm_window = tk.Toplevel(window)
+        confirm_window.title("Confirmación")
+        confirm_window.geometry("300x150")
+        confirm_window.configure(bg="#F1F2F6")
+        
+        # Center the window
+        confirm_window.geometry("+%d+%d" % (
+            window.winfo_x() + window.winfo_width()/2 - 150,
+            window.winfo_y() + window.winfo_height()/2 - 75
+        ))
+        
+        # Add confirmation message
+        tk.Label(
+            confirm_window,
+            text="¡Reserva realizada con éxito!",
+            bg="#F1F2F6",
+            font=("Canva Sans", 12, "bold")
+        ).pack(pady=20)
+        
+        # Insert booking into database
+        try:
+            conexion = make_connection()
+            cursor=conexion.cursor()
+            for bus in selected_buses:
+                for i in range(int(passengers)):
+                    if(passenger_class=="Economico"):
+                        cursor.execute(f"""INSERT INTO reserva (reserva_id, usuario_id,bus_id,vip)
+                                        VALUES ({obtain_pk(cursor,"reserva")}, {obtain_userid(cursor)},{bus} ,0);
+                        """)
+                        conexion.commit()
+
+                    elif(passenger_class=="VIP"):
+                        cursor.execute(f"""INSERT INTO reserva (reserva_id, usuario_id,bus_id,vip)
+                                        VALUES ({obtain_pk(cursor,"reserva")}, {obtain_userid(cursor)},{bus} ,1);
+                        """)
+                        conexion.commit()
+            conexion.close()
+            
+            # Close confirmation window after 2 seconds
+            confirm_window.after(2000, confirm_window.destroy)
+            
+            # Return to main menu or previous screen
+            results_frame.after(2100, lambda: on_log_out_button())
+            
+        except Exception as e:
+            tk.Label(
+                confirm_window,
+                text=f"Error: {str(e)}",
+                bg="#F1F2F6",
+                fg="red",
+                font=("Canva Sans", 10)
+            ).pack(pady=10)
+    
+    def handle_bus_selection(bus_id, button):
+        if button.cget("text") == "Seleccionar":
+            if len(selected_buses) < 2:
+                selected_buses.append(bus_id)
+                button.configure(
+                    text="Seleccionado",
+                    fg_color="gray",
+                    hover_color="gray",
+                    state="disabled"
+                )
+                # Enable confirm button if we have at least one selection
+                commit_button.configure(state="normal")
+        
+        # Update the state of all select buttons
+        if len(selected_buses) >= 2:
+            for child in content_frame.winfo_children():
+                if isinstance(child, tk.Frame):
+                    for widget in child.winfo_children():
+                        if isinstance(widget, CTkButton) and widget.cget("text") == "Seleccionar":
+                            widget.configure(state="disabled")
+    
     # Botón para confirmar Selección
     commit_button = CTkButton(
         content_frame,
         text="Confirmar Seleccion",
         corner_radius=32,
         fg_color="#7732FF",
-        hover_color="#5A23CC"
+        hover_color="#5A23CC",
+        state="disabled",
+        command=confirm_booking
     )
+    commit_button.pack(padx=(90, 0))
     commit_button.place_forget()
+
     # Mostrar Buses Disponibles de Partida
     if not buses:
         no_results_label = tk.Label(
@@ -869,26 +961,27 @@ def make_show_results(buses, buses_2, passengers, origin, destination):
             wraplength=350,
             justify="center"
         )
+        commit_button.pack(padx=(90, 0))
         no_results_label.pack(expand=True)
     else:
         commit_button.pack(pady=(10, 0))
+        commit_button.pack(padx=(90, 0))
         title_font = font.Font(family="Canva Sans", size=15, weight="bold")
         title_label = tk.Label(
             content_frame,
-            text="Selecciona un Bus para la Fecha de Partida",
+            text="Selecciona un Bus \npara la Fecha de Partida",
             font=title_font,
             bg="#F1F2F6",
             fg="black",
             wraplength=350,
-            justify="center",
         )
         title_label.pack(pady=50)
+        
         for idx, bus in enumerate(buses):
             bus_id, fecha_salida, asientos_ocupados = bus
-            # Creando un bloque para cada Bus 
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
             block_frame.pack(pady=(10, 0), fill="x")
-            # Detalles del Bus
+            
             detalles = f"""
 Bus ID: {bus_id}
 Punto de Origen: {origin}
@@ -905,25 +998,29 @@ Asientos Disponibles: {60 - asientos_ocupados}
                 font=("Arial", 11)
             )
             label.pack(pady=5)
-            # Botón para seleccionar un Bus
+            
             select_button = CTkButton(
                 block_frame,
                 text="Seleccionar",
                 corner_radius=32,
                 fg_color="#7732FF",
-                hover_color="#5A23CC"
+                hover_color="#5A23CC",
+                command=lambda bid=bus_id, btn=None: handle_bus_selection(bid, btn)
             )
             select_button.pack(pady=(10, 0))
-            # Agregar línea separadora entre bloques
+            # Update the command after button creation
+            select_button.configure(command=lambda bid=bus_id, btn=select_button: handle_bus_selection(bid, btn))
+            
             if idx < len(buses) - 1:
                 separator = tk.Frame(content_frame, bg="#7732FF", height=2, width=300)
                 separator.pack(pady=(10, 10))
                 separator.pack_propagate(False)
+
     # Mostrar Buses Disponibles de Regreso
     if not buses_2 and not return_date == "Seleccionar":
         no_results_label = tk.Label(
             content_frame,
-            text="No se encontraron Buses Disponibles para la Fecha de Regreso",
+            text="No se encontraron Buses \nDisponibles para la Fecha de Regreso",
             bg="#F1F2F6",
             font=("Canva Sans", 12),
             wraplength=350,
@@ -942,7 +1039,7 @@ Asientos Disponibles: {60 - asientos_ocupados}
         title_font_2 = font.Font(family="Canva Sans", size=15, weight="bold")
         title_label_2 = tk.Label(
             content_frame,
-            text="Selecciona un Bus para la Fecha de Regreso",
+            text="Selecciona un Bus \npara la Fecha de Regreso",
             font=title_font_2,
             bg="#F1F2F6",
             fg="black",
@@ -950,12 +1047,12 @@ Asientos Disponibles: {60 - asientos_ocupados}
             justify="center",
         )
         title_label_2.pack(pady=50)
+        
         for idx, bus in enumerate(buses_2):
             bus_id, fecha_salida, asientos_ocupados = bus
-            # Creando un bloque para cada Bus 
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
             block_frame.pack(pady=(10, 0), fill="x")
-            # Detalles del Bus
+            
             detalles = f"""
 Bus ID: {bus_id}
 Punto de Origen: {origin}
@@ -972,22 +1069,25 @@ Asientos Disponibles: {60 - asientos_ocupados}
                 font=("Arial", 11)
             )
             label.pack(pady=5)
-            # Botón para seleccionar un Bus
+            
             select_button = CTkButton(
                 block_frame,
                 text="Seleccionar",
                 corner_radius=32,
                 fg_color="#7732FF",
-                hover_color="#5A23CC"
+                hover_color="#5A23CC",
+                command=lambda bid=bus_id, btn=None: handle_bus_selection(bid, btn)
             )
             select_button.pack(pady=(10, 0))
-            # Agregar línea separadora entre bloques
+            # Update the command after button creation
+            select_button.configure(command=lambda bid=bus_id, btn=select_button: handle_bus_selection(bid, btn))
+            
             if idx < len(buses_2) - 1:
                 separator = tk.Frame(content_frame, bg="#7732FF", height=2, width=300)
                 separator.pack(pady=(10, 10))
                 separator.pack_propagate(False)
-    return results_frame
 
+    return results_frame
 # ----------------------------------------------------------MOSTRAR Y OCULTAR FRAMES-----------------------------------------------------------------------------------------------
 
 """Funcion para Mostrar un Frame"""

@@ -3,6 +3,7 @@
   <h1 style="margin: 0;" > <img src="ASSETS/color_positive.png" width="40" /> PASA "Viajar nunca fue más simple" </h1>
 </div>
 
+[![](IMAGES/logo.png)](IMAGES/video.mp4)
 Este proyecto implementa un sistema de migración y gestión de datos para una empresa de buses, permitiendo la transición desde un sistema heredado en SQL Server a una nueva implementación en MySQL además con una interfaz gráfica que complementa al proyecto.</p>
 
 ## 🚌 Descripción del Proyecto
