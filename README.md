@@ -417,7 +417,88 @@ EXISTE_BASE = "Seleccionar nombre de esquema desde el esquema de información de
 - Confirmar las entradas
 - Ver la integridad
 ### Pseudocodigo
+#### USUARIO
+```
+Sistema de Reservas de Buses
 
+Inicio:
+1. Configurar dependencias y bibliotecas:
+   - Instalar tkinter, pyodbc, customtkinter, pillow, tkcalendar.
+
+2. Configurar conexion a base de datos:
+   - Definir DRIVER, SERVER, DATABASE, y credenciales de usuario.
+
+3. Definir funciones principales:
+
+   Funciones de Conexion:
+   - Conectar a la base de datos:
+     - Intentar establecer conexion usando las credenciales.
+     - Si hay error, mostrar mensaje.
+
+   Funciones de Usuarios:
+   - Crear cuenta:
+     - Recoger datos de entrada: nombre, apellido, edad, carnet, contraseña.
+     - Validar:
+       - Nombre, apellido no vacíos.
+       - Edad mayor o igual a 18.
+       - Carnet con 7 dígitos.
+       - Contraseña no vacía.
+     - Insertar datos en tabla de usuarios.
+     - Mostrar pantalla principal si es exitoso.
+
+   - Iniciar sesión:
+     - Recoger credenciales: carnet y contraseña.
+     - Validar:
+       - Carnet con 7 dígitos.
+       - Contraseña no vacía.
+     - Consultar base de datos para verificar usuario.
+     - Mostrar pantalla principal si es correcto.
+
+   Funciones de Reservas:
+   - Buscar buses:
+     - Recoger datos: origen, destino, fecha salida, fecha regreso, pasajeros, clase.
+     - Validar:
+       - Origen y destino diferentes.
+       - Fecha de salida seleccionada.
+       - Numero de pasajeros entre 1 y 60.
+     - Consultar base de datos:
+       - Obtener buses disponibles según origen, destino y fechas.
+     - Mostrar resultados.
+
+   - Confirmar reserva:
+     - Recoger buses seleccionados y detalles del usuario.
+     - Insertar reservas en la base de datos.
+     - Mostrar mensaje de confirmación.
+
+4. Diseño de interfaz:
+
+   Pantalla Inicial:
+   - Mostrar logo y opciones: "Iniciar sesión" y "Crear cuenta".
+
+   Pantalla de Inicio de Sesión:
+   - Formularios para carnet y contraseña.
+   - Botón para validar.
+
+   Pantalla de Creación de Cuenta:
+   - Formularios para nombre, apellido, edad, carnet y contraseña.
+   - Botón para registrar.
+
+   Pantalla Principal:
+   - Campos para origen, destino, fechas, pasajeros y clase.
+   - Botón para buscar buses.
+
+   Pantalla de Resultados:
+   - Lista de buses disponibles.
+   - Botón para confirmar selección.
+
+5. Gestion de Eventos:
+   - Cambiar entre pantallas según acciones del usuario.
+   - Validar datos antes de interactuar con la base de datos.
+   - Habilitar o deshabilitar botones según estado de la aplicación.
+
+Fin.
+```
+#### ADMIN
 ## 🧪 Pruebas
 
 ### Tests Implementados
