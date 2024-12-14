@@ -4,7 +4,8 @@
     pip install pillow
     pip install customtkinter
 """
-import tkinter as tk 
+import tkinter as tk
+from tkinter import ttk
 import pyodbc
 from tkinter import messagebox, font
 from tkcalendar import Calendar
@@ -13,14 +14,27 @@ from PIL import Image, ImageTk
 import customtkinter as ctk
 from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
 window = None
-
+current_frame = None
+add_frame = None
+option_frame = None
+update_frame = None
+delete_frame = None
+fetch_frame = None
+navigation_bar = None
+action_bar = None
+start_frame = None
+register_frame = None
+login_frame = None
+terms_frame = None
+loading_frame = None
+all_frames = []
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
 server = 'LENOVO'  
 database = 'pasa'
-username = 'LENOVO\\user' 
+username = 'LENOVO\\user'
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -43,6 +57,17 @@ def make_connection():
         return None
 
 # ----------------------------------------------------ENTRADA Y SALIDA DE DATOS-----------------------------------------------------------------------------------------------
+
+"""Funcion para Validar si un Usuario tiene el mismo Numero de Catnet"""
+def validate_carnet(carnet:str)->bool:
+    conexion=make_connection()
+    cursor=conexion.cursor()
+    cursor.execute(f"SELECT carnet FROM usuario WHERE carnet = {carnet};")
+    valor=cursor.fetchone()
+    if valor is None:
+        return False
+    else:
+        return True
 
 """Crear llave"""
 def obtain_pk(cursor,tabla:str)->str:
@@ -82,6 +107,9 @@ def create_account():
         return
     if not len(id_card) == 7:
         messagebox.showerror("Error", "El Numero de Carnet debe tener 7 digitos")
+        return
+    if validate_carnet(id_card)==True:
+        messagebox.showerror("Error", "Carnet ya existente")
         return
     if not all([password]):
         messagebox.showerror("Error", "Debes crear una Contraseña")
@@ -151,6 +179,56 @@ def login():
         messagebox.showerror("Error", f"Error al realizar la consulta: {e}")
     finally:
         connection.close()
+
+"""Funcion para Realizar Consultas"""
+def queries_option():
+    global point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
+    # Obtener entradas de usuario
+    origin = point_origin_input.get()
+    destination = point_destination_input.get()
+    departure_date = departure_date_button.cget("text")
+    return_date = return_date_button.cget("text")
+    passengers = passengers_entry.get().strip()
+    passenger_class = passenger_class_input.get()
+    # Validaciones
+    if origin == "Seleccionar":
+        messagebox.showerror("Error", "Debes seleccionar un Punto de Origen.")
+        return
+    if destination == "Seleccionar":
+        messagebox.showerror("Error", "Debes seleccionar un Punto de Destino.")
+        return
+    if origin == destination:
+        messagebox.showerror("Error", "El Punto de Origen no puede ser igual al Punto de Destino.")
+        return
+    if departure_date == "Seleccionar":
+        messagebox.showerror("Error", "Debes seleccionar una Fecha de Partida.")
+        return
+    if return_date == "Seleccionar":
+        messagebox.showerror("Error", "Debes seleccionar una Fecha de Regreso.")
+        return
+    if not passengers.isdigit():
+        messagebox.showerror("Error", "El Número de Pasajeros debe ser un valor numérico.")
+        return
+    passengers = int(passengers)
+    if passengers < 1 or passengers > 60:
+        messagebox.showerror("Error", "El Número de Pasajeros debe estar entre 1 y 60.")
+        return
+    if passenger_class == "Seleccionar":
+        messagebox.showerror("Error", "Debes seleccionar la Clase de los Pasajeros.")
+        return
+    # Validación adicional para coherencia de fechas
+    try:
+        departure_date_obj = date.fromisoformat(departure_date)
+        return_date_obj = date.fromisoformat(return_date)
+        if departure_date_obj >= return_date_obj:
+            messagebox.showerror("Error", "La Fecha de Regreso debe ser posterior a la Fecha de Partida.")
+            return
+    except ValueError:
+        messagebox.showerror("Error", "Formato de fecha inválido. Verifica las fechas seleccionadas.")
+        return
+    # Si todas las validaciones pasan
+    messagebox.showinfo("Éxito", "Consulta procesada correctamente.")
+
 
 # ------------------------------------------------------------FRAMES---------------------------------------------------------------------------------------------
 
@@ -303,7 +381,7 @@ def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_fra
         navigation_bar, 
         text="Buscar", 
         image=search_icon, 
-        command=lambda: show_frame(fetch_frame),
+        command=lambda: show_frame(make_fetch_frame()),
         **button_style
     )
     fetch_button.pack(side="left", expand=True)
@@ -311,7 +389,7 @@ def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_fra
         navigation_bar, 
         text="Agregar", 
         image=add_icon, 
-        command=lambda: show_frame(add_frame),
+        command=lambda: show_frame(make_add_frame()),
         **button_style
     )
     add_button.pack(side="left", expand=True)
@@ -319,7 +397,7 @@ def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_fra
         navigation_bar, 
         text="Eliminar", 
         image=delete_icon, 
-        command=lambda: show_frame(delete_frame),
+        command=lambda: show_frame(make_delete_frame()),
         **button_style
     )
     delete_button.pack(side="left", expand=True)
@@ -327,7 +405,7 @@ def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_fra
         navigation_bar, 
         text="Modificar", 
         image=update_icon, 
-        command=lambda: show_frame(update_frame),
+        command=lambda: show_frame(make_update_frame()),
         **button_style
     )
     update_button.pack(side="left", expand=True)
@@ -641,6 +719,7 @@ def make_login_frame():
 
 """Frame para Buscar Datos"""
 def make_fetch_frame():
+    global current_frame, navigation_bar, action_bar
     fetch_frame = tk.Frame(window, bg="#09090A")
     fetch_frame.name = "fetch"
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
@@ -656,55 +735,302 @@ def make_fetch_frame():
     title_label.pack(pady=50)
     return fetch_frame
 
-"""Frame para Agregar Datos"""
-def make_add_frame():
-    add_frame = tk.Frame(window, bg="#09090A")
-    add_frame.name = "add"
+"""Frame para Crear Botones Predeterminados"""
+def make_option_frame(parent, title_name):
+    option_frame = ttk.Frame(parent)
+    global option 
+    option = ttk.Entry(option_frame) 
+    option.pack(padx=10, pady=10)
+    # Scrollbar
+    canvas = tk.Canvas(option_frame, bg="#09090A", highlightthickness=0)
+    scrollbar = tk.Scrollbar(option_frame, orient="vertical", command=canvas.yview)
+    # Crear un marco interno dentro del canvas
+    scrollable_frame = tk.Frame(canvas, bg="#09090A")
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+    # Vincular el marco interno con el canvas
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+    # Titulo de Bus
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
-        add_frame,
-        text="Agregar Datos",
+        scrollable_frame,
+        text=f"{title_name} un Bus",  
         font=title_font,
         bg="#09090A",
-        fg="white",
+        fg="#7732FF",
         wraplength=350,
         justify="center",
     )
-    title_label.pack(pady=50)
+    title_label.pack(pady=20)
+    # Función auxiliar para crear campos de entrada
+    def create_input_field(parent, label_text, placeholder):
+        frame = tk.Frame(parent, bg="#09090A")
+        frame.pack(side="top", pady=10, fill="x", padx=10)
+        label = tk.Label(frame, text=label_text, bg="#09090A", fg="#C8BCF6")
+        label.pack(side="left", padx=10)
+        entry = CTkEntry(
+            frame,
+            placeholder_text=placeholder,
+            border_color="#C8BCF6",
+            corner_radius=32,
+        )
+        entry.pack(side="left", padx=10, fill="x", expand=True)
+    create_input_field(scrollable_frame, "Bus ID:", "Ingresar")
+    create_input_field(scrollable_frame, "Nombre del Bus:", "Ingresar")
+    create_input_field(scrollable_frame, "Chofer ID:", "Ingresar")
+    create_input_field(scrollable_frame, "Ruta ID:", "Ingresar")
+    # Calendario
+    def open_calendar(min_date, max_date, callback):
+        calendar_window = tk.Toplevel(window)
+        calendar_window.title("Selecciona la Fecha")
+        calendar_window.configure(bg="#09090A")
+        calendar_window.geometry("320x250+150+85")
+        try:
+            calendar_window.iconbitmap("../../ASSETS/icon_admin.ico")
+        except Exception:
+            print(f"Error al cargar el icono: {Exception}")
+        calendar_frame = tk.Frame(calendar_window, bg="#C8BCF6", relief="flat", bd=1)
+        calendar_frame.pack(padx=10, pady=10, fill="both", expand=True)
+        calendar = Calendar(
+            calendar_frame,
+            mindate=min_date,
+            maxdate=max_date,
+            date_pattern="yyyy-mm-dd",
+            selectmode="day",
+            background="#FFFFFF",
+            foreground="#7732FF",
+            headersbackground="#F1F2F6",
+            headersforeground="#7732FF",
+            selectbackground="#7732FF",
+            selectforeground="#FFFFFF",
+            weekendforeground="#A9A9A9",
+            bordercolor="#F1F2F6"
+        )
+        calendar.pack(padx=10, pady=10)
+        calendar.bind("<<CalendarSelected>>", lambda _: [callback(calendar.get_date()), calendar_window.destroy()])
+    # Fecha de Partida
+    departure_date_frame = tk.Frame(scrollable_frame, bg="#09090A")
+    departure_date_frame.pack(side="top", pady=10, fill="x", padx=10)
+    departure_date_label = tk.Label(departure_date_frame, text="Fecha de Partida:", bg="#09090A", fg="#C8BCF6")
+    departure_date_label.pack(side="left", padx=10)
+    departure_date_button = CTkButton(
+        departure_date_frame,
+        text="Seleccionar",
+        corner_radius=32,
+        fg_color="#09090A",
+        text_color="#C8BCF6",
+        hover_color="#E1E1E1",
+        border_color="#C8BCF6",
+        border_width=2,
+        command=lambda: open_calendar(
+            date.today(),
+            date(2025, 12, 31),
+            lambda d: departure_date_button.configure(text=d)
+        )
+    )
+    departure_date_button.pack(side="left", padx=10, fill="x", expand=True)
+    # Fecha de Regreso
+    return_date_frame = tk.Frame(scrollable_frame, bg="#09090A")
+    return_date_frame.pack(side="top", pady=10, fill="x", padx=10)
+    return_date_label = tk.Label(return_date_frame, text="Fecha de Regreso:", bg="#09090A", fg="#C8BCF6")
+    return_date_label.pack(side="left", padx=10)
+    # Verificando el correcto orden de selección de Fecha de Regreso
+    def enable_return_date_selection():
+        departure_date = departure_date_button.cget("text")  
+        if departure_date == "Seleccionar":
+            messagebox.showerror("Error", "Primero selecciona la Fecha de Partida")
+        else:
+            try:
+                # Convertir la fecha de partida a un objeto datetime
+                min_date = date.fromisoformat(departure_date)
+                open_calendar(
+                    min_date, 
+                    date(2025, 12, 31),  
+                    lambda selected_date: validate_return_date(min_date, selected_date)
+                )
+            except ValueError:
+                messagebox.showerror("Error", "Fecha de Partida invalida")
+    # Verificando que a Fecha de Regreso sea posterior a la Fecha de Partida
+    def validate_return_date(departure_date, return_date):
+        try:
+            return_date_obj = date.fromisoformat(return_date)
+            if return_date_obj <= departure_date:
+                messagebox.showerror("Error", "La Fecha de Regreso debe ser posterior a la Fecha de Partida")
+            else:
+                return_date_button.configure(text=return_date)  
+        except ValueError:
+            messagebox.showerror("Error", "Fecha de Regreso invalida")
+    return_date_button = CTkButton(
+        return_date_frame,
+        text="Seleccionar",
+        corner_radius=32,
+        fg_color="#09090A",
+        text_color="#C8BCF6",
+        hover_color="#E1E1E1",
+        border_color="#C8BCF6",
+        border_width=2,
+        command=enable_return_date_selection
+    )
+    return_date_button.pack(side="left", padx=10, fill="x", expand=True)
+    # Boton de Bus
+    bus_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
+    bus_frame.pack(side="top", pady=20, fill="x", padx=10)
+    bus_button_color = "#7732FF"
+    bus_available = CTkButton(
+        bus_frame,
+        text=f"{title_name} Bus",
+        corner_radius=32,
+        fg_color=bus_button_color,
+        hover_color="#5A23CC",
+        command=queries_option
+    )
+    bus_available.pack(pady=10)
+    # Título para Chofer
+    title_label_2 = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} un Chofer",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    title_label_2.pack(pady=20)
+    create_input_field(scrollable_frame, "ID:", "Ingresar")
+    create_input_field(scrollable_frame, "Nombre:", "Ingresar")
+    create_input_field(scrollable_frame, "Carnet:", "Ingresar")
+    create_input_field(scrollable_frame, "Edad", "Ingresar")
+    # Boton de Chofer
+    driver_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
+    driver_frame.pack(side="top", pady=20, fill="x", padx=10)
+    driver_button_color = "#7732FF"
+    driver_available = CTkButton(
+        driver_frame,
+        text=f"{title_name} Chofer",
+        corner_radius=32,
+        fg_color=bus_button_color,
+        hover_color="#5A23CC",
+        command=queries_option
+    )
+    driver_available.pack(pady=10)
+    # Título para Ruta
+    title_label_2 = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} una Ruta",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    title_label_2.pack(pady=20)
+    create_input_field(scrollable_frame, "Ruta ID", "Ingresar")
+    # Punto de origen
+    origin_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
+    origin_frame.pack(side="top", pady=10, fill="x", padx=10)
+    point_origin_txt = tk.Label(origin_frame, text="Punto de Partida:", bg="#F1F2F6")
+    point_origin_input = CTkComboBox(
+        origin_frame,
+        values=["Santa Cruz", "La Paz", "Cochabamba", "Potosí", "Chuquisaca", "Oruro", "Tarija", "Beni", "Pando"],
+        fg_color="#E1E1E1",
+        button_color="#C8BCF6",
+        border_color="#C8BCF6",
+        corner_radius=32,
+        state="readonly"
+    )
+    point_origin_input.set("Seleccionar")
+    point_origin_txt.pack(side="left", padx=10)
+    point_origin_input.pack(side="left", padx=10)
+    # Punto de destino
+    destination_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
+    destination_frame.pack(side="top", pady=10, fill="x", padx=10)
+    point_destination_txt = tk.Label(destination_frame, text="Punto de Destino:", bg="#F1F2F6")
+    point_destination_input = CTkComboBox(
+        destination_frame,
+        values=["Santa Cruz", "La Paz", "Cochabamba", "Potosí", "Chuquisaca", "Oruro", "Tarija", "Beni", "Pando"],
+        fg_color="#E1E1E1",
+        button_color="#C8BCF6",
+        border_color="#C8BCF6",
+        corner_radius=32,
+        state="readonly"
+    )
+    point_destination_input.set("Seleccionar")
+    point_destination_txt.pack(side="left", padx=10)
+    point_destination_input.pack(side="left", padx=10)
+    create_input_field(scrollable_frame, "Costo Economico", "Ingresar")
+    create_input_field(scrollable_frame, "Costo VIP", "Ingresar")
+    # Boton de Ruta
+    route_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
+    route_frame.pack(side="top", pady=20, fill="x", padx=10)
+    route_button_color = "#7732FF"
+    route_available = CTkButton(
+        route_frame,
+        text=f"{title_name} ruta",
+        corner_radius=32,
+        fg_color=bus_button_color,
+        hover_color="#5A23CC",
+        command=queries_option
+    )
+    route_available.pack(pady=10)
+    return option_frame
+
+"""Frame para Agregar Datos"""
+def make_add_frame():
+    global current_frame, add_frame, option_frame
+    if add_frame is None:
+        add_frame = tk.Frame(window, bg="#09090A")
+        add_frame.name = "add"
+    # Asegurar que `option_frame` está correctamente asociado al frame actual
+    if option_frame is None or option_frame.master != add_frame:
+        option_frame = make_option_frame(add_frame, "Agregar")
+        option_frame.pack(fill="both", expand=True)
+    # Cambiar al nuevo frame
+    if current_frame:
+        current_frame.pack_forget()
+    current_frame = add_frame
+    current_frame.pack(fill="both", expand=True)
+    show_option(target_frame=add_frame)
     return add_frame
 
 """Frame para Modificar Datos"""
 def make_update_frame():
-    update_frame = tk.Frame(window, bg="#09090A")
-    update_frame.name = "update"
-    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
-    title_label = tk.Label(
-        update_frame,
-        text="Modificar Datos",
-        font=title_font,
-        bg="#09090A",
-        fg="white",
-        wraplength=350,
-        justify="center",
-    )
-    title_label.pack(pady=50)
+    global current_frame, update_frame, option_frame
+    if update_frame is None:
+        update_frame = tk.Frame(window, bg="#09090A")
+        update_frame.name = "update"
+    # Asegurar que `option_frame` está correctamente asociado al frame actual
+    if option_frame is None or option_frame.master != update_frame:
+        option_frame = make_option_frame(update_frame, "Actualizar")
+        option_frame.pack(fill="both", expand=True)
+    # Cambiar al nuevo frame
+    if current_frame:
+        current_frame.pack_forget()
+    current_frame = update_frame
+    current_frame.pack(fill="both", expand=True)
+    show_option(target_frame=update_frame)
     return update_frame
 
 """Frame para Eliminar Datos"""
 def make_delete_frame():
-    delete_frame = tk.Frame(window, bg="#09090A")
-    delete_frame.name = "delete"
-    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
-    title_label = tk.Label(
-        delete_frame,
-        text="Eliminar Datos",
-        font=title_font,
-        bg="#09090A",
-        fg="white",
-        wraplength=350,
-        justify="center",
-    )
-    title_label.pack(pady=50)
+    global current_frame, delete_frame, option_frame
+    if delete_frame is None:
+        delete_frame = tk.Frame(window, bg="#09090A")
+        delete_frame.name = "delete"
+    # Asegurar que `option_frame` está correctamente asociado al frame actual
+    if option_frame is None or option_frame.master != delete_frame:
+        option_frame = make_option_frame(delete_frame, "Eliminar")
+        option_frame.pack(fill="both", expand=True)
+    # Cambiar al nuevo frame
+    if current_frame:
+        current_frame.pack_forget()
+    current_frame = delete_frame
+    current_frame.pack(fill="both", expand=True)
+    show_option(target_frame=delete_frame)
     return delete_frame
 
 # ----------------------------------------------------------MOSTRAR Y OCULTAR FRAMES-----------------------------------------------------------------------------------------------
@@ -712,7 +1038,11 @@ def make_delete_frame():
 """Funcion para Mostrar un Frame"""
 def show_frame(frame_to_show):
     global all_frames, action_bar, back_button, log_out_button, current_frame
+    # Ocultar frame actual
+    if current_frame:
+        current_frame.pack_forget()
     current_frame = frame_to_show  
+    frame_to_show.pack(expand=True)
     # Ocultar todos los frames
     for frame in all_frames:
         frame.pack_forget()
@@ -776,11 +1106,23 @@ def on_log_out_button():
     hide_log_out_button()
     show_frame(start_frame)
 
+"""Función para Mostrar Option"""
+def show_option(target_frame=None):
+    global option
+    if option and target_frame:
+        option.place(relx=0.5, rely=0.5, anchor='center')
+
+"""Función para Ocultar Option"""
+def hide_option():
+    if option:
+        option.place_forget()
+
 # ----------------------------------------------------------------MAIN--------------------------------------------------------------------------------------------
 
 """Funcion Principal"""
 def main():
-    global window, all_frames, start_frame, register_frame, login_frame, action_bar, terms_frame, current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar
+    global window, all_frames, start_frame, register_frame, login_frame, action_bar, terms_frame
+    global current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar
     # Configuración de la ventana
     set_appearance_mode("#09090A")
     set_default_color_theme("blue")
@@ -789,15 +1131,13 @@ def main():
     window.geometry("380x750+120+10")
     window.resizable(False, False)
     window.configure(bg="#09090A")
-    # Agregar Icono
-    try:
-        window.iconbitmap("../../ASSETS/icon_admin.ico")
-    except Exception:
-        print("Error al cargar el Icono")
-    # Creación de Frames
-    loading_frame = make_loading_screen()
+    # Crear barras y frames
     action_bar = make_action_bar()
     action_bar.pack_forget()
+    navigation_bar = make_navigation_bar(window, None, None, None, None)
+    navigation_bar.pack_forget()
+    # Crear Frames
+    loading_frame = make_loading_screen()
     start_frame = make_start_frame()
     register_frame = make_register_frame()
     login_frame = make_login_frame()
@@ -806,15 +1146,13 @@ def main():
     delete_frame = make_delete_frame()
     fetch_frame = make_fetch_frame()
     terms_frame = make_terms_frame()
-    # Crear Barra de Navegacion
-    navigation_bar = make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_frame)
-    navigation_bar.pack_forget()  
-    # Lista de Frames
     all_frames = [
         loading_frame, start_frame, register_frame,
-        login_frame, add_frame, update_frame, delete_frame, fetch_frame, terms_frame
+        login_frame, fetch_frame, terms_frame,
+        add_frame, update_frame, delete_frame
     ]
-    # Iniciar el programa
+    # Mostrar pantalla de carga
+    current_frame = loading_frame
     show_frame(loading_frame)
     window.after(1500, lambda: show_frame(start_frame))
     window.mainloop()
