@@ -182,53 +182,98 @@ def login():
 
 """Funcion para Realizar Consultas"""
 def queries_option():
-    global point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
-    # Obtener entradas de usuario
-    origin = point_origin_input.get()
-    destination = point_destination_input.get()
-    departure_date = departure_date_button.cget("text")
-    return_date = return_date_button.cget("text")
-    passengers = passengers_entry.get().strip()
-    passenger_class = passenger_class_input.get()
-    # Validaciones
-    if origin == "Seleccionar":
-        messagebox.showerror("Error", "Debes seleccionar un Punto de Origen.")
+    # Obtener datos del frame actual
+    global option, current_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button
+    # Establecer la conexión con la base de datos
+    connection = make_connection()
+    if not connection:
         return
-    if destination == "Seleccionar":
-        messagebox.showerror("Error", "Debes seleccionar un Punto de Destino.")
-        return
-    if origin == destination:
-        messagebox.showerror("Error", "El Punto de Origen no puede ser igual al Punto de Destino.")
-        return
-    if departure_date == "Seleccionar":
-        messagebox.showerror("Error", "Debes seleccionar una Fecha de Partida.")
-        return
-    if return_date == "Seleccionar":
-        messagebox.showerror("Error", "Debes seleccionar una Fecha de Regreso.")
-        return
-    if not passengers.isdigit():
-        messagebox.showerror("Error", "El Número de Pasajeros debe ser un valor numérico.")
-        return
-    passengers = int(passengers)
-    if passengers < 1 or passengers > 60:
-        messagebox.showerror("Error", "El Número de Pasajeros debe estar entre 1 y 60.")
-        return
-    if passenger_class == "Seleccionar":
-        messagebox.showerror("Error", "Debes seleccionar la Clase de los Pasajeros.")
-        return
-    # Validación adicional para coherencia de fechas
+    cursor = connection.cursor()
     try:
-        departure_date_obj = date.fromisoformat(departure_date)
-        return_date_obj = date.fromisoformat(return_date)
-        if departure_date_obj >= return_date_obj:
-            messagebox.showerror("Error", "La Fecha de Regreso debe ser posterior a la Fecha de Partida.")
+        # Determinar el tipo de operación y frame actual
+        if current_frame == add_frame:
+            action = "add"
+        elif current_frame == delete_frame:
+            action = "delete"
+        elif current_frame == update_frame:
+            action = "update"
+        else:
+            messagebox.showerror("Error", "Operación no válida o Frame desconocido.")
             return
-    except ValueError:
-        messagebox.showerror("Error", "Formato de fecha inválido. Verifica las fechas seleccionadas.")
-        return
-    # Si todas las validaciones pasan
-    messagebox.showinfo("Éxito", "Consulta procesada correctamente.")
-
+        # Operaciones según el Frame
+        if action == "add":
+            if "Agregar Bus" in option.get():
+                # Extraer datos para agregar un bus
+                chofer_id = int(option.get())  
+                ruta_id = int(point_destination_input.get())
+                nombre = "Bus_" + option.get() 
+                fecha_sal = departure_date_button.cget("text")
+                fecha_ret = return_date_button.cget("text")
+                # Llamar a la función de agregar bus
+                add_bus(chofer_id, ruta_id, nombre, fecha_sal, fecha_ret)
+                messagebox.showinfo("Éxito", "Bus agregado correctamente.")
+            elif "Agregar Chofer" in option.get():
+                # Extraer datos para agregar un chofer
+                nombre = option.get()
+                edad = int(point_origin_input.get())
+                carnet = int(return_date_button.cget("text"))  
+                add_driver(nombre, edad, carnet)
+                messagebox.showinfo("Éxito", "Chofer agregado correctamente")
+            elif "Agregar Ruta" in option.get():
+                dep_inicio = point_origin_input.get()
+                dep_final = point_destination_input.get()
+                costo = float(departure_date_button.cget("text"))
+                costo_vip = float(return_date_button.cget("text"))
+                add_route(dep_inicio, dep_final, costo, costo_vip)
+                messagebox.showinfo("Éxito", "Ruta agregada correctamente")
+        elif action == "delete":
+            if "Eliminar Bus" in option.get():
+                # Obtener el ID del bus
+                bus_id = int(option.get())
+                del_bus(bus_id)
+                messagebox.showinfo("Éxito", "Bus eliminado correctamente")
+            elif "Eliminar Chofer" in option.get():
+                chofer_id = int(option.get())
+                del_driver(chofer_id)
+                messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
+            elif "Eliminar Ruta" in option.get():
+                ruta_id = int(option.get())
+                del_route(ruta_id)
+                messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
+        elif action == "update":
+            if "Actualizar Bus" in option.get():
+                # Obtener datos del bus para actualizar
+                bus_id = int(option.get())
+                chofer_id = int(point_origin_input.get())
+                ruta_id = int(point_destination_input.get())
+                nombre = "Bus_" + option.get()
+                fecha_sal = departure_date_button.cget("text")
+                fecha_ret = return_date_button.cget("text")
+                # Llamar a la función de actualizar bus
+                update_bus(bus_id, chofer_id, ruta_id, nombre, fecha_ret, fecha_sal)
+                messagebox.showinfo("Éxito", "Bus actualizado correctamente")
+            elif "Actualizar Chofer" in option.get():
+                chofer_id = int(option.get())
+                nombre = point_origin_input.get()
+                edad = int(point_destination_input.get())
+                carnet = int(departure_date_button.cget("text"))
+                update_driver(chofer_id, nombre, edad, carnet)
+                messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+            elif "Actualizar Ruta" in option.get():
+                ruta_id = int(option.get())
+                dep_inicio = point_origin_input.get()
+                dep_final = point_destination_input.get()
+                costo = float(departure_date_button.cget("text"))
+                costo_vip = float(return_date_button.cget("text"))
+                update_route(ruta_id, dep_inicio, dep_final, costo, costo_vip)
+                messagebox.showinfo("Éxito", "Ruta actualizada correctamente")
+    except ValueError as ve:
+        messagebox.showerror("Error", f"Datos inválidos: {ve}")
+    except pyodbc.Error as e:
+        messagebox.showerror("Error", f"Error en la base de datos: {e}")
+    finally:
+        # Cerrar la conexión
+        connection.close()
 
 # ------------------------------------------------------------FRAMES---------------------------------------------------------------------------------------------
 
@@ -717,22 +762,115 @@ def make_login_frame():
     show_back_button()
     return login_frame
 
+# ------------------------------------------------------------MANEJO DE COMANDOS---------------------------------------------------------------------------------------------
+
+# Funciones para obtener datos de la base de datos
+def get_bus(cursor):
+    cursor.execute("SELECT * FROM bus;")
+    return cursor.fetchall()
+
+def get_driver(cursor):
+    cursor.execute("SELECT * FROM chofer;")
+    return cursor.fetchall()
+
+def get_route(cursor):
+    cursor.execute("SELECT * FROM ruta;")
+    return cursor.fetchall()
+
+def get_booking(cursor):
+    cursor.execute("""
+    SELECT reserva_id, reserva.usuario_id, usuario.nombre, usuario.apellido, bus.bus_id,
+        CASE
+            WHEN vip = 0 THEN costo
+            WHEN vip = 1 THEN costo_vip
+        END AS costo
+    FROM reserva
+    INNER JOIN usuario ON reserva.usuario_id = usuario.usuario_id
+    INNER JOIN bus ON bus.bus_id = reserva.bus_id
+    INNER JOIN ruta ON bus.ruta_id = ruta.ruta_id;
+    """)
+    return cursor.fetchall()
+
 """Frame para Buscar Datos"""
 def make_fetch_frame():
     global current_frame, navigation_bar, action_bar
     fetch_frame = tk.Frame(window, bg="#09090A")
     fetch_frame.name = "fetch"
-    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
-    title_label = tk.Label(
+    # Función para abrir una ventana con datos de una tabla
+    def open_table_window(fetch_function, title):
+        connection = make_connection()
+        if not connection:
+            return
+        cursor = connection.cursor()
+        try:
+            data = fetch_function(cursor)  
+            if not data:
+                messagebox.showinfo("Información", f"No hay datos en la tabla {title}.")
+                return
+            # Crear una nueva ventana
+            table_window = tk.Toplevel(fetch_frame)
+            table_window.title(f"Tabla: {title}")
+            table_window.geometry("600x400")
+            table_window.configure(bg="#09090A")
+            # Crear un Treeview para mostrar los datos
+            tree = ttk.Treeview(table_window, show="headings", selectmode="browse")
+            tree.pack(fill="both", expand=True)
+            # Crear encabezados basados en las columnas
+            columns = [desc[0] for desc in cursor.description]
+            tree["columns"] = columns
+            for col in columns:
+                tree.heading(col, text=col)
+                tree.column(col, anchor="center")
+            # Insertar datos en el Treeview
+            for row in data:
+                tree.insert("", "end", values=row)
+            # Botón para cerrar la ventana
+            close_button = tk.Button(table_window, text="Cerrar", command=table_window.destroy, bg="#7732FF", fg="white")
+            close_button.pack(pady=10)
+        except pyodbc.Error as e:
+            messagebox.showerror("Error", f"No se pudo obtener datos: {e}")
+        finally:
+            connection.close()
+    # Botón para mostrar la tabla de buses
+    bus_button = CTkButton(
         fetch_frame,
-        text="Ver Datos",
-        font=title_font,
-        bg="#09090A",
-        fg="white",
-        wraplength=350,
-        justify="center",
+        text="Ver Buses",
+        corner_radius=32,
+        fg_color="#7732FF",
+        hover_color="#5A23CC",
+        command=lambda: open_table_window(get_bus, "Buses")
     )
-    title_label.pack(pady=50)
+    bus_button.pack(pady=10, padx=20, fill="x")
+    # Botón para mostrar la tabla de choferes
+    driver_button = CTkButton(
+        fetch_frame,
+        text="Ver Choferes",
+        corner_radius=32,
+        fg_color="#7732FF",
+        hover_color="#5A23CC",
+        command=lambda: open_table_window(get_driver, "Choferes")
+    )
+    driver_button.pack(pady=10, padx=20, fill="x")
+    # Botón para mostrar la tabla de rutas
+    route_button = CTkButton(
+        fetch_frame,
+        text="Ver Rutas",
+        corner_radius=32,
+        fg_color="#7732FF",
+        hover_color="#5A23CC",
+        command=lambda: open_table_window(get_route, "Rutas")
+    )
+    route_button.pack(pady=10, padx=20, fill="x")
+    # Botón para mostrar la tabla de reservas
+    booking_button = CTkButton(
+        fetch_frame,
+        text="Ver Reservas",
+        corner_radius=32,
+        fg_color="#7732FF",
+        hover_color="#5A23CC",
+        command=lambda: open_table_window(get_booking, "Reservas")
+    )
+    booking_button.pack(pady=10, padx=20, fill="x")
     return fetch_frame
 
 """Frame para Crear Botones Predeterminados"""
