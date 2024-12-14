@@ -915,6 +915,8 @@ def make_option_frame(parent, title_name):
         frame = tk.Frame(parent, bg="#09090A")
         frame.pack(side="top", pady=10, fill="x", padx=10)
         if identifier_button == 1:
+            frame = tk.Frame(parent, bg="#09090A")
+            frame.pack(side="top", pady=10, fill="x", padx=10)
             label = tk.Label(frame, text=label_text, bg="#09090A", fg="#C8BCF6")
             label.pack(side="left", padx=10)
             entry = CTkEntry(
@@ -924,8 +926,8 @@ def make_option_frame(parent, title_name):
                 corner_radius=32,
             )
             entry.pack(side="left", padx=10, fill="x", expand=True)
-        else:
-            frame = tk.Frame(scrollable_frame, bg="#09090A") 
+        elif identifier_button == 2:
+            frame = tk.Frame(parent, bg="#09090A")  
             frame.pack(side="top", pady=20, fill="x", padx=10)
             available = CTkButton(
                 frame,
