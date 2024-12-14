@@ -42,7 +42,15 @@ def make_connection():
         return None
 
 # ----------------------------------------------------ENTRADA Y SALIDA DE DATOS-----------------------------------------------------------------------------------------------
-
+def validate_carnet(carnet:str)->bool:
+    conexion=make_connection()
+    cursor=conexion.cursor()
+    cursor.execute(f"SELECT carnet FROM usuario WHERE carnet = {carnet};")
+    valor=cursor.fetchone()
+    if valor is None:
+        return False
+    else:
+        return True
 """Crear llave"""
 def obtain_pk(cursor,tabla:str)->str:
     cursor.execute(f"SELECT {tabla}_id FROM {tabla} ORDER BY {tabla}_id DESC ")
@@ -89,12 +97,16 @@ def create_account():
     if not all([password]):
         messagebox.showerror("Error", "Debes crear una Contraseña")
         return
+    if validate_carnet(id_card)==True:
+        messagebox.showerror("Error", "Carnet ya existente")
+        return
     # Borrar Datos en caso de Error
     name_entry.delete(0, tk.END)
     last_name_entry.delete(0, tk.END)
     age_entry.delete(0, tk.END)
     id_card_entry.delete(0, tk.END)
     password_entry.delete(0, tk.END)
+    id_card_entry.delete(0, tk.END)
     # Conexion con la Base de Datos
     connection = make_connection()
     if not connection:
