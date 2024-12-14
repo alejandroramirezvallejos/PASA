@@ -6,10 +6,7 @@ Este proyecto implementa un sistema de migración y gestión de datos para una e
 
 ## video
 
-<video width="320" height="240" controls>
-  <source src="IMAGES/video.mp4" type="video/mp4">
-  Tu navegador no soporta el elemento de video.
-</video>
+[![Ver Video en Google Drive](IMAGES/logo.png)](https://drive.google.com/file/d/1NAG6RkiZN7XI502VA-ma2FuVwAHScZMw/view)
 
 ## 🚌 Descripción del Proyecto
 
