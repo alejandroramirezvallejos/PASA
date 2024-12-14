@@ -17,9 +17,9 @@ window = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'JOSUEPC'  
+server = ''  
 database = 'pasa'
-username = 'JOSUEPC\\user' 
+username = '\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
