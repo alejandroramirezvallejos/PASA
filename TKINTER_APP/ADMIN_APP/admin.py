@@ -4,6 +4,7 @@
     pip install pillow
     pip install customtkinter
 """
+import sys
 import tkinter as tk
 from tkinter import ttk
 import pyodbc
@@ -32,9 +33,9 @@ all_frames = []
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = ''  
+server = 'LENOVO'  
 database = 'pasa'
-username = '\\user'
+username = 'LENOVO\\user'
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -363,17 +364,22 @@ def make_action_bar():
                 add_frame.pack_forget()
                 hide_log_out_button()
                 show_frame(start_frame)
+                hide_option()
             elif current_frame == fetch_frame:
                 fetch_frame.pack_forget()
                 hide_log_out_button()
                 show_frame(start_frame)
+                hide_option()
             elif current_frame == update_frame:
                 update_frame.pack_forget()
                 hide_log_out_button()
+                hide_option()
                 show_frame(start_frame)
+                hide_option()
             elif current_frame == delete_frame:
                 delete_frame.pack_forget()
                 hide_log_out_button()
+                hide_option()
                 show_frame(start_frame)
         log_out_button = tk.Button(
             action_bar,
@@ -823,8 +829,7 @@ def make_fetch_frame():
                 tree.column(col, anchor="center")
             # Insertar datos en el Treeview
             for row in data:
-                cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
-                tree.insert("", "end", values=cleaned_row)
+                tree.insert("", "end", values=row)
             # Botón para cerrar la ventana
             close_button = tk.Button(table_window, text="Cerrar", command=table_window.destroy, bg="#7732FF", fg="white")
             close_button.pack(pady=10)
@@ -907,34 +912,70 @@ def make_option_frame(parent, title_name):
     )
     title_label.pack(pady=20)
     # Función auxiliar para crear campos de entrada
-    def create_input_field(parent, label_text, placeholder):
+    def create_input_field(parent, label_text, placeholder, identifier_button):
         frame = tk.Frame(parent, bg="#09090A")
         frame.pack(side="top", pady=10, fill="x", padx=10)
-        label = tk.Label(frame, text=label_text, bg="#09090A", fg="#C8BCF6")
-        label.pack(side="left", padx=10)
-        entry = CTkEntry(
-            frame,
-            placeholder_text=placeholder,
-            border_color="#C8BCF6",
-            corner_radius=32,
-        )
-        entry.pack(side="left", padx=10, fill="x", expand=True)
-    create_input_field(scrollable_frame, "Bus ID:", "Ingresar")
-    create_input_field(scrollable_frame, "Nombre del Bus:", "Ingresar")
-    create_input_field(scrollable_frame, "Chofer ID:", "Ingresar")
-    create_input_field(scrollable_frame, "Ruta ID:", "Ingresar")
-    # Boton de Bus
-    bus_frame = tk.Frame(scrollable_frame, bg="#F1F2F6")
-    bus_frame.pack(side="top", pady=20, fill="x", padx=10)
-    bus_button_color = "#7732FF"
-    bus_available = CTkButton(
-        bus_frame,
-        text=f"{title_name} Bus",
-        corner_radius=32,
-        fg_color=bus_button_color,
-        hover_color="#5A23CC",
+        if identifier_button == 1:
+            frame = tk.Frame(parent, bg="#09090A")
+            frame.pack(side="top", pady=10, fill="x", padx=10)
+            label = tk.Label(frame, text=label_text, bg="#09090A", fg="#C8BCF6")
+            label.pack(side="left", padx=10)
+            entry = CTkEntry(
+                frame,
+                placeholder_text=placeholder,
+                border_color="#C8BCF6",
+                corner_radius=32,
+            )
+            entry.pack(side="left", padx=10, fill="x", expand=True)
+        elif identifier_button == 2:
+            frame = tk.Frame(parent, bg="#09090A")  
+            frame.pack(side="top", pady=20, fill="x", padx=10)
+            available = CTkButton(
+                frame,
+                text=label_text,
+                corner_radius=32,
+                fg_color="#7732FF",
+                hover_color="#5A23CC"
+            )
+            available.pack(pady=10, fill="x")  
+    create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Nombre del Bus:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
+    create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
+    # Titulo de Chofer
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} un Chofer",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
     )
-    bus_available.pack(pady=10)
+    title_label.pack(pady=20)
+    create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Nombre del Chofer:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Edad:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Carnet:", "Ingresar", 1)
+    create_input_field(scrollable_frame, f"{title_name} Chofer", "Ingresar", 2)
+    # Titulo de Ruta
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} una Ruta",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(pady=20)
+    create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Costo Economico:", "Ingresar", 1)
+    create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
+    create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
     return option_frame
 
 """Frame para Agregar Datos"""
@@ -943,11 +984,11 @@ def make_add_frame():
     if add_frame is None:
         add_frame = tk.Frame(window, bg="#09090A")
         add_frame.name = "add"
-    # Asegurar que `option_frame` está correctamente asociado al frame actual
     if option_frame is None or option_frame.master != add_frame:
+        if option_frame:
+            option_frame.pack_forget() 
         option_frame = make_option_frame(add_frame, "Agregar")
         option_frame.pack(fill="both", expand=True)
-    # Cambiar al nuevo frame
     if current_frame:
         current_frame.pack_forget()
     current_frame = add_frame
@@ -961,11 +1002,11 @@ def make_update_frame():
     if update_frame is None:
         update_frame = tk.Frame(window, bg="#09090A")
         update_frame.name = "update"
-    # Asegurar que `option_frame` está correctamente asociado al frame actual
     if option_frame is None or option_frame.master != update_frame:
+        if option_frame:
+            option_frame.pack_forget()  
         option_frame = make_option_frame(update_frame, "Actualizar")
         option_frame.pack(fill="both", expand=True)
-    # Cambiar al nuevo frame
     if current_frame:
         current_frame.pack_forget()
     current_frame = update_frame
@@ -979,11 +1020,11 @@ def make_delete_frame():
     if delete_frame is None:
         delete_frame = tk.Frame(window, bg="#09090A")
         delete_frame.name = "delete"
-    # Asegurar que `option_frame` está correctamente asociado al frame actual
     if option_frame is None or option_frame.master != delete_frame:
+        if option_frame:
+            option_frame.pack_forget()  
         option_frame = make_option_frame(delete_frame, "Eliminar")
         option_frame.pack(fill="both", expand=True)
-    # Cambiar al nuevo frame
     if current_frame:
         current_frame.pack_forget()
     current_frame = delete_frame
