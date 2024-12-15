@@ -14,6 +14,7 @@ from datetime import date
 from PIL import Image, ImageTk
 import customtkinter as ctk
 from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
+import functions_query as f
 window = None
 current_frame = None
 add_frame = None
@@ -33,9 +34,9 @@ all_frames = []
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'LENOVO'  
+server = 'JOSUEPC'  
 database = 'pasa'
-username = 'LENOVO\\user'
+username = 'JOSUEPC\\user'
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -58,22 +59,6 @@ def make_connection():
         return None
 
 # ----------------------------------------------------ENTRADA Y SALIDA DE DATOS-----------------------------------------------------------------------------------------------
-
-"""Funcion para Validar si un Usuario tiene el mismo Numero de Catnet"""
-def validate_carnet(carnet:str)->bool:
-    conexion=make_connection()
-    cursor=conexion.cursor()
-    cursor.execute(f"SELECT carnet FROM usuario WHERE carnet = {carnet};")
-    valor=cursor.fetchone()
-    if valor is None:
-        return False
-    else:
-        return True
-
-"""Crear llave"""
-def obtain_pk(cursor,tabla:str)->str:
-    cursor.execute(f"SELECT {tabla}_id FROM {tabla} ORDER BY {tabla}_id DESC ")
-    return cursor.fetchone()[0]+1
 
 """Guardar Datos al Crear una Cuenta"""
 def create_account():
@@ -109,7 +94,7 @@ def create_account():
     if not len(id_card) == 7:
         messagebox.showerror("Error", "El Numero de Carnet debe tener 7 digitos")
         return
-    if validate_carnet(id_card)==True:
+    if f.validate_carnet(id_card)==True:
         messagebox.showerror("Error", "Carnet ya existente")
         return
     if not all([password]):
@@ -129,9 +114,9 @@ def create_account():
         cursor = connection.cursor()
         query = """
         INSERT INTO usuario (usuario_id,nombre, apellido, edad, carnet, contraseña, admin) 
-        VALUES ({},'{}','{}',{},{},'{}',0);
+        VALUES ({},'{}','{}',{},{},'{}',1);
         """
-        cursor.execute(query.format(obtain_pk(cursor,"usuario"),name, last_name, age, id_card, password))
+        cursor.execute(query.format(f.obtain_pk(cursor,"usuario"),name, last_name, age, id_card, password))
         connection.commit()
         # Cambiar al fetch_frame si todo sale bien
         show_frame(fetch_frame)
@@ -211,35 +196,35 @@ def queries_option():
                 fecha_sal = departure_date_button.cget("text")
                 fecha_ret = return_date_button.cget("text")
                 # Llamar a la función de agregar bus
-                add_bus(chofer_id, ruta_id, nombre, fecha_sal, fecha_ret)
+                f.add_bus(chofer_id, ruta_id, fecha_sal, fecha_ret)
                 messagebox.showinfo("Éxito", "Bus agregado correctamente.")
             elif "Agregar Chofer" in option.get():
                 # Extraer datos para agregar un chofer
                 nombre = option.get()
                 edad = int(point_origin_input.get())
                 carnet = int(return_date_button.cget("text"))  
-                add_driver(nombre, edad, carnet)
+                f.add_driver(nombre, edad, carnet)
                 messagebox.showinfo("Éxito", "Chofer agregado correctamente")
             elif "Agregar Ruta" in option.get():
                 dep_inicio = point_origin_input.get()
                 dep_final = point_destination_input.get()
                 costo = float(departure_date_button.cget("text"))
                 costo_vip = float(return_date_button.cget("text"))
-                add_route(dep_inicio, dep_final, costo, costo_vip)
+                f.add_route(dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta agregada correctamente")
         elif action == "delete":
             if "Eliminar Bus" in option.get():
                 # Obtener el ID del bus
                 bus_id = int(option.get())
-                del_bus(bus_id)
+                f.del_bus(bus_id)
                 messagebox.showinfo("Éxito", "Bus eliminado correctamente")
             elif "Eliminar Chofer" in option.get():
                 chofer_id = int(option.get())
-                del_driver(chofer_id)
+                f.del_driver(chofer_id)
                 messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
             elif "Eliminar Ruta" in option.get():
                 ruta_id = int(option.get())
-                del_route(ruta_id)
+                f.del_route(ruta_id)
                 messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
         elif action == "update":
             if "Actualizar Bus" in option.get():
@@ -251,14 +236,14 @@ def queries_option():
                 fecha_sal = departure_date_button.cget("text")
                 fecha_ret = return_date_button.cget("text")
                 # Llamar a la función de actualizar bus
-                update_bus(bus_id, chofer_id, ruta_id, nombre, fecha_ret, fecha_sal)
+                f.update_bus(bus_id, chofer_id, ruta_id, nombre, fecha_ret, fecha_sal)
                 messagebox.showinfo("Éxito", "Bus actualizado correctamente")
             elif "Actualizar Chofer" in option.get():
                 chofer_id = int(option.get())
                 nombre = point_origin_input.get()
                 edad = int(point_destination_input.get())
                 carnet = int(departure_date_button.cget("text"))
-                update_driver(chofer_id, nombre, edad, carnet)
+                f.update_driver(chofer_id, nombre, edad, carnet)
                 messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
             elif "Actualizar Ruta" in option.get():
                 ruta_id = int(option.get())
@@ -266,7 +251,7 @@ def queries_option():
                 dep_final = point_destination_input.get()
                 costo = float(departure_date_button.cget("text"))
                 costo_vip = float(return_date_button.cget("text"))
-                update_route(ruta_id, dep_inicio, dep_final, costo, costo_vip)
+                f.update_route(ruta_id, dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta actualizada correctamente")
     except ValueError as ve:
         messagebox.showerror("Error", f"Datos inválidos: {ve}")
@@ -770,32 +755,6 @@ def make_login_frame():
 
 # ------------------------------------------------------------MANEJO DE COMANDOS---------------------------------------------------------------------------------------------
 
-# Funciones para obtener datos de la base de datos
-def get_bus(cursor):
-    cursor.execute("SELECT * FROM bus;")
-    return cursor.fetchall()
-
-def get_driver(cursor):
-    cursor.execute("SELECT * FROM chofer;")
-    return cursor.fetchall()
-
-def get_route(cursor):
-    cursor.execute("SELECT * FROM ruta;")
-    return cursor.fetchall()
-
-def get_booking(cursor):
-    cursor.execute("""
-    SELECT reserva_id, reserva.usuario_id, usuario.nombre, usuario.apellido, bus.bus_id,
-        CASE
-            WHEN vip = 0 THEN costo
-            WHEN vip = 1 THEN costo_vip
-        END AS costo
-    FROM reserva
-    INNER JOIN usuario ON reserva.usuario_id = usuario.usuario_id
-    INNER JOIN bus ON bus.bus_id = reserva.bus_id
-    INNER JOIN ruta ON bus.ruta_id = ruta.ruta_id;
-    """)
-    return cursor.fetchall()
 
 """Frame para Buscar Datos"""
 def make_fetch_frame():
@@ -829,7 +788,8 @@ def make_fetch_frame():
                 tree.column(col, anchor="center")
             # Insertar datos en el Treeview
             for row in data:
-                tree.insert("", "end", values=row)
+                cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
+                tree.insert("", "end", values=cleaned_row)
             # Botón para cerrar la ventana
             close_button = tk.Button(table_window, text="Cerrar", command=table_window.destroy, bg="#7732FF", fg="white")
             close_button.pack(pady=10)
@@ -844,7 +804,7 @@ def make_fetch_frame():
         corner_radius=32,
         fg_color="#7732FF",
         hover_color="#5A23CC",
-        command=lambda: open_table_window(get_bus, "Buses")
+        command=lambda: open_table_window(f.get_bus, "Buses")
     )
     bus_button.pack(pady=10, padx=20, fill="x")
     # Botón para mostrar la tabla de choferes
@@ -854,7 +814,7 @@ def make_fetch_frame():
         corner_radius=32,
         fg_color="#7732FF",
         hover_color="#5A23CC",
-        command=lambda: open_table_window(get_driver, "Choferes")
+        command=lambda: open_table_window(f.get_driver, "Choferes")
     )
     driver_button.pack(pady=10, padx=20, fill="x")
     # Botón para mostrar la tabla de rutas
@@ -864,7 +824,7 @@ def make_fetch_frame():
         corner_radius=32,
         fg_color="#7732FF",
         hover_color="#5A23CC",
-        command=lambda: open_table_window(get_route, "Rutas")
+        command=lambda: open_table_window(f.get_route, "Rutas")
     )
     route_button.pack(pady=10, padx=20, fill="x")
     # Botón para mostrar la tabla de reservas
@@ -874,7 +834,7 @@ def make_fetch_frame():
         corner_radius=32,
         fg_color="#7732FF",
         hover_color="#5A23CC",
-        command=lambda: open_table_window(get_booking, "Reservas")
+        command=lambda: open_table_window(f.get_booking, "Reservas")
     )
     booking_button.pack(pady=10, padx=20, fill="x")
     return fetch_frame
