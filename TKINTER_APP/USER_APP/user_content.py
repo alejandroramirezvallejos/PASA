@@ -3,7 +3,7 @@ from tkinter import messagebox, font
 from tkcalendar import Calendar
 from datetime import date
 from customtkinter import CTkComboBox, CTkButton, CTkEntry
-from USER_APP import action_bar as a, search_bus as sh
+from . import user_action_bar as a, user_search_bus as sh
 
 """Frame de Area de contenido"""
 def make_content_frame(window):

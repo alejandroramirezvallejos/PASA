@@ -7,7 +7,7 @@ from tkcalendar import Calendar
 from datetime import date
 from PIL import Image, ImageTk
 from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
-from USER_APP import user_content as uc, user_show_frames as shf, user_signup_login as usl, welcome as w, action_bar as a, connection as con, search_bus as sh
+from USER_APP import user_content as uc, user_show_frames as shf, user_signup_login as usl, user_welcome as w, user_action_bar as a, user_connection as con, user_search_bus as sh
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
