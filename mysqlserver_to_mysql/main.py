@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'resourc
 
 import conexion as c
 from resources import functions_main
-
+from resources import pruebas as p
 
 try: 
     #mysqlserver
@@ -14,7 +14,7 @@ try:
     conexionmq =c.conectar_mysql()
     cursormq=conexionmq.cursor()
     migracion1=functions_main.MIGRACION(cursorms,cursormq)
-    if(migracion1.VERIFICACION()==True):
+    if(p.prueba_VERIFICACION(cursormq)==True):
         print("La base de datos 'pasa' ya existe. Finalizando el programa.")
     else:
         migracion1.CREAR_BASE()
