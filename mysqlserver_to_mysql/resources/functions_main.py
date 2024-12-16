@@ -3,6 +3,7 @@ from queries import queries as q
 import functions as fs
 import pyodbc
 import mysql.connector
+import pruebas as p
 @dataclass
 class MIGRACION:
     cursorms:pyodbc.Cursor
@@ -30,7 +31,7 @@ class MIGRACION:
         self.cursormq.execute(q.CREAR_TABLA.format(tabla[0],fs.valores_columnas(columnas)))
         #verificar si se creo la tabla
         self.cursormq.execute(q.COMPROBAR_TABLA.format(tabla[0]))
-        assert self.cursormq.fetchone() is not None, f"Error: La tabla {tabla[0]} no se creó correctamente en MySQL."
+        p.prueba_tabla(self.cursormq,tabla[0])
 
     def METER_DATOS_TABLA(self,tabla:tuple):
         """ Inserta los datos de una tabla de SQL Server en la tabla correspondiente en MySQL. 
@@ -41,7 +42,8 @@ class MIGRACION:
             self.cursormq.execute(q.INSERTAR_DATOS.format(tabla[0],fs.valores_filas(fila)))
         self.cursormq.execute(q.COMPROBAR_DATOS.format(tabla[0]))
         tamañomq:int = self.cursormq.fetchone()[0]
-        assert tamañomq == len(filas), f"Error: El número de filas en la tabla {tabla[0]} no coincide. Esperado: {len(filas)}, Actual: {tamañomq}"
+        p.prueba_cantidad(tamañomq,filas,tabla[0])
+        
 
     def CREAR_PK(self,tabla:tuple):
             """ Crea la clave primaria para una tabla en MySQL basada en la clave primaria de SQL Server. 
@@ -60,15 +62,5 @@ class MIGRACION:
             llaves_foranesa:list=self.cursorms.fetchall()
             for fk in llaves_foranesa:
                 self.cursormq.execute(q.INSERTAR_FK.format(fk[1],fk[0],fk[2],fk[3],fk[4]))
-    def VERIFICACION(self)->bool:
-        """ Verifica si la base de datos existe en MySQL. 
-        Ejecuta la consulta definida en `q.EXISTE_BASE` y devuelve True si la base de datos existe, False en caso contrario. 
-        Returns: 
-        bool: True si la base de datos existe, False en caso contrario. """
-        self.cursormq.execute(q.EXISTE_BASE)
-        existencia=self.cursormq.fetchone()
-        if(existencia is None):
-            return False
-        else:
-            return True
 
+        

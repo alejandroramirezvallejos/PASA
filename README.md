@@ -46,10 +46,11 @@ El sistema moderniza la gestión de datos de una empresa de buses, facilitando:
 │   ├── conexion.py               # Gestión de conexiones
 │   ├── main.py                   # Punto de entrada
 │   ├──resources 
-│       ├── functions.py          # Funciones auxiliares
-│       ├── functions_main.py     # Clase principal
 │       ├──queries
 │           └── queries.py        # Consultas SQL
+│       ├── functions.py          # Clase principal
+│       ├── functions_main.py     # Funciones auxiliares
+│       ├── Pruebas.py            # Pruebas requeridas
 ├── README.MD                     # Este texto
 ├──LICENSE                        # Licencia MIT
 ```
