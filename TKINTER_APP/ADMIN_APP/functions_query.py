@@ -128,14 +128,13 @@ def verification_id(cursor,table,id):
     else:
         return True
 #actualiza bus y si no existe lo crea
-def update_bus(bus_id,chofer_id,ruta_id,nombre,fecha_retorno,fecha_salida):
+def update_bus(bus_id,chofer_id,ruta_id,fecha_retorno,fecha_salida):
     conexion=make_connection()
     cursor=conexion.cursor()
     if(verification_id(cursor,"bus",bus_id)==True):
         cursor.execute(f"""UPDATE bus
     SET chofer_id ={chofer_id}, 
         ruta_id = {ruta_id}, 
-        nombre= '{nombre}', 
         fecha_retorno = '{fecha_retorno}',
         fecha_salida='{fecha_salida}'
     WHERE bus_id = {bus_id};

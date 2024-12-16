@@ -30,13 +30,20 @@ login_frame = None
 terms_frame = None
 loading_frame = None
 all_frames = []
+selected_option = ""
+entry1 = None
+entry2 = None
+entry3 = None
+entry4 = None
+
+
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'JOSUEPC'  
+server = 'LENOVO'  
 database = 'pasa'
-username = 'JOSUEPC\\user'
+username = 'LENOVO\\user'
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -168,15 +175,12 @@ def login():
 
 """Funcion para Realizar Consultas"""
 def queries_option():
-    # Obtener datos del frame actual
-    global option, current_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button
-    # Establecer la conexión con la base de datos
+    global current_frame, selected_option, entry1, entry2, entry3, entry4
     connection = make_connection()
     if not connection:
         return
     cursor = connection.cursor()
     try:
-        # Determinar el tipo de operación y frame actual
         if current_frame == add_frame:
             action = "add"
         elif current_frame == delete_frame:
@@ -186,71 +190,58 @@ def queries_option():
         else:
             messagebox.showerror("Error", "Operación no válida o Frame desconocido.")
             return
-        # Operaciones según el Frame
+        # Depuración: Imprimir los valores de entrada antes de usarlos
         if action == "add":
-            if "Agregar Bus" in option.get():
-                # Extraer datos para agregar un bus
-                chofer_id = int(option.get())  
-                ruta_id = int(point_destination_input.get())
-                nombre = "Bus_" + option.get() 
-                fecha_sal = departure_date_button.cget("text")
-                fecha_ret = return_date_button.cget("text")
-                # Llamar a la función de agregar bus
-                f.add_bus(chofer_id, ruta_id, fecha_sal, fecha_ret)
+            if "Agregar Bus" in selected_option:
+                print("hola")
                 messagebox.showinfo("Éxito", "Bus agregado correctamente.")
-            elif "Agregar Chofer" in option.get():
-                # Extraer datos para agregar un chofer
-                nombre = option.get()
-                edad = int(point_origin_input.get())
-                carnet = int(return_date_button.cget("text"))  
+            elif "Agregar Chofer" in selected_option:
+                nombre = entry1.get()
+                edad = int(entry2.get())
+                carnet = int(entry3.get())
                 f.add_driver(nombre, edad, carnet)
                 messagebox.showinfo("Éxito", "Chofer agregado correctamente")
-            elif "Agregar Ruta" in option.get():
-                dep_inicio = point_origin_input.get()
-                dep_final = point_destination_input.get()
-                costo = float(departure_date_button.cget("text"))
-                costo_vip = float(return_date_button.cget("text"))
+            elif "Agregar Ruta" in selected_option:
+                dep_inicio = entry1.get()
+                dep_final = entry2.get()
+                costo = float(entry3.get())
+                costo_vip = float(entry4.get())
                 f.add_route(dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta agregada correctamente")
         elif action == "delete":
-            if "Eliminar Bus" in option.get():
-                # Obtener el ID del bus
-                bus_id = int(option.get())
+            if "Eliminar Bus" in selected_option:
+                bus_id = int(entry1.get())
                 f.del_bus(bus_id)
                 messagebox.showinfo("Éxito", "Bus eliminado correctamente")
-            elif "Eliminar Chofer" in option.get():
-                chofer_id = int(option.get())
+            elif "Eliminar Chofer" in selected_option:
+                chofer_id = int(entry1.get())
                 f.del_driver(chofer_id)
                 messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
-            elif "Eliminar Ruta" in option.get():
-                ruta_id = int(option.get())
+            elif "Eliminar Ruta" in selected_option:
+                ruta_id = int(entry1.get())
                 f.del_route(ruta_id)
                 messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
         elif action == "update":
-            if "Actualizar Bus" in option.get():
-                # Obtener datos del bus para actualizar
-                bus_id = int(option.get())
-                chofer_id = int(point_origin_input.get())
-                ruta_id = int(point_destination_input.get())
-                nombre = "Bus_" + option.get()
-                fecha_sal = departure_date_button.cget("text")
-                fecha_ret = return_date_button.cget("text")
-                # Llamar a la función de actualizar bus
-                f.update_bus(bus_id, chofer_id, ruta_id, nombre, fecha_ret, fecha_sal)
+            if "Actualizar Bus" in selected_option:
+                bus_id = int(entry1.get())
+                nombre_bus = entry2.get()
+                chofer_id = int(entry3.get())
+                ruta_id = int(entry4.get())
+                f.update_bus(bus_id, nombre_bus, chofer_id, ruta_id)
                 messagebox.showinfo("Éxito", "Bus actualizado correctamente")
-            elif "Actualizar Chofer" in option.get():
-                chofer_id = int(option.get())
-                nombre = point_origin_input.get()
-                edad = int(point_destination_input.get())
-                carnet = int(departure_date_button.cget("text"))
+            elif "Actualizar Chofer" in selected_option:
+                chofer_id = int(entry1.get())
+                nombre = entry2.get()
+                edad = int(entry3.get())
+                carnet = int(entry4.get())
                 f.update_driver(chofer_id, nombre, edad, carnet)
                 messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
-            elif "Actualizar Ruta" in option.get():
-                ruta_id = int(option.get())
-                dep_inicio = point_origin_input.get()
-                dep_final = point_destination_input.get()
-                costo = float(departure_date_button.cget("text"))
-                costo_vip = float(return_date_button.cget("text"))
+            elif "Actualizar Ruta" in selected_option:
+                ruta_id = int(entry1.get())
+                dep_inicio = entry2.get()
+                dep_final = entry3.get()
+                costo = float(entry4.get())
+                costo_vip = float(entry4.get())
                 f.update_route(ruta_id, dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta actualizada correctamente")
     except ValueError as ve:
@@ -258,7 +249,6 @@ def queries_option():
     except pyodbc.Error as e:
         messagebox.showerror("Error", f"Error en la base de datos: {e}")
     finally:
-        # Cerrar la conexión
         connection.close()
 
 # ------------------------------------------------------------FRAMES---------------------------------------------------------------------------------------------
@@ -844,7 +834,8 @@ def make_option_frame(parent, title_name):
     option_frame = ttk.Frame(parent)
     global option 
     option = ttk.Entry(option_frame) 
-    option.pack(padx=10, pady=10)
+    option_frame.config(width=300, height=200)
+    option_frame.pack(fill="both", expand=True, padx=10, pady=10)
     # Scrollbar
     canvas = tk.Canvas(option_frame, bg="#09090A", highlightthickness=0)
     scrollbar = tk.Scrollbar(option_frame, orient="vertical", command=canvas.yview)
@@ -873,11 +864,10 @@ def make_option_frame(parent, title_name):
     title_label.pack(pady=20)
     # Función auxiliar para crear campos de entrada
     def create_input_field(parent, label_text, placeholder, identifier_button):
+        global entry1, entry2, entry3, entry4
         frame = tk.Frame(parent, bg="#09090A")
         frame.pack(side="top", pady=10, fill="x", padx=10)
         if identifier_button == 1:
-            frame = tk.Frame(parent, bg="#09090A")
-            frame.pack(side="top", pady=10, fill="x", padx=10)
             label = tk.Label(frame, text=label_text, bg="#09090A", fg="#C8BCF6")
             label.pack(side="left", padx=10)
             entry = CTkEntry(
@@ -887,22 +877,30 @@ def make_option_frame(parent, title_name):
                 corner_radius=32,
             )
             entry.pack(side="left", padx=10, fill="x", expand=True)
+
         elif identifier_button == 2:
-            frame = tk.Frame(parent, bg="#09090A")  
+            frame = tk.Frame(parent, bg="#09090A")
             frame.pack(side="top", pady=20, fill="x", padx=10)
+            def on_button_click():
+                global selected_option
+                selected_option = label_text
+                queries_option()
             available = CTkButton(
                 frame,
                 text=label_text,
                 corner_radius=32,
                 fg_color="#7732FF",
-                hover_color="#5A23CC"
+                hover_color="#5A23CC",
+                command=on_button_click,
             )
-            available.pack(pady=10, fill="x")  
+            available.pack(pady=10, fill="x")
+        
     create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
     create_input_field(scrollable_frame, "Nombre del Bus:", "Ingresar", 1)
     create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
     create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
     create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
+
     # Titulo de Chofer
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
@@ -993,7 +991,12 @@ def make_delete_frame():
     return delete_frame
 
 # ----------------------------------------------------------MOSTRAR Y OCULTAR FRAMES-----------------------------------------------------------------------------------------------
-
+def reset_entries():
+    global entry1, entry2, entry3, entry4
+    entry1 = None
+    entry2 = None
+    entry3 = None
+    entry4 = None
 """Funcion para Mostrar un Frame"""
 def show_frame(frame_to_show):
     global all_frames, action_bar, back_button, log_out_button, current_frame
