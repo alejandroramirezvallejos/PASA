@@ -15,6 +15,7 @@ from PIL import Image, ImageTk
 import customtkinter as ctk
 from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
 import functions_query as f
+import conection as c
 window = None
 current_frame = None
 add_frame = None
@@ -30,33 +31,11 @@ login_frame = None
 terms_frame = None
 loading_frame = None
 all_frames = []
-# ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
+entries = []
+selected_option = ""
 
-"""Configurando la Conexion con la Base de Datos"""
-driver = '{ODBC Driver 17 for SQL Server}'
-server = 'JOSUEPC'  
-database = 'pasa'
-username = 'JOSUEPC\\user'
 
-"""Creando Conexion con la Base de Datos"""
-def make_connection():
-    try:
-        connection = pyodbc.connect(
-            f"DRIVER={driver};"
-            f"SERVER={server};"
-            f"DATABASE={database};"
-            f"UID={username};"
-            f"Trusted_Connection=yes;"
-        )
-        return connection
-    except pyodbc.Error as e:
-        if '28000' in str(e):
-            messagebox.showerror(
-                "Error de conexión", "Verifica las credenciales de la Base de Datos"
-            )
-        else:
-            messagebox.showerror("Error de conexión", f"No se pudo conectar a SQL Server: {e}")
-        return None
+
 
 # ----------------------------------------------------ENTRADA Y SALIDA DE DATOS-----------------------------------------------------------------------------------------------
 
@@ -107,7 +86,7 @@ def create_account():
     id_card_entry.delete(0, tk.END)
     password_entry.delete(0, tk.END)
     # Conexion con la Base de Datos
-    connection = make_connection()
+    connection = c.make_connection()
     if not connection:
         return
     try:
@@ -148,7 +127,7 @@ def login():
     login_id_card_entry.delete(0, tk.END)
     login_password_entry.delete(0, tk.END)
     # Conexion con la Base de Datos
-    connection = make_connection()
+    connection = c.make_connection()
     if not connection:
         return
     try:
@@ -168,15 +147,12 @@ def login():
 
 """Funcion para Realizar Consultas"""
 def queries_option():
-    # Obtener datos del frame actual
-    global option, current_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button
-    # Establecer la conexión con la base de datos
-    connection = make_connection()
+    global current_frame, selected_option, entries
+    connection = c.make_connection()
     if not connection:
         return
     cursor = connection.cursor()
     try:
-        # Determinar el tipo de operación y frame actual
         if current_frame == add_frame:
             action = "add"
         elif current_frame == delete_frame:
@@ -186,82 +162,74 @@ def queries_option():
         else:
             messagebox.showerror("Error", "Operación no válida o Frame desconocido.")
             return
-        # Operaciones según el Frame
+        
         if action == "add":
-            if "Agregar Bus" in option.get():
-                # Extraer datos para agregar un bus
-                chofer_id = int(option.get())  
-                ruta_id = int(point_destination_input.get())
-                nombre = "Bus_" + option.get() 
-                fecha_sal = departure_date_button.cget("text")
-                fecha_ret = return_date_button.cget("text")
-                # Llamar a la función de agregar bus
-                f.add_bus(chofer_id, ruta_id, fecha_sal, fecha_ret)
+            if "Agregar Bus" in selected_option:
+                chofer_id = int(entries[0].get())
+                ruta_id = int(entries[1].get())
+                fecha_sal=(entries[2].get())
+                fecha_ret=(entries[3].get())
+                f.add_bus(chofer_id,ruta_id,fecha_sal,fecha_ret)
                 messagebox.showinfo("Éxito", "Bus agregado correctamente.")
-            elif "Agregar Chofer" in option.get():
-                # Extraer datos para agregar un chofer
-                nombre = option.get()
-                edad = int(point_origin_input.get())
-                carnet = int(return_date_button.cget("text"))  
+            elif "Agregar Chofer" in selected_option:
+                nombre = entries[4].get()
+                edad = int(entries[5].get())
+                carnet = int(entries[6].get())
                 f.add_driver(nombre, edad, carnet)
                 messagebox.showinfo("Éxito", "Chofer agregado correctamente")
-            elif "Agregar Ruta" in option.get():
-                dep_inicio = point_origin_input.get()
-                dep_final = point_destination_input.get()
-                costo = float(departure_date_button.cget("text"))
-                costo_vip = float(return_date_button.cget("text"))
+            elif "Agregar Ruta" in selected_option:
+                dep_inicio = entries[7].get()
+                dep_final = entries[8].get()
+                costo = float(entries[9].get())
+                costo_vip = float(entries[10].get())
                 f.add_route(dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta agregada correctamente")
+        
+        
         elif action == "delete":
-            if "Eliminar Bus" in option.get():
-                # Obtener el ID del bus
-                bus_id = int(option.get())
+            if "Eliminar Bus" in selected_option:
+                bus_id = int(entries[0].get())
                 f.del_bus(bus_id)
                 messagebox.showinfo("Éxito", "Bus eliminado correctamente")
-            elif "Eliminar Chofer" in option.get():
-                chofer_id = int(option.get())
+            elif "Eliminar Chofer" in selected_option:
+                chofer_id = int(entries[1].get())
                 f.del_driver(chofer_id)
                 messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
-            elif "Eliminar Ruta" in option.get():
-                ruta_id = int(option.get())
+            elif "Eliminar Ruta" in selected_option:
+                ruta_id = int(entries[2].get())
                 f.del_route(ruta_id)
                 messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
+        
+        
         elif action == "update":
-            if "Actualizar Bus" in option.get():
-                # Obtener datos del bus para actualizar
-                bus_id = int(option.get())
-                chofer_id = int(point_origin_input.get())
-                ruta_id = int(point_destination_input.get())
-                nombre = "Bus_" + option.get()
-                fecha_sal = departure_date_button.cget("text")
-                fecha_ret = return_date_button.cget("text")
-                # Llamar a la función de actualizar bus
-                f.update_bus(bus_id, chofer_id, ruta_id, nombre, fecha_ret, fecha_sal)
+            if "Actualizar Bus" in selected_option:
+                bus_id = int(entries[0].get())
+                chofer_id = int(entries[1].get())
+                ruta_id = int(entries[2].get())
+                fecha_sal=(entries[3].get())
+                fecha_ret=(entries[4].get())
+                f.update_bus(bus_id,  chofer_id, ruta_id,fecha_sal,fecha_ret)
                 messagebox.showinfo("Éxito", "Bus actualizado correctamente")
-            elif "Actualizar Chofer" in option.get():
-                chofer_id = int(option.get())
-                nombre = point_origin_input.get()
-                edad = int(point_destination_input.get())
-                carnet = int(departure_date_button.cget("text"))
+            elif "Actualizar Chofer" in selected_option:
+                nombre = entries[5].get()
+                chofer_id = int(entries[6].get())
+                edad = int(entries[7].get())
+                carnet = int(entries[8].get())
                 f.update_driver(chofer_id, nombre, edad, carnet)
                 messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
-            elif "Actualizar Ruta" in option.get():
-                ruta_id = int(option.get())
-                dep_inicio = point_origin_input.get()
-                dep_final = point_destination_input.get()
-                costo = float(departure_date_button.cget("text"))
-                costo_vip = float(return_date_button.cget("text"))
-                f.update_route(ruta_id, dep_inicio, dep_final, costo, costo_vip)
-                messagebox.showinfo("Éxito", "Ruta actualizada correctamente")
-    except ValueError as ve:
-        messagebox.showerror("Error", f"Datos inválidos: {ve}")
-    except pyodbc.Error as e:
-        messagebox.showerror("Error", f"Error en la base de datos: {e}")
-    finally:
-        # Cerrar la conexión
-        connection.close()
-
+            elif "Actualizar Ruta" in selected_option:
+                ruta_id = int(entries[9].get())
+                dep_inicio = entries[10].get()
+                dep_final = entries[11].get()
+                costo = int(entries[12].get())
+                costo_vip = int(entries[13].get())
+                f.update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip)
+                messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+    except Exception as e:
+        messagebox.showerror("Error",e)
 # ------------------------------------------------------------FRAMES---------------------------------------------------------------------------------------------
+
+
 
 """Pantalla de Carga"""
 def make_loading_screen():
@@ -763,7 +731,7 @@ def make_fetch_frame():
     fetch_frame.name = "fetch"
     # Función para abrir una ventana con datos de una tabla
     def open_table_window(fetch_function, title):
-        connection = make_connection()
+        connection = c.make_connection()
         if not connection:
             return
         cursor = connection.cursor()
@@ -839,26 +807,69 @@ def make_fetch_frame():
     booking_button.pack(pady=10, padx=20, fill="x")
     return fetch_frame
 
+def create_input_field(parent, label_text, placeholder, identifier_button):
+    global entries
+    frame = tk.Frame(parent, bg="#09090A")
+    frame.pack(side="top", pady=10, fill="x", padx=10)
+    if identifier_button == 1:
+        label = tk.Label(frame, text=label_text, bg="#09090A", fg="#C8BCF6")
+        label.pack(side="left", padx=10)
+        entry = CTkEntry(
+            frame,
+            placeholder_text=placeholder,
+            border_color="#C8BCF6",
+            corner_radius=32,
+        )
+        entry.pack(side="left", padx=10, fill="x", expand=True)
+        if entry is not None:
+            entries.append(entry)  # Agregar la entrada a la lista
+    
+    
+    elif identifier_button == 2:
+        frame = tk.Frame(parent, bg="#09090A")
+        frame.pack(side="top", pady=20, fill="x", padx=10)
+        def on_button_click():
+            global selected_option
+            selected_option = label_text
+
+            queries_option()  # Llama a la función queries_option cuando se presione el botón
+        available = CTkButton(
+            frame,
+            text=label_text,
+            corner_radius=32,
+            fg_color="#7732FF",
+            hover_color="#5A23CC",
+            command=on_button_click,
+        )
+        available.pack(pady=10, fill="x")
+
+
+
 """Frame para Crear Botones Predeterminados"""
 def make_option_frame(parent, title_name):
     option_frame = ttk.Frame(parent)
-    global option 
-    option = ttk.Entry(option_frame) 
+    global option, entries 
+    option = ttk.Entry(option_frame)
+    entries = []  # Reiniciar la lista de entradas cada vez que se crea un nuevo conjunto
     option.pack(padx=10, pady=10)
+
     # Scrollbar
-    canvas = tk.Canvas(option_frame, bg="#09090A", highlightthickness=0)
-    scrollbar = tk.Scrollbar(option_frame, orient="vertical", command=canvas.yview)
+    canvas = tk.Canvas(option_frame, bg="#09090A", highlightthickness=0, width=350, height=1300)
+    scrollbar = tk.Scrollbar(option_frame, orient="vertical", command=canvas.yview,width=18)
+
     # Crear un marco interno dentro del canvas
     scrollable_frame = tk.Frame(canvas, bg="#09090A")
     scrollable_frame.bind(
         "<Configure>",
         lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
     )
+
     # Vincular el marco interno con el canvas
-    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=350, height=1300)
     canvas.configure(yscrollcommand=scrollbar.set)
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
+
     # Titulo de Bus
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
@@ -871,38 +882,23 @@ def make_option_frame(parent, title_name):
         justify="center",
     )
     title_label.pack(pady=20)
-    # Función auxiliar para crear campos de entrada
-    def create_input_field(parent, label_text, placeholder, identifier_button):
-        frame = tk.Frame(parent, bg="#09090A")
-        frame.pack(side="top", pady=10, fill="x", padx=10)
-        if identifier_button == 1:
-            frame = tk.Frame(parent, bg="#09090A")
-            frame.pack(side="top", pady=10, fill="x", padx=10)
-            label = tk.Label(frame, text=label_text, bg="#09090A", fg="#C8BCF6")
-            label.pack(side="left", padx=10)
-            entry = CTkEntry(
-                frame,
-                placeholder_text=placeholder,
-                border_color="#C8BCF6",
-                corner_radius=32,
-            )
-            entry.pack(side="left", padx=10, fill="x", expand=True)
-        elif identifier_button == 2:
-            frame = tk.Frame(parent, bg="#09090A")  
-            frame.pack(side="top", pady=20, fill="x", padx=10)
-            available = CTkButton(
-                frame,
-                text=label_text,
-                corner_radius=32,
-                fg_color="#7732FF",
-                hover_color="#5A23CC"
-            )
-            available.pack(pady=10, fill="x")  
-    create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
-    create_input_field(scrollable_frame, "Nombre del Bus:", "Ingresar", 1)
-    create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
-    create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
-    create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
+    #bus
+    if title_name == "Agregar":
+        create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "fecha_salida:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "fecha_retorno","Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
+    elif title_name == "Eliminar":
+        create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
+    elif title_name == "Actualizar":
+        create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "fecha_salida:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "fecha_retorno","Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
     # Titulo de Chofer
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
@@ -915,12 +911,22 @@ def make_option_frame(parent, title_name):
         justify="center",
     )
     title_label.pack(pady=20)
-    create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
-    create_input_field(scrollable_frame, "Nombre del Chofer:", "Ingresar", 1)
-    create_input_field(scrollable_frame, "Edad:", "Ingresar", 1)
-    create_input_field(scrollable_frame, "Carnet:", "Ingresar", 1)
-    create_input_field(scrollable_frame, f"{title_name} Chofer", "Ingresar", 2)
-    # Titulo de Ruta
+    #chofer
+    if title_name == "Agregar":
+        create_input_field(scrollable_frame, "Nombre del Chofer:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Edad:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Carnet:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Chofer", "Ingresar", 2)
+    elif title_name == "Eliminar":
+        create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Chofer", "Ingresar", 2)
+    elif title_name == "Actualizar":
+        create_input_field(scrollable_frame, "Nombre del Chofer:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Edad:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Carnet:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Chofer", "Ingresar", 2)
+    # Titulo de RUTA
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
         scrollable_frame,
@@ -931,11 +937,24 @@ def make_option_frame(parent, title_name):
         wraplength=350,
         justify="center",
     )
-    title_label.pack(pady=20)
-    create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
-    create_input_field(scrollable_frame, "Costo Economico:", "Ingresar", 1)
-    create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
-    create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
+    title_label.pack(pady=20)    
+    #ruta
+    if title_name == "Agregar":
+        create_input_field(scrollable_frame, "Dep_inicio:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Dep_final:", "Ingresar", 1)        
+        create_input_field(scrollable_frame, "Costo:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
+    elif title_name == "Eliminar":
+        create_input_field(scrollable_frame, "Ruta ID", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)  
+    elif title_name == "Actualizar":
+        create_input_field(scrollable_frame, "Ruta ID", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Dep_inicio", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Dep_final", "Ingresar", 1)        
+        create_input_field(scrollable_frame, "Costo:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
     return option_frame
 
 """Frame para Agregar Datos"""

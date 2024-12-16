@@ -1,28 +1,5 @@
 
-
-import pyodbc
-
-
-# ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
-
-"""Configurando la Conexion con la Base de Datos"""
-driver = '{ODBC Driver 17 for SQL Server}'
-server = 'JOSUEPC'  
-database = 'pasa'
-username = 'JOSUEPC\\user' 
-
-"""Creando Conexion con la Base de Datos"""
-def make_connection():
-        connection = pyodbc.connect(
-            f"DRIVER={driver};"
-            f"SERVER={server};"
-            f"DATABASE={database};"
-            f"UID={username};"
-            f"Trusted_Connection=yes;"
-        )
-        return connection
-
-
+import conection as c
 
 #-----------------------------------------------FUNCION OBTENCION DE LLAVE NUEVA--------------------------------------------------------------------------------------------------=
 def obtain_pk(cursor,tabla:str)->str:
@@ -31,7 +8,7 @@ def obtain_pk(cursor,tabla:str)->str:
 
 
 def validate_carnet(carnet:str)->bool:
-    conexion=make_connection()
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     cursor.execute(f"SELECT carnet FROM usuario WHERE carnet = {carnet};")
     valor=cursor.fetchone()
@@ -70,7 +47,7 @@ INNER JOIN ruta ON bus.ruta_id = ruta.ruta_id;
 # adicionan cosas
 #addiciona bus
 def add_bus(chofer_id,ruta_id,fecha_sal,fecha_ret):
-    conexion=make_connection()
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     cursor.execute(f"""INSERT INTO bus (bus_id, chofer_id, ruta_id, fecha_salida,fecha_retorno)
 VALUES ({obtain_pk(cursor,"bus")},{chofer_id},{ruta_id},'{fecha_sal}','{fecha_ret}');
@@ -78,7 +55,7 @@ VALUES ({obtain_pk(cursor,"bus")},{chofer_id},{ruta_id},'{fecha_sal}','{fecha_re
     conexion.commit()
 #adicciona chofer
 def add_driver(nombre,edad,carnet):
-    conexion=make_connection()
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     cursor.execute(f"""INSERT INTO chofer 
                            (chofer_id,nombre,edad,carnet)
@@ -87,7 +64,7 @@ def add_driver(nombre,edad,carnet):
     conexion.commit()
 #adicionar ruta
 def add_route(dep_inicio,dep_final,costo,costo_vip):
-    conexion=make_connection()
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     cursor.execute(f"""INSERT INTO ruta (ruta_id,dep_inicio,dep_final,costo,costo_vip)
 VALUES ({obtain_pk(cursor,"ruta")},'{dep_inicio}','{dep_final}',{costo},{costo_vip});
@@ -96,7 +73,7 @@ VALUES ({obtain_pk(cursor,"ruta")},'{dep_inicio}','{dep_final}',{costo},{costo_v
 #-------------------------eliminar----------------------------------------------
 #elimina un bus con su id
 def del_bus(bus_id):
-    conexion=make_connection()
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     cursor.execute(f"""DELETE FROM bus
     WHERE bus_id = {bus_id};
@@ -104,7 +81,7 @@ def del_bus(bus_id):
     conexion.commit()
 #elimina un chofer con su id
 def del_driver(chofer_id):
-    conexion=make_connection()
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     cursor.execute(f"""DELETE FROM chofer
     WHERE chofer_id = {chofer_id};
@@ -112,7 +89,7 @@ def del_driver(chofer_id):
     conexion.commit()
 #elimina una ruta con su id
 def del_route(route_id):
-    conexion=make_connection()
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     cursor.execute(f"""DELETE FROM ruta
     WHERE ruta_id = {route_id};
@@ -128,24 +105,23 @@ def verification_id(cursor,table,id):
     else:
         return True
 #actualiza bus y si no existe lo crea
-def update_bus(bus_id,chofer_id,ruta_id,nombre,fecha_retorno,fecha_salida):
-    conexion=make_connection()
+def update_bus(bus_id,chofer_id,ruta_id,fecha_salida,fecha_retorno):
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     if(verification_id(cursor,"bus",bus_id)==True):
         cursor.execute(f"""UPDATE bus
     SET chofer_id ={chofer_id}, 
-        ruta_id = {ruta_id}, 
-        nombre= '{nombre}', 
+        ruta_id = {ruta_id},  
         fecha_retorno = '{fecha_retorno}',
         fecha_salida='{fecha_salida}'
     WHERE bus_id = {bus_id};
     """)
     else:
-        add_bus(chofer_id,ruta_id,nombre,fecha_salida,fecha_retorno)
+        add_bus(chofer_id,ruta_id,fecha_salida,fecha_retorno)
     conexion.commit()
 #actualiza chofer y si no existe lo crea
 def update_driver(chofer_id,nombre,edad,carnet):
-    conexion=make_connection()
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     if(verification_id(cursor,"chofer",chofer_id)==True):
         cursor.execute(f"""UPDATE chofer
@@ -159,7 +135,7 @@ def update_driver(chofer_id,nombre,edad,carnet):
     conexion.commit()
 #actualiza ruta y si no existe lo crea 
 def update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip):
-    conexion=make_connection()
+    conexion=c.make_connection()
     cursor=conexion.cursor()
     if(verification_id(cursor,"ruta",ruta_id)==True):
         cursor.execute(f"""UPDATE ruta

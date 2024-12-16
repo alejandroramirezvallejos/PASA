@@ -34,12 +34,14 @@ El sistema moderniza la gestión de datos de una empresa de buses, facilitando:
 ## 🗄️ Estructura del Proyecto
 
 ```
-├──tkinter_app
-│   ├──main.py                    # Codigo de la Interfaz
+├──ASSETS                         # Recursos de la Interfaz
 ├──DATABASE             
 │   ├──pasa.bak                   # Base de datos en MySQL_Server
-├──IMAGES
-│   ├──Imagenes varias            # Recursos de la Interfaz
+├──IMAGES               
+│   ├──Imagenes varias            # Recurso para readme
+├──TKINTER_APP
+│   ├──ADMIN_APP                  # Interfaz Administrador
+│   ├──USER_APP                   # Interaz Usuario
 ├── mysqlserver_to_mysq
 │   ├── conexion.py               # Gestión de conexiones
 │   ├── main.py                   # Punto de entrada
@@ -48,8 +50,7 @@ El sistema moderniza la gestión de datos de una empresa de buses, facilitando:
 │       ├── functions_main.py     # Clase principal
 │       ├──queries
 │           └── queries.py        # Consultas SQL
-├── Readme_data                 
-│   └── Imagenes varias e video   # Informacion para hacer mejor el readme 
+├── README.MD                     # Este texto
 ├──LICENSE                        # Licencia MIT
 ```
 
@@ -499,6 +500,349 @@ Inicio:
 Fin.
 ```
 #### ADMIN
+```
+1. Importar las librerías necesarias
+   - Instalar tk 
+   - Instalar pyodbc 
+   - Instalar tkcalendar 
+   - Instalar pillow 
+   - Instalar customtkinter
+
+2. Definir la configuración de la conexión con la base de datos
+   - Asignar el controlador de ODBC
+   - Asignar el servidor de la base de datos
+   - Asignar el nombre de la base de datos
+   - Asignar el nombre de usuario
+
+3. Crear una función para establecer la conexión con la base de datos
+   - Intentar conectar usando los parámetros definidos
+     - Retornar la conexión si es exitosa
+   - Manejar posibles errores de conexión
+     - Si el error es de credenciales, mostrar mensaje de error específico
+     - Mostrar mensaje de error general para otros problemas de conexión
+     - Retornar `None` en caso de error
+
+4. Definir la función para obtener una nueva llave primaria (obtain_pk)
+   - Ejecutar una consulta para seleccionar el ID de la tabla ordenado en orden descendente
+   - Retornar el siguiente valor del ID
+
+5. Definir la función para validar un carnet (validate_carnet)
+   - Crear la conexión usando 'make_connection'
+   - Crear un cursor
+   - Ejecutar una consulta para seleccionar el carnet en la tabla de usuarios
+   - Verificar si el valor del carnet existe
+     - Retornar False si no existe
+     - Retornar True si existe
+
+6. Definir funciones para obtener datos de diferentes tablas
+   - Obtener todas las filas de la tabla rutas (get_route)
+   - Obtener todas las filas de la tabla bus (get_bus)
+   - Obtener todas las filas de la tabla chofer (get_driver)
+   - Obtener todas las reservas con información adicional (get_booking)
+
+7. Definir funciones para adicionar datos a las tablas
+   - Adicionar un bus a la tabla bus (add_bus)
+     - Crear la conexión y el cursor
+     - Ejecutar una consulta para insertar un nuevo bus
+     - Confirmar los cambios
+   - Adicionar un chofer a la tabla chofer (add_driver)
+     - Crear la conexión y el cursor
+     - Ejecutar una consulta para insertar un nuevo chofer
+     - Confirmar los cambios
+   - Adicionar una ruta a la tabla ruta (add_route)
+     - Crear la conexión y el cursor
+     - Ejecutar una consulta para insertar una nueva ruta
+     - Confirmar los cambios
+
+8. Definir funciones para eliminar datos de las tablas
+   - Eliminar un bus por su ID (del_bus)
+     - Crear la conexión y el cursor
+     - Ejecutar una consulta para eliminar el bus
+     - Confirmar los cambios
+   - Eliminar un chofer por su ID (del_driver)
+     - Crear la conexión y el cursor
+     - Ejecutar una consulta para eliminar el chofer
+     - Confirmar los cambios
+   - Eliminar una ruta por su ID (del_route)
+     - Crear la conexión y el cursor
+     - Ejecutar una consulta para eliminar la ruta
+     - Confirmar los cambios
+
+9. Definir funciones para verificar y actualizar datos
+   - Verificar si un ID existe en una tabla (verification_id)
+     - Ejecutar una consulta para seleccionar el ID en la tabla
+     - Retornar False si no existe
+     - Retornar True si existe
+   - Actualizar un bus y si no existe, lo crea (update_bus)
+     - Crear la conexión y el cursor
+     - Verificar si el ID del bus existe
+       - Ejecutar una consulta para actualizar el bus si existe
+       - Llamar a 'add_bus' si no existe
+     - Confirmar los cambios
+   - Actualizar un chofer y si no existe, lo crea (update_driver)
+     - Crear la conexión y el cursor
+     - Verificar si el ID del chofer existe
+       - Ejecutar una consulta para actualizar el chofer si existe
+       - Llamar a 'add_driver' si no existe
+     - Confirmar los cambios
+   - Actualizar una ruta y si no existe, lo crea (update_route)
+     - Crear la conexión y el cursor
+     - Verificar si el ID de la ruta existe
+       - Ejecutar una consulta para actualizar la ruta si existe
+       - Llamar a 'add_route' si no existe
+     - Confirmar los cambios
+
+10. Importar las librerías necesarias
+   - Importar sys
+   - Importar tkinter como tk y ttk
+   - Importar pyodbc
+   - Importar messagebox y font desde tkinter
+   - Importar Calendar desde tkcalendar
+   - Importar date desde datetime
+   - Importar Image e ImageTk desde PIL
+   - Importar customtkinter como ctk y sus componentes necesarios
+   - Importar functions_query como f
+   - Importar conection como c
+
+11. Definir variables globales
+   - Variables para las ventanas y frames
+   - Variables para las entradas de datos y opción seleccionada
+
+12. Crear función para guardar datos al crear una cuenta (create_account)
+   - Obtener y validar la entrada de datos
+   - Manejar errores de validación y mostrar mensajes de error
+   - Borrar datos en caso de error
+   - Conectar a la base de datos
+   - Ejecutar consulta para insertar los datos del usuario
+   - Cambiar al frame de consulta si todo sale bien
+   - Manejar posibles errores de la base de datos
+
+13. Crear función para extraer datos y verificar el inicio de sesión (login)
+   - Obtener y validar la entrada de datos
+   - Manejar errores de validación y mostrar mensajes de error
+   - Borrar datos en caso de error
+   - Conectar a la base de datos
+   - Ejecutar consulta para verificar el usuario y la contraseña
+   - Cambiar al frame de consulta si todo sale bien
+   - Manejar posibles errores de la base de datos
+
+14. Crear función para realizar consultas según la opción seleccionada (queries_option)
+   - Crear la conexión y el cursor
+   - Identificar la acción (agregar, eliminar, actualizar) según el frame actual
+   - Ejecutar las consultas correspondientes a cada acción y opción seleccionada
+   - Manejar posibles errores y mostrar mensajes de éxito o error
+
+15. Crear función para la pantalla de carga (make_loading_screen)
+   - Crear el frame de carga
+   - Agregar un ícono y manejar posibles errores al cargar la imagen
+   - Configurar un retraso para mostrar el siguiente frame
+
+16. Crear el frame de la barra de acción (make_action_bar)
+    - Crear el frame de la barra de acción
+    - Agregar un logo al centro del frame
+      - Cargar la imagen del logo
+      - Manejar errores en caso de que no se pueda cargar la imagen
+    - Crear un botón para regresar y ocultarlo inicialmente
+      - Definir la función on_back_button para gestionar el botón de regreso
+        - Verificar desde qué frame se está presionando el botón de regreso
+        - Ocultar y cambiar al frame inicial correspondiente
+      - Cargar la imagen del botón de regreso
+      - Manejar errores en caso de que no se pueda cargar la imagen
+    - Crear un botón para cerrar sesión
+      - Definir la función log_out_button para gestionar el botón de cerrar sesión
+        - Verificar desde qué frame se está presionando el botón de cerrar sesión
+        - Ocultar y cambiar al frame inicial correspondiente
+      - Cargar la imagen del botón de cerrar sesión
+      - Manejar errores en caso de que no se pueda cargar la imagen
+
+17. Crear el frame de la barra de navegación (make_navigation_bar)
+    - Crear el frame de la barra de navegación
+    - Definir la función para cargar iconos
+      - Intentar cargar la imagen y redimensionarla
+      - Manejar errores en caso de que no se pueda cargar la imagen
+    - Cargar los iconos de los botones de navegación (buscar, agregar, eliminar, modificar)
+      - Manejar errores en caso de que no se puedan cargar los iconos
+    - Definir el estilo de los botones de navegación
+    - Crear los botones de navegación y asignarles sus iconos y comandos correspondientes
+      - Botón de buscar
+      - Botón de agregar
+      - Botón de eliminar
+      - Botón de modificar
+
+18. Crear el frame inicial (make_start_frame)
+    - Crear el frame inicial y asignarle un nombre
+    - Agregar un icono al frame
+      - Intentar cargar la imagen del icono
+      - Manejar errores en caso de que no se pueda cargar la imagen
+    - Agregar un texto de título
+      - Configurar la fuente, color y propiedades del texto
+    - Crear y agregar el botón de inicio de sesión
+      - Configurar el botón y su acción para mostrar el frame de inicio de sesión
+    - Crear y agregar el botón de creación de cuenta
+      - Configurar el botón y su acción para mostrar el frame de registro
+    - Agregar un texto de términos y condiciones
+      - Configurar el texto y sus propiedades
+    - Crear un enlace para "Términos y condiciones"
+      - Configurar el enlace y su acción para mostrar el frame de términos y condiciones
+
+19. Crear el frame de términos y condiciones de uso (make_terms_frame)
+    - Crear el frame de términos y condiciones y asignarle un nombre
+    - Agregar un título principal
+      - Configurar el título y sus propiedades
+    - Crear un Scrollbar para el contenido
+      - Configurar el Scrollbar y el Canvas
+    - Agregar el contenido de términos y condiciones
+      - Dividir el contenido en secciones
+      - Crear y agregar un frame para cada sección
+      - Configurar el título y contenido de cada sección
+    - Agregar un botón para regresar
+      - Configurar el botón de regresar y su acción
+
+20. Crear el frame para registrar una cuenta (make_register_frame)
+    - Crear el frame de registro y asignarle un nombre
+    - Agregar un título y configurar sus propiedades (fuente, color, etc.)
+    - Crear y agregar campos de entrada para:
+      - Nombre (name_entry)
+      - Apellidos (last_name_entry)
+      - Edad (age_entry)
+      - Carnet (id_card_entry)
+      - Contraseña (password_entry)
+    - Configurar los estilos y propiedades de cada campo de entrada
+    - Crear y agregar el botón para crear una cuenta (create_account_button)
+      - Configurar el botón y su comando para llamar a la función create_account
+    - Agregar un botón de regreso (show_back_button) para navegar al frame anterior
+
+21. Crear el frame para iniciar sesión (make_login_frame)
+    - Crear el frame de inicio de sesión y asignarle un nombre
+    - Agregar un título y configurar sus propiedades (fuente, color, etc.)
+    - Crear y agregar campos de entrada para:
+      - Carnet (login_id_card_entry)
+      - Contraseña (login_password_entry)
+    - Configurar los estilos y propiedades de cada campo de entrada
+    - Crear y agregar el botón para iniciar sesión (login_button_submit)
+      - Configurar el botón y su comando para llamar a la función login
+    - Agregar un botón de regreso (show_back_button) para navegar al frame anterior
+
+22. Crear el frame para buscar datos (make_fetch_frame)
+    - Crear el frame de búsqueda de datos y asignarle un nombre
+    - Definir la función para abrir una ventana con datos de una tabla (open_table_window)
+      - Crear la conexión y el cursor
+      - Ejecutar la función de búsqueda y obtener los datos
+      - Manejar casos en los que no haya datos en la tabla
+      - Crear una nueva ventana y configurar sus propiedades (tamaño, color, etc.)
+      - Crear un Treeview para mostrar los datos
+        - Configurar los encabezados basados en las columnas
+        - Insertar los datos en el Treeview
+      - Crear y agregar un botón para cerrar la ventana (close_button)
+      - Manejar posibles errores durante la obtención de datos
+    - Crear y agregar botones para mostrar las tablas específicas:
+      - Tabla de buses (bus_button)
+      - Tabla de choferes (driver_button)
+      - Tabla de rutas (route_button)
+      - Tabla de reservas (booking_button)
+      - Configurar los botones y sus comandos para llamar a la función open_table_window con los parámetros correspondientes
+
+23. Crear función para crear campos de entrada (create_input_field)
+    - Definir la función con parámetros: parent, label_text, placeholder, identifier_button
+    - Crear un frame para el campo de entrada y agregarlo al parent
+    - Si identifier_button es 1:
+      - Crear y configurar un label y un entry
+      - Agregar el entry a la lista global de entries
+    - Si identifier_button es 2:
+      - Crear un frame y un botón
+      - Definir la función on_button_click para gestionar la acción del botón
+        - Asignar el texto del label a selected_option
+        - Llamar a la función queries_option
+      - Configurar el botón con su acción y agregarlo al frame
+
+24. Crear frame para crear botones predeterminados (make_option_frame)
+    - Definir la función con parámetros: parent, title_name
+    - Crear un frame de opción y una entrada global (option)
+    - Crear un canvas y un scrollbar
+    - Configurar y vincular el canvas y el scrollbar
+    - Crear un frame interno dentro del canvas (scrollable_frame)
+    - Configurar un título para el bus y agregar campos de entrada según title_name (Agregar, Eliminar, Actualizar)
+    - Configurar un título para el chofer y agregar campos de entrada según title_name (Agregar, Eliminar, Actualizar)
+    - Configurar un título para la ruta y agregar campos de entrada según title_name (Agregar, Eliminar, Actualizar)
+    - Retornar el frame de opción
+
+25. Crear frame para agregar datos (make_add_frame)
+    - Definir la función y gestionar los frames y el frame actual
+    - Si add_frame es None, crear y configurar el frame
+    - Si option_frame es None o su master no es add_frame, crear y configurar el option_frame
+      - Llamar a make_option_frame con los parámetros adecuados y agregarlo al frame
+    - Configurar y mostrar el frame actual y la opción
+    - Retornar el frame de agregar datos
+
+26. Crear el frame para modificar datos (make_update_frame)
+    - Definir la función y gestionar los frames y el frame actual
+    - Si update_frame es None, crear y configurar el frame
+    - Si option_frame es None o su master no es update_frame, crear y configurar el option_frame
+      - Llamar a make_option_frame con los parámetros adecuados y agregarlo al frame
+    - Configurar y mostrar el frame actual y la opción
+    - Retornar el frame de modificar datos
+
+27. Crear el frame para eliminar datos (make_delete_frame)
+    - Definir la función y gestionar los frames y el frame actual
+    - Si delete_frame es None, crear y configurar el frame
+    - Si option_frame es None o su master no es delete_frame, crear y configurar el option_frame
+      - Llamar a make_option_frame con los parámetros adecuados y agregarlo al frame
+    - Configurar y mostrar el frame actual y la opción
+    - Retornar el frame de eliminar datos
+
+28. Crear funciones para mostrar y ocultar frames (show_frame)
+    - Definir la función para mostrar un frame específico (show_frame)
+      - Ocultar el frame actual si existe
+      - Configurar y mostrar el frame a mostrar
+      - Ocultar todos los frames en la lista global de frames
+      - Gestionar la visibilidad de la barra de acción, botón de regreso y botón de cierre de sesión según el frame a mostrar
+
+29. Crear funciones para mostrar y ocultar el botón de regreso (show_back_button, hide_back_button)
+    - Definir la función para mostrar el botón de regreso (show_back_button)
+      - Configurar la posición del botón de regreso si existe
+    - Definir la función para ocultar el botón de regreso (hide_back_button)
+      - Llamar a la función on_back_button
+      - Ocultar el botón de regreso si existe
+
+30. Crear función para limpiar datos al presionar el botón de regresar (on_back_button)
+    - Definir la función on_back_button
+    - Limpiar los datos de entrada específicos al frame actual:
+      - Si el frame actual es login_frame:
+        - Borrar el contenido de login_id_card_entry y login_password_entry
+      - Si el frame actual es register_frame:
+        - Borrar el contenido de name_entry, last_name_entry, age_entry, id_card_entry y password_entry
+
+31. Crear funciones para mostrar y ocultar el botón de cerrar sesión (show_log_out_button, hide_log_out_button)
+    - Definir la función show_log_out_button
+      - Configurar la posición del botón de cerrar sesión si existe
+    - Definir la función hide_log_out_button
+      - Ocultar el botón de cerrar sesión si existe
+
+32. Crear función para limpiar datos al presionar el botón de cerrar sesión (on_log_out_button)
+    - Definir la función on_log_out_button
+    - Ocultar el botón de cerrar sesión
+    - Mostrar el frame inicial (start_frame)
+
+33. Crear funciones para mostrar y ocultar opciones (show_option, hide_option)
+    - Definir la función show_option
+      - Configurar la posición de option si existe y el target_frame es válido
+    - Definir la función hide_option
+      - Ocultar option si existe
+
+34. Crear la función principal (main)
+    - Configurar la ventana principal de la aplicación:
+      - Establecer el modo de apariencia y el tema de color predeterminado
+      - Crear la ventana principal con título, tamaño, y configuración de diseño
+    - Crear las barras de acción y de navegación
+    - Crear los diferentes frames de la aplicación (loading, start, register, login, add, update, delete, fetch, terms)
+    - Almacenar todos los frames en una lista global (all_frames)
+    - Mostrar la pantalla de carga inicialmente y luego cambiar al frame inicial después de un retraso
+    - Iniciar el bucle principal de la aplicación
+
+35. Ejecutar la función principal si se está ejecutando el script directamente (condicional if __name__ == "__main__")
+    - Llamar a la función main()
+
+```
 ## 🧪 Pruebas
 
 ### Tests Implementados
