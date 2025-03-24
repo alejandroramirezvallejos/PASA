@@ -12,7 +12,7 @@ from datetime import date
 from PIL import Image, ImageTk
 from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
 window = None
-
+import queries as q
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
 
 """Configurando la Conexion con la Base de Datos"""
@@ -47,7 +47,7 @@ def make_connection():
 def validate_carnet(carnet:str)->bool:
     conexion=make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"SELECT carnet FROM usuario WHERE carnet = {carnet};")
+    cursor.execute(q.BUSCA_CARNET.format(carnet))
     valor=cursor.fetchone()
     if valor is None:
         return False
@@ -56,11 +56,11 @@ def validate_carnet(carnet:str)->bool:
 
 """Crear llave"""
 def obtain_pk(cursor,tabla:str)->str:
-    cursor.execute(f"SELECT {tabla}_id FROM {tabla} ORDER BY {tabla}_id DESC ")
+    cursor.execute(q.CREAR_LLAVE.format(tabla,tabla,tabla))
     return cursor.fetchone()[0]+1
 #obtener llave
 def obtain_userid(cursor):
-    cursor.execute(f"""select usuario_id from usuario where carnet={id_card}""")
+    cursor.execute(q.OBTENER_LLAVE.format(id_card))
     return cursor.fetchone()[0]
 
 """Guardar Datos al Crear una Cuenta"""
@@ -116,11 +116,7 @@ def create_account():
         return
     try:
         cursor = connection.cursor()
-        query = """
-        INSERT INTO usuario (usuario_id,nombre, apellido, edad, carnet, contraseña, admin) 
-        VALUES ({},'{}','{}',{},{},'{}',0);
-        """
-        cursor.execute(query.format(obtain_pk(cursor,"usuario"),name, last_name, age, id_card, password))
+        cursor.execute(q.CREAR_USUARIO.format(obtain_pk(cursor,"usuario"),name, last_name, age, id_card, password))
         connection.commit()
         # Cambiar al content_frame si todo sale bien
         show_frame(content_frame)
@@ -158,8 +154,7 @@ def login():
         return
     try:
         cursor = connection.cursor()
-        query = "SELECT * FROM dbo.usuario WHERE carnet = ? AND contraseña = ?"
-        cursor.execute(query, (id_card, password))
+        cursor.execute(q.OBTENER_USUARIO, (id_card, password))
         usuario = cursor.fetchone()
         # Cambiar al content_frame si todo sale bien
         if usuario:
@@ -206,26 +201,12 @@ def search_buses():
     try:
         cursor = connection.cursor()
         # Consulta para Fecha de Partida
-        query = """
-        SELECT b.bus_id, b.fecha_salida, COUNT(r.bus_id) AS asientos_ocupados
-        FROM bus AS b
-        JOIN chofer AS c ON b.chofer_id = c.chofer_id
-        LEFT JOIN reserva AS r ON b.bus_id = r.bus_id
-        WHERE b.ruta_id IN (
-        SELECT ruta_id 
-        FROM ruta 
-        WHERE dep_inicio = '{}' AND dep_final = '{}'
-        )
-        AND b.fecha_salida = '{}'
-        GROUP BY b.bus_id, b.fecha_salida
-        HAVING COUNT(r.bus_id) <= (60 - {});
-        """
-        cursor.execute(query.format(origin, destination, departure_date, int(passengers)))
+        cursor.execute(q.OBTENER_DATOS_BUS.format(origin, destination, departure_date, int(passengers)))
         buses = cursor.fetchall()
         # Consulta para Fecha de Regreso
         buses_2 = []
         if return_date != "Seleccionar":
-            cursor.execute(query.format(destination, origin, return_date, int(passengers)))
+            cursor.execute(q.OBTENER_DATOS_BUS.format(destination, origin, return_date, int(passengers)))
             buses_2 = cursor.fetchall()
 
         # Mostrar Resultados
@@ -886,14 +867,10 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
             for bus in selected_buses:
                 for i in range(int(passengers)):
                     if(passenger_class=="Economico"):
-                        cursor.execute(f"""INSERT INTO reserva (reserva_id, usuario_id,bus_id,vip)
-                                        VALUES ({obtain_pk(cursor,"reserva")}, {obtain_userid(cursor)},{bus} ,0);
-                        """)
+                        cursor.execute(q.INSERTAR_ECONOMICO.format(obtain_pk(cursor,"reserva"),obtain_userid(cursor),bus))
                         conexion.commit()
                     elif(passenger_class=="VIP"):
-                        cursor.execute(f"""INSERT INTO reserva (reserva_id, usuario_id,bus_id,vip)
-                                        VALUES ({obtain_pk(cursor,"reserva")}, {obtain_userid(cursor)},{bus} ,1);
-                        """)
+                        cursor.execute(q.INSERTAR_VIP.format(obtain_pk(cursor,"reserva"),obtain_userid(cursor),bus))
                         conexion.commit()
             conexion.close()
             confirm_window.after(2000, confirm_window.destroy)
