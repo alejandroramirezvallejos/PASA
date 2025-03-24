@@ -16,6 +16,7 @@ import customtkinter as ctk
 from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
 import functions_query as f
 import conection as c
+import  queries as q
 window = None
 current_frame = None
 add_frame = None
@@ -91,11 +92,7 @@ def create_account():
         return
     try:
         cursor = connection.cursor()
-        query = """
-        INSERT INTO usuario (usuario_id,nombre, apellido, edad, carnet, contraseña, admin) 
-        VALUES ({},'{}','{}',{},{},'{}',1);
-        """
-        cursor.execute(query.format(f.obtain_pk(cursor,"usuario"),name, last_name, age, id_card, password))
+        cursor.execute(q.INSERTAR_USUARIO.format(f.obtain_pk(cursor,"usuario"),name, last_name, age, id_card, password))
         connection.commit()
         # Cambiar al fetch_frame si todo sale bien
         show_frame(fetch_frame)
@@ -132,8 +129,7 @@ def login():
         return
     try:
         cursor = connection.cursor()
-        query = "SELECT * FROM dbo.usuario WHERE carnet = ? AND contraseña = ?"
-        cursor.execute(query, (id_card, password))
+        cursor.execute(q.OBTENER_USUARIO, (id_card, password))
         usuario = cursor.fetchone()
         # Cambiar al fetch_frame si todo sale bien
         if usuario:
