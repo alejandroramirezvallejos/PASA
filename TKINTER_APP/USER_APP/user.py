@@ -10,7 +10,7 @@ from tkinter import messagebox, font
 from tkcalendar import Calendar
 from datetime import date
 from PIL import Image, ImageTk
-from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
+from customtkinter import CTkImage, CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
 window = None
 import queries as q
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
@@ -731,13 +731,13 @@ def make_history_frame():
 
 """Frame de Pagar"""
 def make_pay_frame():
-    # Creando Frame
     pay_frame = tk.Frame(window, bg="#F1F2F6")
     pay_frame.name = "pay"
+    # Titulo
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(               
         pay_frame,
-        text="Realizar Pago",
+        text="Elige tu metodo de pago",
         font=title_font,
         bg="#F1F2F6",
         fg="black",
@@ -745,6 +745,141 @@ def make_pay_frame():
         justify="center",
     )
     title_label.pack(pady=10)
+    # Boton de Visa
+    try:
+        visa_button_frame = tk.Frame(pay_frame, bg="#F1F2F6")
+        visa_button_frame.pack(side="top", pady=10, fill="x", padx=10)
+        visa_button_label = tk.Label(visa_button_frame, text=" ", bg="#F1F2F6")
+        visa_button_label.pack(side="left", padx=10)
+        image_path = "../../ASSETS/visa_button.png"
+        image = Image.open(image_path)
+        image = image.resize((36, 13), Image.LANCZOS)  
+        ctk_image = CTkImage(light_image=image, dark_image=image)
+        visa_button = CTkButton(
+            visa_button_frame,
+            text="Visa",
+            font=("Canva Sans", 12),
+            fg_color="#F1F2F6",
+            text_color="#000000",
+            hover_color="#E1E1E1",
+            border_color="#7732FF",
+            border_width=2,
+            corner_radius=32,
+            image=ctk_image,  
+            compound="left"
+        )
+        visa_button.image = ctk_image  
+        visa_button.pack(side="left", padx=10, fill="x", expand=True)
+    except Exception as e:
+        print(f"Error al cargar la imagen de Visa: {e}")
+    # Boton de Mastercard
+    try:
+        mastercard_button_frame = tk.Frame(pay_frame, bg="#F1F2F6")
+        mastercard_button_frame.pack(side="top", pady=10, fill="x", padx=10)
+        mastercard_button_label = tk.Label(mastercard_button_frame, text=" ", bg="#F1F2F6")
+        mastercard_button_label.pack(side="left", padx=10)
+        image_mastercard_path = "../../ASSETS/mastercard_button.png"
+        image_mastercard = Image.open(image_mastercard_path)
+        image_mastercard = image_mastercard.resize((36, 22), Image.LANCZOS)  
+        ctk_image_mastercard = CTkImage(light_image=image_mastercard, dark_image=image_mastercard)
+        mastercard_button = CTkButton(
+            mastercard_button_frame,
+            text="Mastercard",
+            font=("Canva Sans", 12),
+            fg_color="#F1F2F6",
+            text_color="#000000",
+            hover_color="#E1E1E1",
+            border_color="#7732FF",
+            border_width=2,
+            corner_radius=32,
+            image=ctk_image_mastercard,  
+            compound="left"
+        )
+        mastercard_button.image = ctk_image_mastercard 
+        mastercard_button.pack(side="left", padx=10, fill="x", expand=True)
+    except Exception as e:
+        print(f"Error al cargar la imagen de Mastercard: {e}")
+    # Boton de PayPal
+    try:
+        paypal_button_frame = tk.Frame(pay_frame, bg="#F1F2F6")
+        paypal_button_frame.pack(side="top", pady=10, fill="x", padx=10)
+        paypal_button_label = tk.Label(paypal_button_frame, text=" ", bg="#F1F2F6")
+        paypal_button_label.pack(side="left", padx=10)
+        image_path_paypal = "../../ASSETS/paypal_button.png"
+        image_paypal = Image.open(image_path_paypal)
+        image_paypal = image_paypal.resize((36, 36), Image.LANCZOS)  
+        ctk_image_paypal = CTkImage(light_image=image_paypal, dark_image=image_paypal)
+        paypal_button = CTkButton(
+            paypal_button_frame,
+            text="PayPal",
+            font=("Canva Sans", 12),
+            fg_color="#F1F2F6",
+            text_color="#000000",
+            hover_color="#E1E1E1",
+            border_color="#7732FF",
+            border_width=2,
+            corner_radius=32,
+            image=ctk_image_paypal,  
+            compound="left"
+        )
+        paypal_button.image = ctk_image_paypal  
+        paypal_button.pack(side="left", padx=10, fill="x", expand=True)
+    except Exception as e:
+        print(f"Error al cargar la imagen de PayPal: {e}")
+    # Boton de Bitcoin
+    try:
+        bitcoin_button_frame = tk.Frame(pay_frame, bg="#F1F2F6")
+        bitcoin_button_frame.pack(side="top", pady=10, fill="x", padx=10)
+        bitcoin_button_label = tk.Label(bitcoin_button_frame, text=" ", bg="#F1F2F6")
+        bitcoin_button_label.pack(side="left", padx=10)
+        image_path_bitcoin = "../../ASSETS/bitcoin_button.png"
+        image_bitcoin = Image.open(image_path_bitcoin)
+        image_bitcoin = image_bitcoin.resize((36, 36), Image.LANCZOS)  
+        ctk_image_bitcoin = CTkImage(light_image=image_bitcoin, dark_image=image_bitcoin)
+        bitcoin_button = CTkButton(
+            bitcoin_button_frame,
+            text="Bitcoin",
+            font=("Canva Sans", 12),
+            fg_color="#F1F2F6",
+            text_color="#000000",
+            hover_color="#E1E1E1",
+            border_color="#7732FF",
+            border_width=2,
+            corner_radius=32,
+            image=ctk_image_bitcoin,  
+            compound="left"
+        )
+        bitcoin_button.image = ctk_image_bitcoin  
+        bitcoin_button.pack(side="left", padx=10, fill="x", expand=True)
+    except Exception as e:
+        print(f"Error al cargar la imagen de Bitcoin: {e}")
+    # Boton de Yolo
+    try:
+        yolo_button_frame = tk.Frame(pay_frame, bg="#F1F2F6")
+        yolo_button_frame.pack(side="top", pady=10, fill="x", padx=10)
+        yolo_button_label = tk.Label(yolo_button_frame, text=" ", bg="#F1F2F6")
+        yolo_button_label.pack(side="left", padx=10)
+        image_path_yolo = "../../ASSETS/yolo_button.png"
+        image_yolo = Image.open(image_path_yolo)
+        image_yolo = image_yolo.resize((36, 30), Image.LANCZOS)  
+        ctk_image_yolo = CTkImage(light_image=image_yolo, dark_image=image_yolo)
+        yolo_button = CTkButton(
+            yolo_button_frame,
+            text="Yolo",
+            font=("Canva Sans", 12),
+            fg_color="#F1F2F6",
+            text_color="#000000",
+            hover_color="#E1E1E1",
+            border_color="#7732FF",
+            border_width=2,
+            corner_radius=32,
+            image=ctk_image_yolo,  
+            compound="left"
+        )
+        yolo_button.image = ctk_image_yolo 
+        yolo_button.pack(side="left", padx=10, fill="x", expand=True)
+    except Exception as e:
+        print(f"Error al cargar la imagen de Yolo: {e}")
     return pay_frame
 
 """Frame de Area de contenido"""
