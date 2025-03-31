@@ -17,9 +17,9 @@ import queries as q
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = ''  
+server = 'X'  
 database = 'pasa'
-username = '\\user' 
+username = 'X\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -296,6 +296,24 @@ def make_action_bar():
         back_button.place_forget()
     except Exception as e:
         print(f"Error al cargar el Boton Regresar: {e}")
+    # Crear Boton de Historial pero inicialmente ocultarlo
+    try:
+        history_image_path = "../../ASSETS/history_button.png"
+        history_image = Image.open(history_image_path).resize((17, 21), Image.LANCZOS)
+        history_photo = ImageTk.PhotoImage(history_image)
+        global history_button
+        history_button = tk.Button(
+            action_bar,
+            image=history_photo,
+            bg="#F1F2F6",
+            borderwidth=0,
+            command=on_back_button
+        )
+        history_button.image = history_photo
+        history_button.place(x=25, y=12) 
+        history_button.place_forget()
+    except Exception as e:
+        print(f"Error al cargar el Boton de Historial: {e}")
     # Boton para Cerrar Sesion
     try:
         log_out_image_path = "../../ASSETS/log_out_button.png"
@@ -639,6 +657,17 @@ def make_content_frame():
     # Creando Frame
     content_frame = tk.Frame(window, bg="#F1F2F6")
     content_frame.name = "content"
+    # Publicidad
+    try:
+        advertising_image = Image.open("../../ASSETS/advertising.png")
+        advertising_image = advertising_image.resize((380, 150), Image.LANCZOS) 
+        advertising_photo = ImageTk.PhotoImage(advertising_image)
+        advertising_label = tk.Label(content_frame, image=advertising_photo, bg="#F1F2F6")
+        advertising_label.image = advertising_photo
+        advertising_label.pack(pady=20)
+    except Exception as e:
+        print("Error al cargar la imagen de la publicidad", e)
+    # Titulo
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
         content_frame,
@@ -649,7 +678,7 @@ def make_content_frame():
         wraplength=350,
         justify="center",
     )
-    title_label.pack(pady=50)
+    title_label.pack(pady=10)
     combo_fg_color = "#F1F2F6"
     combo_button_color = "#7732FF"
     combo_border_color = "#7732FF"
@@ -1043,7 +1072,7 @@ Asientos Disponibles: {60 - asientos_ocupados}
 
 """Funcion para Mostrar un Frame"""
 def show_frame(frame_to_show):
-    global all_frames, action_bar, back_button, log_out_button, current_frame
+    global all_frames, action_bar, back_button, current_frame
     current_frame = frame_to_show  
     # Ocultar todos los frames
     for frame in all_frames:
@@ -1052,20 +1081,42 @@ def show_frame(frame_to_show):
     if hasattr(frame_to_show, "name") and frame_to_show.name in ["loading", "start"]:
         action_bar.pack_forget()
         hide_back_button()
+        hide_history_button()
         hide_log_out_button()
     else:
         action_bar.pack(side="top", fill="x")
         hide_back_button()
+        hide_history_button()
         hide_log_out_button()
         if hasattr(frame_to_show, "name"):
             if frame_to_show.name == "content":
                 show_log_out_button()
+                show_history_button()
             elif frame_to_show.name == "results":
                 show_back_button()
                 show_log_out_button()
             elif frame_to_show.name in ["login", "register", "terms"]:
                 show_back_button()
     frame_to_show.pack(expand=True)
+
+"""Funcion para Mostrar el Boton de Historial"""
+def show_history_button(target_frame=None):
+    if history_button:
+        history_button.place(x=25, y=12)  
+
+"""Funcion para ocultar el Boton de Historial"""
+def hide_history_button():
+    if history_button:
+        history_button.place_forget()
+
+"""Funcion para ocultar Frame al apretar Boton de Historial"""
+def on_history_button():
+    global current_frame, content_frame
+    # Ocultar frame actual
+    if current_frame == content_frame:
+        content_frame.pack_forget()
+    hide_history_button()
+    show_frame(start_frame)
 
 """Funcion para Mostrar el Boton para Regresar"""
 def show_back_button(target_frame=None):
