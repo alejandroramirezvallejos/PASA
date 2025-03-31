@@ -194,6 +194,10 @@ def queries_option():
                 ruta_id = int(entries[2].get())
                 f.del_route(ruta_id)
                 messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
+            elif "Eliminar Usuario" in selected_option:
+                usuario_id=int(entries[3].get())
+                f.del_usuario(usuario_id)
+                messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
         
         
         elif action == "update":
@@ -1014,6 +1018,20 @@ def make_option_frame(parent, title_name):
         create_input_field(scrollable_frame, "Carnet:", "Ingresar", 1)
         create_input_field(scrollable_frame, "Contraseña:", "Ingresar", 1)
         create_input_field(scrollable_frame, "Admin:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Usuario", "Ingresar", 2)
+    elif title_name=="Eliminar":
+        title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} un Usuario",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        title_label.pack(pady=20)   
+        create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Usuario", "Ingresar", 2)
 
 
