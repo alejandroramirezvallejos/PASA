@@ -266,7 +266,7 @@ def make_action_bar():
         back_photo = ImageTk.PhotoImage(back_image)
         global back_button
         def on_back_button():
-            global current_frame, results_frame, history_frame, login_frame, register_frame, content_frame, start_frame, terms_frame
+            global current_frame, pay_frame, results_frame, history_frame, login_frame, register_frame, content_frame, start_frame, terms_frame
             # Verificar desde qué frame se está presionando el Boton de Regreso
             if current_frame == results_frame:
                 results_frame.pack_forget()
@@ -288,6 +288,10 @@ def make_action_bar():
                 terms_frame.pack_forget()
                 hide_back_button()
                 show_frame(start_frame)
+            elif current_frame == pay_frame:
+                pay_frame.pack_forget()
+                hide_back_button()
+                show_frame(results_frame)
         back_button = tk.Button(
             action_bar,
             image=back_photo,
@@ -318,6 +322,24 @@ def make_action_bar():
         history_button.place_forget()
     except Exception as e:
         print(f"Error al cargar el Boton de Historial: {e}")
+    # Crear Boton de Pagar pero inicialmente ocultarlo
+    try:
+        pay_image_path = "../../ASSETS/pay_button.png"
+        pay_image = Image.open(pay_image_path).resize((17, 21), Image.LANCZOS)
+        pay_photo = ImageTk.PhotoImage(pay_image)
+        global pay_button
+        pay_button = tk.Button(
+            action_bar,
+            image=pay_photo,
+            bg="#F1F2F6",
+            borderwidth=0,
+            command=on_pay_button
+        )
+        pay_button.image = pay_photo
+        pay_button.place(x=340, y=12) 
+        pay_button.place_forget()
+    except Exception as e:
+        print(f"Error al cargar el Boton de Pagar: {e}")
     # Boton para Cerrar Sesion
     try:
         log_out_image_path = "../../ASSETS/log_out_button.png"
@@ -327,11 +349,7 @@ def make_action_bar():
         def log_out_button():
             global current_frame, results_frame, content_frame
             # Verificar desde qué frame se está presionando el Boton de Cerrar Sesion
-            if current_frame == results_frame:
-                results_frame.pack_forget()
-                hide_log_out_button()
-                show_frame(start_frame)
-            elif current_frame == content_frame:
+            if current_frame == content_frame:
                 content_frame.pack_forget()
                 hide_log_out_button()
                 show_frame(start_frame)
@@ -424,10 +442,10 @@ def make_start_frame():
 
 """Frame para ver los Terminos y Condiciones de Uso"""
 def make_terms_frame():
-    # Crear el frame de términos y condiciones
+    # Crear el frame principal de términos
     terms_frame = tk.Frame(window, bg="#F1F2F6")
     terms_frame.name = "terms"
-    # Título principal
+    # Título principal 
     title_label = tk.Label(
         terms_frame,
         text="Términos y Condiciones de Uso",
@@ -435,20 +453,24 @@ def make_terms_frame():
         bg="#F1F2F6",
         fg="black",
     )
-    title_label.pack(pady=20)
-    # Crear un Scrollbar
-    scrollbar = tk.Scrollbar(terms_frame)
+    title_label.pack(side="top", pady=5)
+    # Contenedor para el canvas y el scrollbar
+    container = tk.Frame(terms_frame, bg="#F1F2F6")
+    container.pack(side="top", fill="both", expand=True)
+    # Crear el Scrollbar y el Canvas dentro del contenedor
+    scrollbar = tk.Scrollbar(container)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    canvas = tk.Canvas(terms_frame, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0)
+    
+    canvas = tk.Canvas(container, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0)
     canvas.pack(side=tk.LEFT, fill="both", expand=True)
     scrollbar.config(command=canvas.yview)
-    # Agregando el Contenido
+    # Agregar el frame de contenido dentro del canvas
     content_text_frame = tk.Frame(canvas, bg="#F1F2F6")
     canvas.create_window((0, 0), window=content_text_frame, anchor="nw")
     def resize_canvas(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
     content_text_frame.bind("<Configure>", resize_canvas)
-    # Contenido por Secciones
+    # Secciones de contenido
     sections = [
         (
             "1. Aceptación de los Términos",
@@ -475,12 +497,11 @@ def make_terms_frame():
             """Al continuar con el uso de nuestros servicios, usted acepta de manera irrevocable y vinculante los presentes Términos y Condiciones, comprometiéndose a no impugnar su validez o aplicación en ningún momento."""
         ),
     ]
-    # Secciones
     for title, content in sections:
         section_frame = tk.Frame(content_text_frame, bg="#F1F2F6")
-        section_frame.pack(fill="x", padx=20, pady=10)
-        # Título en negrita
-        title_label = tk.Label(
+        section_frame.pack(fill="x", padx=15, pady=5)
+        # Título de la seccion
+        section_title = tk.Label(
             section_frame,
             text=title,
             font=("Arial", 12, "bold"),
@@ -488,8 +509,8 @@ def make_terms_frame():
             fg="black",
             anchor="w",
         )
-        title_label.pack(fill="x")
-        # Contenido justificado
+        section_title.pack(fill="x")
+        # Texto de la seccion
         content_text_label = tk.Label(
             section_frame,
             text=content,
@@ -501,7 +522,6 @@ def make_terms_frame():
             wraplength=335,
         )
         content_text_label.pack(fill="x")
-    # Botón para regresar
     show_back_button(terms_frame)
     return terms_frame
 
@@ -672,6 +692,24 @@ def make_history_frame():
     )
     title_label.pack(pady=10)
     return history_frame
+
+"""Frame de Pagar"""
+def make_pay_frame():
+    # Creando Frame
+    pay_frame = tk.Frame(window, bg="#F1F2F6")
+    pay_frame.name = "pay"
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(               
+        pay_frame,
+        text="Realizar el Pago",
+        font=title_font,
+        bg="#F1F2F6",
+        fg="black",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(pady=10)
+    return pay_frame
 
 """Frame de Area de contenido"""
 def make_content_frame():
@@ -956,7 +994,7 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
         content_frame,
         text="Confirmar Seleccion",
         corner_radius=32,
-        fg_color="#7732FF",
+        fg_color="#0875C6",
         hover_color="#5A23CC",
         state="disabled",
         command=confirm_booking
@@ -1116,6 +1154,9 @@ def show_frame(frame_to_show):
                 show_history_button()
             elif frame_to_show.name == "results":
                 show_back_button()
+                show_pay_button()
+            elif (frame_to_show.name == "pay"):
+                show_back_button()
                 show_log_out_button()
             elif frame_to_show.name == "history":
                 show_back_button()
@@ -1143,6 +1184,25 @@ def on_history_button():
     hide_history_button()
     show_frame(history_frame)
 
+"""Funcion para Mostrar el Boton de Pagar"""
+def show_pay_button(target_frame=None):
+    if pay_button:
+        pay_button.place()  
+
+"""Funcion para ocultar el Boton de Pagar"""
+def hide_pay_button():
+    if pay_button:
+        pay_button.place_forget()
+
+"""Funcion para ocultar Frame al apretar Boton de Pagar"""
+def on_pay_button():
+    global current_frame, results_frame, pay_frame
+    # Ocultar frame actual
+    if current_frame == results_frame:
+        results_frame.pack_forget()
+    hide_pay_button(x=340, y=12)
+    show_frame(pay_frame)
+
 """Funcion para Mostrar el Boton para Regresar"""
 def show_back_button(target_frame=None):
     if back_button:
@@ -1156,7 +1216,7 @@ def hide_back_button():
 
 """Funcion para limpiar datos al  presionar el Boton de Regresar"""
 def on_back_button():
-    global current_frame, login_frame, register_frame, start_frame
+    global current_frame, login_frame, register_frame, start_frame, pay_frame
     # Borar datos al presionar el boton de regreso
     if current_frame == login_frame:
         login_id_card_entry.delete(0, tk.END)
@@ -1180,7 +1240,7 @@ def hide_log_out_button():
 
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
-    global current_frame, start_frame, results_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
+    global current_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
     # Borrar datos al cerrar sesión
     if current_frame == content_frame or current_frame == results_frame:
         point_origin_input.set("Seleccionar")  
@@ -1190,18 +1250,16 @@ def on_log_out_button():
         passengers_entry.delete(0, tk.END) 
         passenger_class_input.set("Seleccionar")  
     # Ocultar frame actual
-    if current_frame == results_frame:
-        results_frame.pack_forget()
-    elif current_frame == content_frame:
+    if current_frame == content_frame:
         content_frame.pack_forget()
     hide_log_out_button()
     show_frame(start_frame)
         
-# ----------------------------------------------------------------MAIN--------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------MAIN-----------------------------------------------------------------------------------------------------------------
 
 """Funcion Principal"""
 def main():
-    global window, all_frames, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame
+    global window, all_frames, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame, pay_frame
     # Configuración de la ventana
     set_appearance_mode("light")
     set_default_color_theme("blue")
@@ -1224,6 +1282,7 @@ def main():
     login_frame = make_login_frame()
     content_frame = make_content_frame()
     history_frame = make_history_frame()
+    pay_frame = make_pay_frame()
     results_frame = tk.Frame(window, bg="#F1F2F6") 
     results_frame.name = "results"
     terms_frame = make_terms_frame()
