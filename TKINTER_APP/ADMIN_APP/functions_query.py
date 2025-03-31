@@ -44,6 +44,14 @@ INNER JOIN ruta ON bus.ruta_id = ruta.ruta_id;
 """)
     return cursor.fetchall()
 
+def get_reportes(cursor):
+    
+    cursor.execute("SELECT *FROM vw_ReportesReservas ")
+    return cursor.fetchall()
+
+
+
+
 # adicionan cosas
 #addiciona bus
 def add_bus(chofer_id,ruta_id,fecha_sal,fecha_ret):

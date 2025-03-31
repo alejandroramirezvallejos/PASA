@@ -765,7 +765,7 @@ def make_fetch_frame():
                 tree.heading(col, text=col)
                 tree.column(col, anchor="center")
             # Insertar datos en el Treeview
-            for row in data:
+            for row in data :
                 cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
                 tree.insert("", "end", values=cleaned_row)
             # Botón para cerrar la ventana
@@ -775,6 +775,9 @@ def make_fetch_frame():
             messagebox.showerror("Error", f"No se pudo obtener datos: {e}")
         finally:
             connection.close()
+    
+    
+    
     # Botón para mostrar la tabla de buses
     bus_button = CTkButton(
         fetch_frame,
@@ -823,7 +826,7 @@ def make_fetch_frame():
         corner_radius=32,
         fg_color="#7732FF",
         hover_color="#5A23CC",
-        command=lambda: open_table_window(f.get_booking, "Reportes")
+        command=lambda: open_table_window(f.get_reportes, "Reportes")
     )
     reportes_button.pack(pady=10, padx=20, fill="x")
 
