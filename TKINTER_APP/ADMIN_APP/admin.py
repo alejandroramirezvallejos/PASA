@@ -16,7 +16,6 @@ import customtkinter as ctk
 from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
 import functions_query as f
 import conection as c
-import  queries as q
 window = None
 current_frame = None
 add_frame = None
@@ -92,7 +91,7 @@ def create_account():
         return
     try:
         cursor = connection.cursor()
-        cursor.execute(q.INSERTAR_USUARIO.format(f.obtain_pk(cursor,"usuario"),name, last_name, age, id_card, password))
+        cursor.execute(f"EXEC sp_insertar_usuario {f.obtain_pk(cursor,'usuario')},'{name}', '{last_name}', {age}, {id_card}, '{password}'")
         connection.commit()
         # Cambiar al fetch_frame si todo sale bien
         show_frame(fetch_frame)
@@ -129,7 +128,7 @@ def login():
         return
     try:
         cursor = connection.cursor()
-        cursor.execute(q.OBTENER_USUARIO, (id_card, password))
+        cursor.execute(f"sp_obtener_usuario '{id_card}', '{password}'")
         usuario = cursor.fetchone()
         # Cambiar al fetch_frame si todo sale bien
         if usuario:
@@ -1103,7 +1102,7 @@ def main():
     set_default_color_theme("blue")
     window = tk.Tk()
     window.title("Pasa")
-    window.geometry("380x750+120+10")
+    window.geometry("380x650+120+10")
     window.resizable(False, False)
     window.configure(bg="#09090A")
     # Crear barras y frames
