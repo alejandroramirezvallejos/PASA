@@ -862,6 +862,7 @@ Fin.
 ```
 Alejandro Ramirez
 Josue Balbontin
+Fernando Terrazas
 ```
 
 ### Cómo Contribuir
@@ -875,4 +876,4 @@ Josue Balbontin
 
 MIT License 
 
-Copyright (c) 2024 Alejandro Ramírez and Josue Balbontin
+Copyright (c) 2024 Alejandro Ramírez, Josue Balbontin and Fernando Terrazas
