@@ -221,6 +221,19 @@ def queries_option():
                 costo_vip = int(entries[13].get())
                 f.update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip)
                 messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+            elif "Actualizar Usuario" in selected_option:
+                usuario_id=int(entries[14].get())
+                nombre=entries[15].get()
+                apellido=entries[16].get()
+                edad=int(entries[17].get())
+                carnet=entries[18].get()
+                if(len(carnet)!=7):
+                    raise ValueError("El carnet tiene que tener 7 digitos y no existir")
+                contraseña=entries[19].get()
+                admin=int(entries[20].get())
+                if(admin!=1 and admin!=0):
+                     raise ValueError("El campo admin solo puede ser 0 (No) o 1 (Sí)")
+                print(usuario_id,nombre,apellido,edad,carnet,contraseña,admin)
     except Exception as e:
         messagebox.showerror("Error",e)
 # ------------------------------------------------------------FRAMES---------------------------------------------------------------------------------------------
@@ -861,7 +874,7 @@ def make_option_frame(parent, title_name):
     )
 
     # Vincular el marco interno con el canvas
-    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=350, height=1300)
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=350, height=1900)
     canvas.configure(yscrollcommand=scrollbar.set)
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
@@ -951,6 +964,31 @@ def make_option_frame(parent, title_name):
         create_input_field(scrollable_frame, "Costo:", "Ingresar", 1)
         create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
+    #USUARIO
+    if title_name == "Actualizar":
+        title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} un Usuario",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        title_label.pack(pady=20)   
+
+        create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Nombre", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Apellido", "Ingresar", 1)        
+        create_input_field(scrollable_frame, "Edad:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Carnet:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Contraseña:", "Ingresar", 1)
+        create_input_field(scrollable_frame, "Admin:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Usuario", "Ingresar", 2)
+
+
+
     return option_frame
 
 """Frame para Agregar Datos"""
