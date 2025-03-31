@@ -232,7 +232,9 @@ def queries_option():
                 admin=int(entries[20].get())
                 if(admin!=1 and admin!=0):
                      raise ValueError("El campo admin solo puede ser 0 (No) o 1 (Sí)")
-                print(usuario_id,nombre,apellido,edad,carnet,contraseña,admin)
+                cursor.execute(f"EXEC sp_update_usuario {usuario_id} , '{nombre}' , '{apellido}' , {edad} , '{carnet}' , '{contraseña}' , {admin}")
+                cursor.commit()
+                messagebox.showinfo("Éxito", "Usuario actualizado correctamente")
     except Exception as e:
         messagebox.showerror("Error",e)
 # ------------------------------------------------------------FRAMES---------------------------------------------------------------------------------------------
@@ -813,6 +815,21 @@ def make_fetch_frame():
         command=lambda: open_table_window(f.get_booking, "Reservas")
     )
     booking_button.pack(pady=10, padx=20, fill="x")
+
+        # Botón para mostrar la tabla de Reportes
+    reportes_button = CTkButton(
+        fetch_frame,
+        text="Ver Reportes",
+        corner_radius=32,
+        fg_color="#7732FF",
+        hover_color="#5A23CC",
+        command=lambda: open_table_window(f.get_booking, "Reportes")
+    )
+    reportes_button.pack(pady=10, padx=20, fill="x")
+
+
+
+
     return fetch_frame
 
 def create_input_field(parent, label_text, placeholder, identifier_button):
