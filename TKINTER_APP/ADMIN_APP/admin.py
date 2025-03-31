@@ -777,7 +777,17 @@ def make_fetch_frame():
             connection.close()
     
     
-    
+     # Botón para mostrar la tabla de Usuarios
+    usuario_button = CTkButton(
+        fetch_frame,
+        text="Ver Usuarios",
+        corner_radius=32,
+        fg_color="#7732FF",
+        hover_color="#5A23CC",
+        command=lambda: open_table_window(f.get_usuarios, "Usuarios")
+    )
+    usuario_button.pack(pady=10, padx=20, fill="x")
+
     # Botón para mostrar la tabla de buses
     bus_button = CTkButton(
         fetch_frame,

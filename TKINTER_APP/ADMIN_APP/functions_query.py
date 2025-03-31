@@ -37,6 +37,15 @@ def get_reportes(cursor):
     cursor.execute("SELECT *FROM vw_ReportesReservas ")
     return cursor.fetchall()
 
+def get_usuarios(cursor):
+    cursor.execute("""SELECT u.usuario_id
+	  ,u.nombre
+	  ,u.apellido
+	  ,u.edad
+	  ,u.carnet
+	  ,u.admin
+FROM usuario u""")
+    return cursor.fetchall()
 
 
 
