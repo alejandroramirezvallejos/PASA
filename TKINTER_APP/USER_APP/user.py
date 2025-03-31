@@ -318,14 +318,14 @@ def make_action_bar():
             command=on_history_button
         )
         history_button.image = history_photo
-        history_button.place(x=25, y=12) 
+        history_button.place(x=25, y=9) 
         history_button.place_forget()
     except Exception as e:
         print(f"Error al cargar el Boton de Historial: {e}")
     # Crear Boton de Pagar pero inicialmente ocultarlo
     try:
         pay_image_path = "../../ASSETS/pay_button.png"
-        pay_image = Image.open(pay_image_path).resize((17, 21), Image.LANCZOS)
+        pay_image = Image.open(pay_image_path).resize((20, 19), Image.LANCZOS)
         pay_photo = ImageTk.PhotoImage(pay_image)
         global pay_button
         pay_button = tk.Button(
@@ -677,11 +677,13 @@ def make_login_frame():
 
 """Frame del Historial"""
 def make_history_frame():
+    global id_card  
+    id_card=login_id_card_entry.get().strip()
     # Creando Frame
     history_frame = tk.Frame(window, bg="#F1F2F6")
     history_frame.name = "history"
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
-    title_label = tk.Label(               
+    title_label = tk.Label(
         history_frame,
         text="Historial",
         font=title_font,
@@ -691,6 +693,40 @@ def make_history_frame():
         justify="center",
     )
     title_label.pack(pady=10)
+    # Scrollbar
+    results_container = tk.Frame(history_frame, bg="#F1F2F6")
+    results_container.pack(fill="both", expand=True, padx=10, pady=10)
+    scrollbar = tk.Scrollbar(results_container)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    canvas = tk.Canvas(results_container, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0)
+    canvas.pack(side=tk.LEFT, fill="both", expand=True)
+    scrollbar.config(command=canvas.yview)
+    inner_frame = tk.Frame(canvas, bg="#F1F2F6")
+    canvas.create_window((0, 0), window=inner_frame, anchor="nw")
+    def onFrameConfigure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+    inner_frame.bind("<Configure>", onFrameConfigure)
+    # Conexión con la base de datos
+    try:
+        connection = make_connection()
+        if connection:
+            cursor = connection.cursor()
+            # Ejecutar el SP
+            cursor.execute("EXEC sp_mostrar_reservas_por_usuario ?", (id_card,))
+            reservas = cursor.fetchall()
+            if reservas:
+                for reserva in reservas:
+                    # Desempaquetar los valores
+                    idReserva, idBus, PrecioVip = reserva
+                    texto_reserva = f"Reserva ID: {idReserva} | Bus ID: {idBus} | Precio VIP: {PrecioVip}"
+                    tk.Label(inner_frame, text=texto_reserva, bg="#F1F2F6", anchor="w", justify="left").pack(fill="x", pady=2)
+            else:
+                tk.Label(inner_frame, text="No se encontraron reservas", bg="#F1F2F6").pack(pady=10)
+            connection.close()
+        else:
+            tk.Label(inner_frame, text="Error en la conexión a la base de datos", bg="#F1F2F6").pack(pady=10)
+    except Exception as e:
+        messagebox.showerror("Error", f"Error al obtener reservas: {e}")
     return history_frame
 
 """Frame de Pagar"""
@@ -701,7 +737,7 @@ def make_pay_frame():
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(               
         pay_frame,
-        text="Realizar el Pago",
+        text="Realizar Pago",
         font=title_font,
         bg="#F1F2F6",
         fg="black",
@@ -1143,11 +1179,13 @@ def show_frame(frame_to_show):
         hide_back_button()
         hide_history_button()
         hide_log_out_button()
+        hide_pay_button()
     else:
         action_bar.pack(side="top", fill="x")
         hide_back_button()
         hide_history_button()
         hide_log_out_button()
+        hide_pay_button()
         if hasattr(frame_to_show, "name"):
             if frame_to_show.name == "content":
                 show_log_out_button()
@@ -1168,7 +1206,7 @@ def show_frame(frame_to_show):
 """Funcion para Mostrar el Boton de Historial"""
 def show_history_button(target_frame=None):
     if history_button:
-        history_button.place(x=25, y=12)  
+        history_button.place(x=25, y=9)  
 
 """Funcion para ocultar el Boton de Historial"""
 def hide_history_button():
@@ -1187,7 +1225,7 @@ def on_history_button():
 """Funcion para Mostrar el Boton de Pagar"""
 def show_pay_button(target_frame=None):
     if pay_button:
-        pay_button.place()  
+        pay_button.place(x=340, y=12)  
 
 """Funcion para ocultar el Boton de Pagar"""
 def hide_pay_button():
@@ -1200,7 +1238,7 @@ def on_pay_button():
     # Ocultar frame actual
     if current_frame == results_frame:
         results_frame.pack_forget()
-    hide_pay_button(x=340, y=12)
+    hide_pay_button()
     show_frame(pay_frame)
 
 """Funcion para Mostrar el Boton para Regresar"""
@@ -1289,7 +1327,8 @@ def main():
     # Lista de Frames
     all_frames = [
         loading_frame, start_frame, register_frame,
-        login_frame, content_frame, results_frame, terms_frame, history_frame
+        login_frame, content_frame, results_frame, terms_frame,
+        history_frame, pay_frame
     ]
     # Iniciar el programa
     show_frame(loading_frame)
