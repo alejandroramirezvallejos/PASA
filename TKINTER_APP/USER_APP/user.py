@@ -266,10 +266,14 @@ def make_action_bar():
         back_photo = ImageTk.PhotoImage(back_image)
         global back_button
         def on_back_button():
-            global current_frame, results_frame, login_frame, register_frame, content_frame, start_frame, terms_frame
+            global current_frame, results_frame, history_frame, login_frame, register_frame, content_frame, start_frame, terms_frame
             # Verificar desde qué frame se está presionando el Boton de Regreso
             if current_frame == results_frame:
                 results_frame.pack_forget()
+                hide_back_button()
+                show_frame(content_frame)
+            elif current_frame == history_frame:
+                history_frame.pack_forget()
                 hide_back_button()
                 show_frame(content_frame)
             elif current_frame == login_frame:
@@ -307,7 +311,7 @@ def make_action_bar():
             image=history_photo,
             bg="#F1F2F6",
             borderwidth=0,
-            command=on_back_button
+            command=on_history_button
         )
         history_button.image = history_photo
         history_button.place(x=25, y=12) 
@@ -650,6 +654,24 @@ def make_login_frame():
     # Botón de Regreso
     show_back_button()
     return login_frame
+
+"""Frame del Historial"""
+def make_history_frame():
+    # Creando Frame
+    history_frame = tk.Frame(window, bg="#F1F2F6")
+    history_frame.name = "history"
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(               
+        history_frame,
+        text="Historial",
+        font=title_font,
+        bg="#F1F2F6",
+        fg="black",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(pady=10)
+    return history_frame
 
 """Frame de Area de contenido"""
 def make_content_frame():
@@ -1095,6 +1117,9 @@ def show_frame(frame_to_show):
             elif frame_to_show.name == "results":
                 show_back_button()
                 show_log_out_button()
+            elif frame_to_show.name == "history":
+                show_back_button()
+                show_log_out_button()
             elif frame_to_show.name in ["login", "register", "terms"]:
                 show_back_button()
     frame_to_show.pack(expand=True)
@@ -1116,7 +1141,7 @@ def on_history_button():
     if current_frame == content_frame:
         content_frame.pack_forget()
     hide_history_button()
-    show_frame(start_frame)
+    show_frame(history_frame)
 
 """Funcion para Mostrar el Boton para Regresar"""
 def show_back_button(target_frame=None):
@@ -1176,7 +1201,7 @@ def on_log_out_button():
 
 """Funcion Principal"""
 def main():
-    global window, all_frames, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame
+    global window, all_frames, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame
     # Configuración de la ventana
     set_appearance_mode("light")
     set_default_color_theme("blue")
@@ -1198,13 +1223,14 @@ def main():
     register_frame = make_register_frame()
     login_frame = make_login_frame()
     content_frame = make_content_frame()
+    history_frame = make_history_frame()
     results_frame = tk.Frame(window, bg="#F1F2F6") 
     results_frame.name = "results"
     terms_frame = make_terms_frame()
     # Lista de Frames
     all_frames = [
         loading_frame, start_frame, register_frame,
-        login_frame, content_frame, results_frame, terms_frame
+        login_frame, content_frame, results_frame, terms_frame, history_frame
     ]
     # Iniciar el programa
     show_frame(loading_frame)
