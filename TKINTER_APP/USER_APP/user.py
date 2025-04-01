@@ -13,6 +13,8 @@ from PIL import Image, ImageTk
 from customtkinter import CTkImage, CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
 window = None
 import queries as q
+id_card = None  
+all_frames = []
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
 
 """Configurando la Conexion con la Base de Datos"""
@@ -681,8 +683,8 @@ def make_login_frame():
 
 """Frame del Historial"""
 def make_history_frame():
-    global id_card  
-    id_card=login_id_card_entry.get().strip()
+    global id_card
+    global history_frame
     # Creando Frame
     history_frame = tk.Frame(window, bg="#F1F2F6")
     history_frame.name = "history"
@@ -1365,11 +1367,12 @@ def hide_history_button():
 
 """Funcion para ocultar Frame al apretar Boton de Historial"""
 def on_history_button():
-    global current_frame, content_frame
+    global current_frame, content_frame, history_frame
     # Ocultar frame actual
     if current_frame == content_frame:
         content_frame.pack_forget()
     hide_history_button()
+    history_frame = make_history_frame() 
     show_frame(history_frame)
 
 """Funcion para Mostrar el Boton de Pagar"""
@@ -1430,7 +1433,7 @@ def hide_log_out_button():
 
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
-    global current_frame, reservation_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
+    global current_frame, reservation_frame, history_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
     # Borrar datos al cerrar sesión
     if current_frame == content_frame or current_frame == results_frame:
         point_origin_input.set("Seleccionar")  
@@ -1444,6 +1447,8 @@ def on_log_out_button():
         content_frame.pack_forget()
     if current_frame == reservation_frame:
         reservation_frame.pack_forget()
+    if current_frame == history_frame:
+        history_frame.pack_forget()
     hide_log_out_button()
     show_frame(start_frame)
 
@@ -1524,12 +1529,12 @@ def main():
     register_frame = make_register_frame()
     login_frame = make_login_frame()
     content_frame = make_content_frame()
-    history_frame = make_history_frame()
     pay_frame = make_pay_frame()
     reservation_frame = make_reservation_confirmed()
     results_frame = tk.Frame(window, bg="#F1F2F6") 
     results_frame.name = "results"
     terms_frame = make_terms_frame()
+    history_frame = make_history_frame()
     # Lista de Frames
     all_frames = [
         loading_frame, start_frame, register_frame,
