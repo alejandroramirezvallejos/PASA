@@ -353,6 +353,10 @@ def make_action_bar():
                 content_frame.pack_forget()
                 hide_log_out_button()
                 show_frame(start_frame)
+            if content_frame == reservation_frame:
+                reservation_frame.pack_forget()
+                hide_log_out_button()
+                show_frame(start_frame)
         log_out_button = tk.Button(
             action_bar,
             image=log_out_photo,
@@ -372,7 +376,7 @@ def make_start_frame():
     # Creacion del Frame
     start_frame = tk.Frame(window, bg="#F1F2F6")
     start_frame.name = "start"
-    # Agregando Icono
+    # Agregando Logo
     try:
         pasa_iso = "../../ASSETS/color_positive.png"
         image = Image.open(pasa_iso)
@@ -716,7 +720,7 @@ def make_history_frame():
             reservas = cursor.fetchall()
             if reservas:
                 for reserva in reservas:
-                    # Desempaquetar los valores
+                    print(f"Reserva: {reserva}")  
                     idReserva, idBus, PrecioVip = reserva
                     texto_reserva = f"Reserva ID: {idReserva} | Bus ID: {idBus} | Precio VIP: {PrecioVip}"
                     tk.Label(inner_frame, text=texto_reserva, bg="#F1F2F6", anchor="w", justify="left").pack(fill="x", pady=2)
@@ -766,7 +770,8 @@ def make_pay_frame():
             border_width=2,
             corner_radius=32,
             image=ctk_image,  
-            compound="left"
+            compound="left",
+            command = on_payment_method_button
         )
         visa_button.image = ctk_image  
         visa_button.pack(side="left", padx=10, fill="x", expand=True)
@@ -793,7 +798,8 @@ def make_pay_frame():
             border_width=2,
             corner_radius=32,
             image=ctk_image_mastercard,  
-            compound="left"
+            compound="left",
+            command = on_payment_method_button
         )
         mastercard_button.image = ctk_image_mastercard 
         mastercard_button.pack(side="left", padx=10, fill="x", expand=True)
@@ -820,7 +826,8 @@ def make_pay_frame():
             border_width=2,
             corner_radius=32,
             image=ctk_image_paypal,  
-            compound="left"
+            compound="left",
+            command = on_payment_method_button
         )
         paypal_button.image = ctk_image_paypal  
         paypal_button.pack(side="left", padx=10, fill="x", expand=True)
@@ -847,7 +854,8 @@ def make_pay_frame():
             border_width=2,
             corner_radius=32,
             image=ctk_image_bitcoin,  
-            compound="left"
+            compound="left",
+            command = on_payment_method_button
         )
         bitcoin_button.image = ctk_image_bitcoin  
         bitcoin_button.pack(side="left", padx=10, fill="x", expand=True)
@@ -874,13 +882,63 @@ def make_pay_frame():
             border_width=2,
             corner_radius=32,
             image=ctk_image_yolo,  
-            compound="left"
+            compound="left",
+            command = on_payment_method_button
         )
         yolo_button.image = ctk_image_yolo 
         yolo_button.pack(side="left", padx=10, fill="x", expand=True)
     except Exception as e:
         print(f"Error al cargar la imagen de Yolo: {e}")
     return pay_frame
+
+"""Frame de Confirmacion de la Reserva"""
+def make_reservation_confirmed():
+    reservation_frame = tk.Frame(window, bg="#F1F2F6")
+    reservation_frame.name = "reservation"
+    # Agregando Logo
+    try:
+        pasa_iso = "../../ASSETS/color_positive.png"
+        image = Image.open(pasa_iso)
+        image = image.resize((170, 170), Image.LANCZOS)
+        photo = ImageTk.PhotoImage(image)
+        iso_label = tk.Label(reservation_frame, image=photo, bg="#F1F2F6")  
+        iso_label.image = photo  
+        iso_label.pack(expand=True)
+    except Exception as e:
+        print(f"Error al cargar el Logo: {e}")
+    # Titulo
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(               
+        reservation_frame,
+        text="¡Reservacion Confirmada!",
+        font=title_font,
+        bg="#F1F2F6",
+        fg="black",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(pady=10)
+    # Texto
+    confirmation_text_label = tk.Label(
+        reservation_frame,
+        text="Su reserva ha sido confirmada. \nLe agradecemos la confianza depositada en nuestro servicio.",
+        font=("Arial", 10),
+        bg="#F1F2F6",
+        fg="black",
+    )
+    confirmation_text_label.pack(pady=(30, 5), side="top", anchor="center")
+    # Boton de Volver a Casa
+    return_home_button = CTkButton(
+        reservation_frame,
+        text="Volver a Casa",
+        corner_radius=32,
+        fg_color="#7732FF",
+        text_color="white",
+        hover_color="#5A23CC",
+        command=on_return_home_button,
+    )
+    return_home_button.pack(pady=10)
+    return reservation_frame
 
 """Frame de Area de contenido"""
 def make_content_frame():
@@ -1106,43 +1164,7 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
     def resize_canvas(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
     content_frame.bind("<Configure>", resize_canvas)
-    def confirm_booking():
-        confirm_window = tk.Toplevel(window)
-        confirm_window.title("Confirmación")
-        confirm_window.geometry("300x150")
-        confirm_window.configure(bg="#F1F2F6")
-        confirm_window.geometry("+%d+%d" % (
-            window.winfo_x() + window.winfo_width()/2 - 150,
-            window.winfo_y() + window.winfo_height()/2 - 75
-        ))
-        tk.Label(
-            confirm_window,
-            text="¡Reserva realizada con éxito!",
-            bg="#F1F2F6",
-            font=("Canva Sans", 12, "bold")
-        ).pack(pady=20) 
-        try:
-            conexion = make_connection()
-            cursor=conexion.cursor()
-            for bus in selected_buses:
-                for i in range(int(passengers)):
-                    if(passenger_class=="Economico"):
-                        cursor.execute(q.INSERTAR_ECONOMICO.format(obtain_pk(cursor,"reserva"),obtain_userid(cursor),bus))
-                        conexion.commit()
-                    elif(passenger_class=="VIP"):
-                        cursor.execute(q.INSERTAR_VIP.format(obtain_pk(cursor,"reserva"),obtain_userid(cursor),bus))
-                        conexion.commit()
-            conexion.close()
-            confirm_window.after(2000, confirm_window.destroy)
-            results_frame.after(2100, lambda: on_log_out_button())  
-        except Exception as e:
-            tk.Label(
-                confirm_window,
-                text=f"Error: {str(e)}",
-                bg="#F1F2F6",
-                fg="red",
-                font=("Canva Sans", 10)
-            ).pack(pady=10)
+    # Funcion de control de seleccion de buses
     def handle_bus_selection(bus_id, button):
         if button.cget("text") == "Seleccionar":
             if len(selected_buses) < 2:
@@ -1153,25 +1175,15 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
                     hover_color="gray",
                     state="disabled"
                 )
-                commit_button.configure(state="normal")
+                pay_button.configure(state="normal")
         if len(selected_buses) >= 2:
             for child in content_frame.winfo_children():
                 if isinstance(child, tk.Frame):
                     for widget in child.winfo_children():
                         if isinstance(widget, CTkButton) and widget.cget("text") == "Seleccionar":
                             widget.configure(state="disabled")
-    # Botón para confirmar Selección
-    commit_button = CTkButton(
-        content_frame,
-        text="Confirmar Seleccion",
-        corner_radius=32,
-        fg_color="#0875C6",
-        hover_color="#5A23CC",
-        state="disabled",
-        command=confirm_booking
-    )
-    commit_button.grid(row=0, column=0, pady=(0, 30), padx=(70, 0))
-    commit_button.place_forget()
+    pay_button.pack(pady=(0, 30))
+    pay_button.pack(padx=(70, 0))
     # Mostrar Buses Disponibles de Partida
     if not buses:
         no_results_label = tk.Label(
@@ -1182,12 +1194,12 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
             wraplength=350,
             justify="center"
         )
-        commit_button.pack(pady=(0, 30))
-        commit_button.pack(padx=(70, 0))
+        pay_button.pack(pady=(0, 30))
+        pay_button.pack(padx=(70, 0))
         no_results_label.pack(expand=True)
     else:
-        commit_button.pack(pady=(0, 30))
-        commit_button.pack(padx=(70, 0))
+        pay_button.pack(pady=(0, 30))
+        pay_button.pack(padx=(70, 0))
         title_font = font.Font(family="Canva Sans", size=15, weight="bold")
         title_label = tk.Label(
             content_frame,
@@ -1336,6 +1348,9 @@ def show_frame(frame_to_show):
                 show_log_out_button()
             elif frame_to_show.name in ["login", "register", "terms"]:
                 show_back_button()
+            elif frame_to_show.name == "reservation":
+                show_log_out_button()
+
     frame_to_show.pack(expand=True)
 
 """Funcion para Mostrar el Boton de Historial"""
@@ -1369,12 +1384,14 @@ def hide_pay_button():
 
 """Funcion para ocultar Frame al apretar Boton de Pagar"""
 def on_pay_button():
-    global current_frame, results_frame, pay_frame
-    # Ocultar frame actual
-    if current_frame == results_frame:
-        results_frame.pack_forget()
-    hide_pay_button()
-    show_frame(pay_frame)
+    global current_frame, results_frame, pay_frame, selected_buses, passengers_entry, passenger_class_input
+    if selected_buses and passengers_entry.get().isdigit() and passenger_class_input.get() != "Seleccionar":
+        if current_frame == results_frame:
+            results_frame.pack_forget()
+            hide_pay_button()
+            show_frame(pay_frame)
+    else:
+        messagebox.showerror("Error", "Por favor selecciona un bus")
 
 """Funcion para Mostrar el Boton para Regresar"""
 def show_back_button(target_frame=None):
@@ -1413,7 +1430,7 @@ def hide_log_out_button():
 
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
-    global current_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
+    global current_frame, reservation_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
     # Borrar datos al cerrar sesión
     if current_frame == content_frame or current_frame == results_frame:
         point_origin_input.set("Seleccionar")  
@@ -1425,14 +1442,68 @@ def on_log_out_button():
     # Ocultar frame actual
     if current_frame == content_frame:
         content_frame.pack_forget()
+    if current_frame == reservation_frame:
+        reservation_frame.pack_forget()
     hide_log_out_button()
     show_frame(start_frame)
-        
+
+"""Funcion para ocultar Frame al apretar Boton de Metodo de Pago"""
+def on_payment_method_button():
+    global current_frame, pay_frame
+    # Ocultar frame actual
+    if current_frame == pay_frame:
+        pay_frame.pack_forget()
+    on_paid_method_button()
+    hide_history_button()
+    show_frame(reservation_frame)
+
+"""Funcion para limpiar datos al presionar el boton de regresar a casa"""
+def on_return_home_button():
+    global current_frame, reservation_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
+    # Borrar datos 
+    if current_frame == reservation_frame:
+        point_origin_input.set("Seleccionar")  
+        point_destination_input.set("Seleccionar")
+        departure_date_button.configure(text="Seleccionar") 
+        return_date_button.configure(text="Seleccionar")
+        passengers_entry.delete(0, tk.END) 
+        passenger_class_input.set("Seleccionar")  
+    # Ocultar frame actual
+    if current_frame == reservation_frame:
+        reservation_frame.pack_forget()
+    show_frame(content_frame)
+
+"""Confirmar seleccion de buses y conectar con la base de datos"""
+def on_paid_method_button():
+    global selected_buses, passengers_entry, passenger_class_input
+    try:
+        connection = make_connection()
+        if not connection:
+            print("La conexión falló!")
+            return
+        cursor = connection.cursor()
+        for bus in selected_buses:
+            for i in range(int(passengers_entry.get())):
+                if passenger_class_input.get() == "Economico":
+                    cursor.execute(q.INSERTAR_ECONOMICO.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
+                elif passenger_class_input.get() == "VIP":
+                    cursor.execute(q.INSERTAR_VIP.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
+        # Retrieve user id before closing the connection
+        user_id = obtain_userid(cursor)
+        connection.commit()
+        connection.close()
+        print(f"Insertando reserva para el usuario {user_id} en el bus {bus} con la clase {passenger_class_input.get()}")
+        messagebox.showinfo("Confirmación", "Reserva realizada con éxito!")
+        show_frame(reservation_frame)
+    except Exception as e:
+        print(f"Error: {e}")
+        messagebox.showerror("Error", f"Error al realizar la reserva: {e}")
+
 # ----------------------------------------------------------------MAIN-----------------------------------------------------------------------------------------------------------------
 
 """Funcion Principal"""
 def main():
-    global window, all_frames, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame, pay_frame
+    global window, all_frames, reservation_frame, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame, pay_frame
     # Configuración de la ventana
     set_appearance_mode("light")
     set_default_color_theme("blue")
@@ -1456,6 +1527,7 @@ def main():
     content_frame = make_content_frame()
     history_frame = make_history_frame()
     pay_frame = make_pay_frame()
+    reservation_frame = make_reservation_confirmed()
     results_frame = tk.Frame(window, bg="#F1F2F6") 
     results_frame.name = "results"
     terms_frame = make_terms_frame()
@@ -1463,7 +1535,7 @@ def main():
     all_frames = [
         loading_frame, start_frame, register_frame,
         login_frame, content_frame, results_frame, terms_frame,
-        history_frame, pay_frame
+        history_frame, pay_frame, reservation_frame
     ]
     # Iniciar el programa
     show_frame(loading_frame)
