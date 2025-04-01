@@ -1441,8 +1441,13 @@ def obtenerprecioporbus(inicio,fin,vip):
         cursor=conexion.execute(q.OBTENER_PRECIO_BUS.format(inicio,fin,1))
     else:
          cursor=conexion.execute(q.OBTENER_PRECIO_BUS.format(inicio,fin,0))
-    
-    return  cursor.fetchone()[0]
+    resultado =cursor.fetchone()
+    print(resultado)
+    if(resultado!=None):
+        
+        return resultado[0]
+    else:
+        return ""
 
 
 
