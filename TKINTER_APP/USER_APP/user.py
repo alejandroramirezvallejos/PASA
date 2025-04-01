@@ -19,9 +19,9 @@ all_frames = []
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'X'  
+server = 'JOSUEPC'  
 database = 'pasa'
-username = 'X\\user' 
+username = 'JOSUEPC\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -1212,6 +1212,7 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
             wraplength=350,
         )
         title_label.pack(pady=50)
+        precio=obtenerprecioporbus(origin,destination,passenger_class)
         for idx, bus in enumerate(buses):
             bus_id, fecha_salida, asientos_ocupados = bus
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
@@ -1222,6 +1223,7 @@ Punto de Origen: {origin}
 Punto de Destino: {destination}
 Fecha de Salida: {fecha_salida}
 Asientos Disponibles: {60 - asientos_ocupados}
+Precio : {precio}
             """
             label = tk.Label(
                 block_frame,
@@ -1277,16 +1279,18 @@ Asientos Disponibles: {60 - asientos_ocupados}
             justify="center",
         )
         title_label_2.pack(pady=50)
+        precio=obtenerprecioporbus(origin,destination,passenger_class)
         for idx, bus in enumerate(buses_2):
             bus_id, fecha_salida, asientos_ocupados = bus
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
             block_frame.pack(pady=(10, 0), fill="x")
             detalles = f"""
 Bus ID: {bus_id}
-Punto de Origen: {origin}
-Punto de Destino: {destination}
+Punto de Origen: {destination}
+Punto de Destino: {origin}
 Fecha de Salida: {fecha_salida}
 Asientos Disponibles: {60 - asientos_ocupados}
+Precio : {precio}
             """
             label = tk.Label(
                 block_frame,
@@ -1431,6 +1435,18 @@ def hide_log_out_button():
     if log_out_button:
         log_out_button.place_forget()
 
+"""FUNCION para obtener el precio de un bus"""
+def obtenerprecioporbus(inicio,fin,vip):
+    conexion=make_connection()
+    if(vip=="Economico"):
+        cursor=conexion.execute(q.OBTENER_PRECIO_BUS.format(inicio,fin,1))
+    else:
+         cursor=conexion.execute(q.OBTENER_PRECIO_BUS.format(inicio,fin,0))
+    
+    return  cursor.fetchone()[0]
+
+
+
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
     global current_frame, reservation_frame, history_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
@@ -1513,7 +1529,7 @@ def main():
     set_default_color_theme("blue")
     window = tk.Tk()
     window.title("Pasa")
-    window.geometry("380x750+120+10")
+    window.geometry("380x650+120+10")
     window.resizable(False, False)
     window.configure(bg="#7732FF")
     # Agregar Icono
