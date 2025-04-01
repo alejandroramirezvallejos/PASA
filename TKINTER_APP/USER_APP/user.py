@@ -1488,7 +1488,6 @@ def on_paid_method_button():
                     cursor.execute(q.INSERTAR_ECONOMICO.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
                 elif passenger_class_input.get() == "VIP":
                     cursor.execute(q.INSERTAR_VIP.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
-        # Retrieve user id before closing the connection
         user_id = obtain_userid(cursor)
         connection.commit()
         connection.close()
