@@ -19,9 +19,9 @@ all_frames = []
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'JOSUEPC'  
+server = 'X'  
 database = 'pasa'
-username = 'JOSUEPC\\user' 
+username = 'X\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -723,8 +723,7 @@ def make_history_frame():
             if reservas:
                 for reserva in reservas:
                     print(f"Reserva: {reserva}")  
-                    idReserva, idBus, PrecioVip = reserva
-                    texto_reserva = f"Reserva ID: {idReserva} | Bus ID: {idBus} | Precio VIP: {PrecioVip}"
+                    texto_reserva = f"Reserva ID: {reserva[0]} | ida: {reserva[1]} |  vuelta: {reserva[2]} | \nFecha de vuelta: {reserva[3]}| Costo: {reserva[4]}"
                     tk.Label(inner_frame, text=texto_reserva, bg="#F1F2F6", anchor="w", justify="left").pack(fill="x", pady=2)
             else:
                 tk.Label(inner_frame, text="No se encontraron reservas", bg="#F1F2F6").pack(pady=10)
