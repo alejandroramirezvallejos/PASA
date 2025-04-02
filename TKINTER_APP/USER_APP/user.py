@@ -19,9 +19,9 @@ all_frames = []
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'X'  
+server = 'JOSUEPC'  
 database = 'pasa'
-username = 'X\\user' 
+username = 'JOSUEPC\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
