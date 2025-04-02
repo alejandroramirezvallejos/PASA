@@ -6,9 +6,9 @@ from tkinter import messagebox
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'JOSUEPC'  
+server = 'X'  
 database = 'pasa'
-username = 'JOSUEPC\\user'
+username = 'X\\user'
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
