@@ -34,9 +34,6 @@ all_frames = []
 entries = []
 selected_option = ""
 
-
-
-
 # ----------------------------------------------------ENTRADA Y SALIDA DE DATOS-----------------------------------------------------------------------------------------------
 
 """Guardar Datos al Crear una Cuenta"""
@@ -128,7 +125,7 @@ def login():
         return
     try:
         cursor = connection.cursor()
-        cursor.execute(f"sp_obtener_usuario '{id_card}', '{password}'")
+        cursor.execute(f"sp_obtener_admin '{id_card}', '{password}'")
         usuario = cursor.fetchone()
         # Cambiar al fetch_frame si todo sale bien
         if usuario:
@@ -1191,6 +1188,11 @@ def main():
     window.geometry("380x650+120+10")
     window.resizable(False, False)
     window.configure(bg="#09090A")
+    # Agregar Icono
+    try:
+        window.iconbitmap("../../ASSETS/icon.ico")
+    except Exception:
+        print("Error al cargar el Icono")
     # Crear barras y frames
     action_bar = make_action_bar()
     action_bar.pack_forget()

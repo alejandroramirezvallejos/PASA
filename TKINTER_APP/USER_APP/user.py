@@ -15,6 +15,10 @@ window = None
 import queries as q
 id_card = None  
 all_frames = []
+sum_cost = 0
+num_passengers = 0
+total_cost_var = None
+
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
 
 """Configurando la Conexion con la Base de Datos"""
@@ -171,6 +175,7 @@ def login():
 """Extraer Datos para Buscar buses"""
 def search_buses():
     global point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
+    global num_passengers
     origin = point_origin_input.get()
     destination = point_destination_input.get()
     departure_date = departure_date_button.cget("text")
@@ -196,6 +201,7 @@ def search_buses():
     if passenger_class == "Seleccionar":
         messagebox.showerror("Error", "Debes seleccionar la Clase de los Pasajeros")
         return
+    num_passengers = int(passengers)
     # Conexión con la Base de Datos
     connection = make_connection()
     if not connection:
@@ -736,13 +742,14 @@ def make_history_frame():
 
 """Frame de Pagar"""
 def make_pay_frame():
+    global sum_cost, total_cost_var
     pay_frame = tk.Frame(window, bg="#F1F2F6")
     pay_frame.name = "pay"
     # Titulo
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(               
         pay_frame,
-        text="Elige tu metodo de pago",
+        text="Realiza el pago",
         font=title_font,
         bg="#F1F2F6",
         fg="black",
@@ -750,6 +757,15 @@ def make_pay_frame():
         justify="center",
     )
     title_label.pack(pady=10)
+    # Texto de Costo total
+    terms_label = tk.Label(
+        pay_frame,
+        textvariable=total_cost_var,
+        font=("Arial", 10),
+        bg="#F1F2F6",
+        fg="black",
+    )
+    terms_label.pack(pady=(30, 5), side="top", anchor="center")
     # Boton de Visa
     try:
         visa_button_frame = tk.Frame(pay_frame, bg="#F1F2F6")
@@ -1166,23 +1182,23 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
         canvas.configure(scrollregion=canvas.bbox("all"))
     content_frame.bind("<Configure>", resize_canvas)
     # Funcion de control de seleccion de buses
-    def handle_bus_selection(bus_id, button):
-        if button.cget("text") == "Seleccionar":
+    def handle_bus_selection(bus_id, button, bus_cost):
+        global sum_cost, selected_buses, total_cost_var, num_passengers
+        # Si el bus no está seleccionado, lo seleccionamos
+        if bus_id not in selected_buses:
+            # Verifica si se puede seleccionar
             if len(selected_buses) < 2:
                 selected_buses.append(bus_id)
-                button.configure(
-                    text="Seleccionado",
-                    fg_color="gray",
-                    hover_color="gray",
-                    state="disabled"
-                )
-                pay_button.configure(state="normal")
-        if len(selected_buses) >= 2:
-            for child in content_frame.winfo_children():
-                if isinstance(child, tk.Frame):
-                    for widget in child.winfo_children():
-                        if isinstance(widget, CTkButton) and widget.cget("text") == "Seleccionar":
-                            widget.configure(state="disabled")
+                sum_cost = sum_cost + num_passengers*bus_cost
+                button.configure(text="Seleccionado", fg_color="gray", hover_color="gray")
+            else:
+                messagebox.showinfo("Información", "Solo puedes seleccionar hasta 2 buses. \nUno de ida y otro de vuelta")
+        else:
+            # Si el bus ya está seleccionado, se deselecciona
+            selected_buses.remove(bus_id)
+            sum_cost = sum_cost - num_passengers*bus_cost
+            button.configure(text="Seleccionar", fg_color="#7732FF", hover_color="#5A23CC")
+        total_cost_var.set(f"El costo total a pagar es: {sum_cost}")
     pay_button.pack(pady=(0, 30))
     pay_button.pack(padx=(70, 0))
     # Mostrar Buses Disponibles de Partida
@@ -1239,10 +1255,10 @@ Precio : {precio}
                 corner_radius=32,
                 fg_color="#7732FF",
                 hover_color="#5A23CC",
-                command=lambda bid=bus_id, btn=None: handle_bus_selection(bid, btn)
+                command=lambda bid=bus_id, btn=None, cost=precio: handle_bus_selection(bid, btn, cost)
             )
             select_button.pack(pady=(10, 0))
-            select_button.configure(command=lambda bid=bus_id, btn=select_button: handle_bus_selection(bid, btn))
+            select_button.configure(command=lambda bid=bus_id, btn=select_button, cost = precio: handle_bus_selection(bid, btn, cost))
             if idx < len(buses) - 1:
                 separator = tk.Frame(content_frame, bg="#7732FF", height=2, width=300)
                 separator.pack(pady=(10, 10))
@@ -1306,10 +1322,10 @@ Precio : {precio}
                 corner_radius=32,
                 fg_color="#7732FF",
                 hover_color="#5A23CC",
-                command=lambda bid=bus_id, btn=None: handle_bus_selection(bid, btn)
+                command=lambda bid=bus_id, btn=None, cost = precio: handle_bus_selection(bid, btn, cost)
             )
             select_button.pack(pady=(10, 0))
-            select_button.configure(command=lambda bid=bus_id, btn=select_button: handle_bus_selection(bid, btn))
+            select_button.configure(command=lambda bid=bus_id, btn=select_button, cost = precio: handle_bus_selection(bid, btn, cost))
             if idx < len(buses_2) - 1:
                 separator = tk.Frame(content_frame, bg="#7732FF", height=2, width=300)
                 separator.pack(pady=(10, 10))
@@ -1321,7 +1337,8 @@ Precio : {precio}
 """Funcion para Mostrar un Frame"""
 def show_frame(frame_to_show):
     global all_frames, action_bar, back_button, current_frame
-    current_frame = frame_to_show  
+    current_frame = frame_to_show 
+    global sum_cost, num_passengers
     # Ocultar todos los frames
     for frame in all_frames:
         frame.pack_forget()
@@ -1332,6 +1349,8 @@ def show_frame(frame_to_show):
         hide_history_button()
         hide_log_out_button()
         hide_pay_button()
+        sum_cost = 0
+        num_passengers = 0
     else:
         action_bar.pack(side="top", fill="x")
         hide_back_button()
@@ -1342,6 +1361,8 @@ def show_frame(frame_to_show):
             if frame_to_show.name == "content":
                 show_log_out_button()
                 show_history_button()
+                sum_cost = 0
+                num_passengers = 0
             elif frame_to_show.name == "results":
                 show_back_button()
                 show_pay_button()
@@ -1434,7 +1455,7 @@ def hide_log_out_button():
     if log_out_button:
         log_out_button.place_forget()
 
-"""FUNCION para obtener el precio de un bus"""
+"""Funcion para obtener el precio de un bus"""
 def obtenerprecioporbus(inicio,fin,vip):
     conexion=make_connection()
     if(vip=="Economico"):
@@ -1448,8 +1469,6 @@ def obtenerprecioporbus(inicio,fin,vip):
         return resultado[0]
     else:
         return ""
-
-
 
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
@@ -1500,7 +1519,10 @@ def on_return_home_button():
 
 """Confirmar seleccion de buses y conectar con la base de datos"""
 def on_paid_method_button():
-    global selected_buses, passengers_entry, passenger_class_input
+    global selected_buses, passengers_entry, passenger_class_input, sum_cost, num_passengers
+    global sum_cost, num_passengers
+    sum_cost = 0
+    num_passengers = 0
     try:
         connection = make_connection()
         if not connection:
@@ -1523,15 +1545,16 @@ def on_paid_method_button():
         print(f"Error: {e}")
         messagebox.showerror("Error", f"Error al realizar la reserva: {e}")
 
-# ----------------------------------------------------------------MAIN-----------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------MAIN-----------------------------------------------------------------------------------------------------------------------------------------------
 
 """Funcion Principal"""
 def main():
-    global window, all_frames, reservation_frame, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame, pay_frame
+    global window, all_frames, reservation_frame, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame, pay_frame, total_cost_var
     # Configuración de la ventana
     set_appearance_mode("light")
     set_default_color_theme("blue")
     window = tk.Tk()
+    total_cost_var = tk.StringVar(window, value="El costo total a pagar es: 0")
     window.title("Pasa")
     window.geometry("380x650+120+10")
     window.resizable(False, False)
