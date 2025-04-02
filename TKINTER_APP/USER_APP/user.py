@@ -723,8 +723,7 @@ def make_history_frame():
             if reservas:
                 for reserva in reservas:
                     print(f"Reserva: {reserva}")  
-                    idReserva, idBus, PrecioVip = reserva
-                    texto_reserva = f"Reserva ID: {idReserva} | Bus ID: {idBus} | Precio VIP: {PrecioVip}"
+                    texto_reserva = f"Reserva ID: {reserva[0]} | ida: {reserva[1]} |  vuelta: {reserva[2]} | \nFecha de vuelta: {reserva[3]}| Costo: {reserva[4]}"
                     tk.Label(inner_frame, text=texto_reserva, bg="#F1F2F6", anchor="w", justify="left").pack(fill="x", pady=2)
             else:
                 tk.Label(inner_frame, text="No se encontraron reservas", bg="#F1F2F6").pack(pady=10)
@@ -1430,6 +1429,21 @@ def show_log_out_button(target_frame=None):
 def hide_log_out_button():
     if log_out_button:
         log_out_button.place_forget()
+
+"""FUNCION para obtener el precio de un bus"""
+def obtenerprecioporbus(inicio,fin,vip):
+    conexion=make_connection()
+    if(vip=="Economico"):
+        cursor=conexion.execute(q.OBTENER_PRECIO_BUS.format(inicio,fin,1))
+    else:
+         cursor=conexion.execute(q.OBTENER_PRECIO_BUS.format(inicio,fin,0))
+    resultado =cursor.fetchone()
+    print(resultado)
+    if(resultado!=None):
+        
+        return resultado[0]
+    else:
+        return ""
 
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
