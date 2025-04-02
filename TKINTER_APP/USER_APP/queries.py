@@ -27,6 +27,7 @@ INSERTAR_VIP="""INSERT INTO reserva (reserva_id, usuario_id,bus_id,vip)
                                         VALUES ({}, {},{} ,1);
                         """
 
-OBTENER_PRECIO_BUS="EXEC sp_totaldeventasporruta '{}','{}',{}"
+
+
 
 

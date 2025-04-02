@@ -1211,7 +1211,6 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
             wraplength=350,
         )
         title_label.pack(pady=50)
-        precio=obtenerprecioporbus(origin,destination,passenger_class)
         for idx, bus in enumerate(buses):
             bus_id, fecha_salida, asientos_ocupados = bus
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
@@ -1222,7 +1221,6 @@ Punto de Origen: {origin}
 Punto de Destino: {destination}
 Fecha de Salida: {fecha_salida}
 Asientos Disponibles: {60 - asientos_ocupados}
-Precio : {precio}
             """
             label = tk.Label(
                 block_frame,
@@ -1278,18 +1276,16 @@ Precio : {precio}
             justify="center",
         )
         title_label_2.pack(pady=50)
-        precio=obtenerprecioporbus(origin,destination,passenger_class)
         for idx, bus in enumerate(buses_2):
             bus_id, fecha_salida, asientos_ocupados = bus
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
             block_frame.pack(pady=(10, 0), fill="x")
             detalles = f"""
 Bus ID: {bus_id}
-Punto de Origen: {destination}
-Punto de Destino: {origin}
+Punto de Origen: {origin}
+Punto de Destino: {destination}
 Fecha de Salida: {fecha_salida}
 Asientos Disponibles: {60 - asientos_ocupados}
-Precio : {precio}
             """
             label = tk.Label(
                 block_frame,
@@ -1449,8 +1445,6 @@ def obtenerprecioporbus(inicio,fin,vip):
     else:
         return ""
 
-
-
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
     global current_frame, reservation_frame, history_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
@@ -1533,7 +1527,7 @@ def main():
     set_default_color_theme("blue")
     window = tk.Tk()
     window.title("Pasa")
-    window.geometry("380x650+120+10")
+    window.geometry("380x750+120+10")
     window.resizable(False, False)
     window.configure(bg="#7732FF")
     # Agregar Icono
