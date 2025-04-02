@@ -688,6 +688,7 @@ def make_history_frame():
     # Creando Frame
     history_frame = tk.Frame(window, bg="#F1F2F6")
     history_frame.name = "history"
+    history_frame.pack(side="top", anchor="n", fill="x", expand=True)
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
         history_frame,
@@ -698,13 +699,13 @@ def make_history_frame():
         wraplength=350,
         justify="center",
     )
-    title_label.pack(pady=10)
+    title_label.pack(side="top", anchor="center", pady=10)
     # Scrollbar
     results_container = tk.Frame(history_frame, bg="#F1F2F6")
     results_container.pack(fill="both", expand=True, padx=10, pady=10)
     scrollbar = tk.Scrollbar(results_container)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    canvas = tk.Canvas(results_container, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0)
+    canvas = tk.Canvas(results_container, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0, height=500)
     canvas.pack(side=tk.LEFT, fill="both", expand=True)
     scrollbar.config(command=canvas.yview)
     inner_frame = tk.Frame(canvas, bg="#F1F2F6")
