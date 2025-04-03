@@ -25,9 +25,9 @@ selected_return = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'X'  
+server = 'JOSUEPC'  
 database = 'pasa'
-username = 'X\\user' 
+username = 'JOSUEPC\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -938,6 +938,40 @@ def make_reservation_confirmed():
         justify="center",
     )
     title_label.pack(pady=10)
+    #factura
+     # Factura
+    conexion =make_connection()
+    cursor=conexion.cursor()
+    cursor.execute(f"EXEC [dbo].[sp_obtener_usuario_nombreapellido] '{id_card}'")
+    print(id_card)
+    resultado=cursor.fetchone()
+
+    if resultado is not None:
+    # Safely extract the first and last name from the fetched row
+        name = resultado[0]+ " " +resultado[1]
+        if selected_return != None and selected_departure!=None:
+            label_text = f"El usuario: {name} \n el id del los buses es: {selected_departure} y  {selected_return} \n el costo total pagado es {sum_cost}"
+        elif selected_return!=None and selected_departure==None:
+            label_text = f"El usuario: {name} \n el id del  bus es: {selected_return} \n el costo total pagado es {sum_cost}"
+        elif selected_return==None and selected_departure!=None:
+            label_text = f"El usuario: {name} \n el id del  bus es: {selected_departure} \n el costo total pagado es {sum_cost}"
+        else:
+            label_text="Error al obtener los buses"
+
+    else:
+    # Handle the case where no user data is found
+        label_text = "No se encontró información del usuario."
+
+    factura_text_label = tk.Label(
+        reservation_frame,
+        text=f"{label_text}",
+        font=("Arial", 10),
+        bg="#F1F2F6",
+        fg="black"
+    )
+    factura_text_label.pack(pady=10, side="top", anchor="center")
+   
+   
     # Texto
     confirmation_text_label = tk.Label(
         reservation_frame,
@@ -1529,7 +1563,7 @@ def on_return_home_button():
 
 """Confirmar seleccion de buses y conectar con la base de datos"""
 def on_paid_method_button():
-    global selected_departure, selected_return, passengers_entry, passenger_class_input, sum_cost, num_passengers
+    global selected_departure, selected_return, passengers_entry, passenger_class_input, sum_cost, num_passengers,reservation_frame
     try:
         connection = make_connection()
         if not connection:
@@ -1548,6 +1582,7 @@ def on_paid_method_button():
         connection.close()
         print(f"Insertando reserva para el usuario {user_id} en el bus {bus} con la clase {passenger_class_input.get()}")
         print("Reserva realizada con exito!")
+        reservation_frame=make_reservation_confirmed()
         show_frame(reservation_frame)
     except Exception as e:
         print(f"Error: {e}")
