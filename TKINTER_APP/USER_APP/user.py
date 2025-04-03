@@ -20,14 +20,16 @@ num_passengers = 0
 total_cost_var = None
 selected_departure = None
 selected_return = None
+passenger_class_user = None
+billing_payment_method = None
 
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'JOSUEPC'  
+server = 'X'  
 database = 'pasa'
-username = 'JOSUEPC\\user' 
+username = 'X\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -716,12 +718,15 @@ def make_history_frame():
     canvas = tk.Canvas(results_container, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0, height=500)
     canvas.pack(side=tk.LEFT, fill="both", expand=True)
     scrollbar.config(command=canvas.yview)
+    # Creacion del Frame de texto de las Reservas
     inner_frame = tk.Frame(canvas, bg="#F1F2F6")
     canvas.create_window((0, 0), window=inner_frame, anchor="nw")
+    window_id = canvas.create_window((0, 0), window=inner_frame, anchor="nw")
     def onFrameConfigure(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
+        canvas.itemconfig(window_id, width=canvas.winfo_width())
     inner_frame.bind("<Configure>", onFrameConfigure)
-    # Conexión con la base de datos
+    # Conexion con la base de datos
     try:
         connection = make_connection()
         if connection:
@@ -732,20 +737,20 @@ def make_history_frame():
             if reservas:
                 for reserva in reservas:
                     print(f"Reserva: {reserva}")  
-                    texto_reserva = f"Reserva ID: {reserva[0]} | ida: {reserva[1]} |  vuelta: {reserva[2]} | \nFecha de vuelta: {reserva[3]}| Costo: {reserva[4]}"
-                    tk.Label(inner_frame, text=texto_reserva, bg="#F1F2F6", anchor="w", justify="left").pack(fill="x", pady=2)
+                    texto_reserva = f"Reserva ID: {reserva[0]}\nLugar de Partida: {reserva[1]}\nLugar de Destino: {reserva[2]}\nFecha de Embarque: {reserva[3]}\nCosto Unitario: {reserva[4]}"
+                    tk.Label(inner_frame, text=texto_reserva, bg="#F1F2F6", anchor="center", justify="center").pack(fill="x", pady=2)
             else:
-                tk.Label(inner_frame, text="No se encontraron reservas", bg="#F1F2F6").pack(pady=10)
+                tk.Label(inner_frame, text="No se encontraron reservas", bg="#F1F2F6").pack(pady=10, side="top", anchor="center")
             connection.close()
         else:
-            tk.Label(inner_frame, text="Error en la conexión a la base de datos", bg="#F1F2F6").pack(pady=10)
+            tk.Label(inner_frame, text="Error en la conexion a la base de datos", bg="#F1F2F6").pack(pady=10, side="top", anchor="center")
     except Exception as e:
         messagebox.showerror("Error", f"Error al obtener reservas: {e}")
     return history_frame
 
 """Frame de Pagar"""
 def make_pay_frame():
-    global sum_cost, total_cost_var
+    global sum_cost, total_cost_var, billing_payment_method
     pay_frame = tk.Frame(window, bg="#F1F2F6")
     pay_frame.name = "pay"
     # Titulo
@@ -795,6 +800,7 @@ def make_pay_frame():
         )
         visa_button.image = ctk_image  
         visa_button.pack(side="left", padx=10, fill="x", expand=True)
+        billing_payment_method = "Visa"
     except Exception as e:
         print(f"Error al cargar la imagen de Visa: {e}")
     # Boton de Mastercard
@@ -823,6 +829,7 @@ def make_pay_frame():
         )
         mastercard_button.image = ctk_image_mastercard 
         mastercard_button.pack(side="left", padx=10, fill="x", expand=True)
+        billing_payment_method = "Mastercard"
     except Exception as e:
         print(f"Error al cargar la imagen de Mastercard: {e}")
     # Boton de PayPal
@@ -851,6 +858,7 @@ def make_pay_frame():
         )
         paypal_button.image = ctk_image_paypal  
         paypal_button.pack(side="left", padx=10, fill="x", expand=True)
+        billing_payment_method = "PayPal"
     except Exception as e:
         print(f"Error al cargar la imagen de PayPal: {e}")
     # Boton de Bitcoin
@@ -879,6 +887,7 @@ def make_pay_frame():
         )
         bitcoin_button.image = ctk_image_bitcoin  
         bitcoin_button.pack(side="left", padx=10, fill="x", expand=True)
+        billing_payment_method = "Bitcoin"
     except Exception as e:
         print(f"Error al cargar la imagen de Bitcoin: {e}")
     # Boton de Yolo
@@ -907,12 +916,14 @@ def make_pay_frame():
         )
         yolo_button.image = ctk_image_yolo 
         yolo_button.pack(side="left", padx=10, fill="x", expand=True)
+        billing_payment_method = "Yolo"
     except Exception as e:
         print(f"Error al cargar la imagen de Yolo: {e}")
     return pay_frame
 
 """Frame de Confirmacion de la Reserva"""
 def make_reservation_confirmed():
+    global num_passengers, passenger_class_user 
     reservation_frame = tk.Frame(window, bg="#F1F2F6")
     reservation_frame.name = "reservation"
     # Agregando Logo
@@ -930,7 +941,7 @@ def make_reservation_confirmed():
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(               
         reservation_frame,
-        text="¡Reservacion Confirmada!",
+        text="¡Reserva Confirmada!",
         font=title_font,
         bg="#F1F2F6",
         fg="black",
@@ -938,30 +949,26 @@ def make_reservation_confirmed():
         justify="center",
     )
     title_label.pack(pady=10)
-    #factura
-     # Factura
+    # Factura
     conexion =make_connection()
     cursor=conexion.cursor()
     cursor.execute(f"EXEC [dbo].[sp_obtener_usuario_nombreapellido] '{id_card}'")
     print(id_card)
     resultado=cursor.fetchone()
-
     if resultado is not None:
-    # Safely extract the first and last name from the fetched row
-        name = resultado[0]+ " " +resultado[1]
+        name = resultado[0] + " " + resultado[1]
+        today = date.today()
         if selected_return != None and selected_departure!=None:
-            label_text = f"El usuario: {name} \n el id del los buses es: {selected_departure} y  {selected_return} \n el costo total pagado es {sum_cost}"
+            label_text = f"Lugar y Fecha: Bolivia, {today}\nNombre: {name}\nNIT: {id_card}\nIDs de los Buses: {selected_departure}, {selected_return}\nBoletos Comprados: {num_passengers}\nClase: {passenger_class_user}\nMetodo de Pago: {billing_payment_method}\nTotal: Bs{sum_cost}"
         elif selected_return!=None and selected_departure==None:
-            label_text = f"El usuario: {name} \n el id del  bus es: {selected_return} \n el costo total pagado es {sum_cost}"
+            label_text = f"Lugar y Fecha: Bolivia, {today}\nNombre: {name}\nNIT: {id_card}\nID del Bus: {selected_return}\nBoletos Comprados: {num_passengers}\nClase: {passenger_class_user}\nMetodo de Pago: {billing_payment_method}\nTotal: Bs{sum_cost}"
         elif selected_return==None and selected_departure!=None:
-            label_text = f"El usuario: {name} \n el id del  bus es: {selected_departure} \n el costo total pagado es {sum_cost}"
+            label_text = f"Lugar y Fecha: Bolivia, {today}\nNombre: {name}\nNIT: {id_card}\nID del Bus: {selected_departure}\nBoletos Comprados: {num_passengers}\nClase: {passenger_class_user}\nMetodo de Pago: {billing_payment_method}\nTotal: Bs{sum_cost}"
         else:
-            label_text="Error al obtener los buses"
+            label_text="No se encontraron los buses para emitir la factura"
 
     else:
-    # Handle the case where no user data is found
-        label_text = "No se encontró información del usuario."
-
+        label_text = "No se encontro informacion del usuario"
     factura_text_label = tk.Label(
         reservation_frame,
         text=f"{label_text}",
@@ -970,26 +977,6 @@ def make_reservation_confirmed():
         fg="black"
     )
     factura_text_label.pack(pady=10, side="top", anchor="center")
-   
-   
-    # Texto
-    confirmation_text_label = tk.Label(
-        reservation_frame,
-        text="Su reserva ha sido confirmada. \nLe agradecemos la confianza depositada en nuestro servicio.",
-        font=("Arial", 10),
-        bg="#F1F2F6",
-        fg="black",
-    )
-    confirmation_text_label.pack(pady=(30, 5), side="top", anchor="center")
-    # Factura
-    bill_text_label = tk.Label(
-        reservation_frame,
-        text="",
-        font=("Arial", 10),
-        bg="#F1F2F6",
-        fg="black",
-    )
-    bill_text_label.pack(pady=(30, 5), side="top", anchor="center")
     # Boton de Volver a Casa
     return_home_button = CTkButton(
         reservation_frame,
@@ -1206,10 +1193,11 @@ def make_content_frame():
 
 """Frame de los Resultados de la busqueda"""
 def make_show_results(buses, buses_2, passengers, origin, destination, passenger_class):
-    global results_frame, return_date, sum_cost, total_cost_var, num_passengers
+    global results_frame, return_date, sum_cost, total_cost_var, num_passengers, passenger_class_user 
     return_date = return_date_button.cget("text")
     selected_departure = None
     selected_return = None
+    passenger_class_user  = passenger_class
     # Creación del Frame principal
     results_frame = tk.Frame(window, bg="#F1F2F6")
     results_frame.name = "results"
