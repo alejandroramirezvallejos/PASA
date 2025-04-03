@@ -23,9 +23,9 @@ total_cost_var = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'X'  
+server = 'JOSUEPC'  
 database = 'pasa'
-username = 'X\\user' 
+username = 'JOSUEPC\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -694,6 +694,7 @@ def make_history_frame():
     # Creando Frame
     history_frame = tk.Frame(window, bg="#F1F2F6")
     history_frame.name = "history"
+    history_frame.pack(side="top", anchor="n", fill="x", expand=True)
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
         history_frame,
@@ -704,13 +705,13 @@ def make_history_frame():
         wraplength=350,
         justify="center",
     )
-    title_label.pack(pady=10)
+    title_label.pack(side="top", anchor="center", pady=10)
     # Scrollbar
     results_container = tk.Frame(history_frame, bg="#F1F2F6")
     results_container.pack(fill="both", expand=True, padx=10, pady=10)
     scrollbar = tk.Scrollbar(results_container)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    canvas = tk.Canvas(results_container, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0)
+    canvas = tk.Canvas(results_container, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0, height=500)
     canvas.pack(side=tk.LEFT, fill="both", expand=True)
     scrollbar.config(command=canvas.yview)
     inner_frame = tk.Frame(canvas, bg="#F1F2F6")
@@ -1166,7 +1167,7 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
     # Creación del Frame principal
     results_frame = tk.Frame(window, bg="#F1F2F6")
     results_frame.name = "results"
-    results_frame.pack(fill="both", expand=True, padx=10, pady=10)
+    results_frame.pack(fill="both", expand=True, padx=0, pady=10)
     # Botón de Regreso y Cerrar Sesión en la parte superior
     show_back_button(results_frame)
     show_log_out_button(results_frame)
@@ -1177,7 +1178,7 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
     canvas.pack(side=tk.LEFT, fill="both", expand=True)
     scrollbar.config(command=canvas.yview)
     content_frame = tk.Frame(canvas, bg="#F1F2F6")
-    canvas.create_window((70, 30), window=content_frame, anchor="nw")
+    canvas.create_window((40, 0), window=content_frame, anchor="nw")
     def resize_canvas(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
     content_frame.bind("<Configure>", resize_canvas)
@@ -1226,7 +1227,7 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
             fg="black",
             wraplength=350,
         )
-        title_label.pack(pady=50)
+        title_label.pack(side="top", anchor="center", pady=10)
         precio=obtenerprecioporbus(origin,destination,passenger_class)
         for idx, bus in enumerate(buses):
             bus_id, fecha_salida, asientos_ocupados = bus
@@ -1293,7 +1294,7 @@ Precio : {precio}
             wraplength=350,
             justify="center",
         )
-        title_label_2.pack(pady=50)
+        title_label_2.pack(pady=10)
         precio=obtenerprecioporbus(origin,destination,passenger_class)
         for idx, bus in enumerate(buses_2):
             bus_id, fecha_salida, asientos_ocupados = bus
