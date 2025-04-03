@@ -18,14 +18,16 @@ all_frames = []
 sum_cost = 0
 num_passengers = 0
 total_cost_var = None
+selected_departure = None
+selected_return = None
 
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'JOSUEPC'  
+server = 'X'  
 database = 'pasa'
-username = 'JOSUEPC\\user' 
+username = 'X\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -945,6 +947,15 @@ def make_reservation_confirmed():
         fg="black",
     )
     confirmation_text_label.pack(pady=(30, 5), side="top", anchor="center")
+    # Factura
+    bill_text_label = tk.Label(
+        reservation_frame,
+        text="",
+        font=("Arial", 10),
+        bg="#F1F2F6",
+        fg="black",
+    )
+    bill_text_label.pack(pady=(30, 5), side="top", anchor="center")
     # Boton de Volver a Casa
     return_home_button = CTkButton(
         reservation_frame,
@@ -1160,18 +1171,18 @@ def make_content_frame():
     return content_frame
 
 """Frame de los Resultados de la busqueda"""
-def make_show_results(buses, buses_2, passengers, origin, destination,passenger_class):
-    global results_frame, return_date, selected_buses
+def make_show_results(buses, buses_2, passengers, origin, destination, passenger_class):
+    global results_frame, return_date, sum_cost, total_cost_var, num_passengers
     return_date = return_date_button.cget("text")
-    selected_buses = []  
+    selected_departure = None
+    selected_return = None
     # Creación del Frame principal
     results_frame = tk.Frame(window, bg="#F1F2F6")
     results_frame.name = "results"
     results_frame.pack(fill="both", expand=True, padx=0, pady=10)
-    # Botón de Regreso y Cerrar Sesión en la parte superior
     show_back_button(results_frame)
     show_log_out_button(results_frame)
-    # Crear el sistema de Scroll
+    # Scrollbar
     scrollbar = tk.Scrollbar(results_frame)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     canvas = tk.Canvas(results_frame, bg="#F1F2F6", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0)
@@ -1182,27 +1193,33 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
     def resize_canvas(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
     content_frame.bind("<Configure>", resize_canvas)
-    # Funcion de control de seleccion de buses
-    def handle_bus_selection(bus_id, button, bus_cost):
-        global sum_cost, selected_buses, total_cost_var, num_passengers
-        # Si el bus no está seleccionado, lo seleccionamos
-        if bus_id not in selected_buses:
-            # Verifica si se puede seleccionar
-            if len(selected_buses) < 2:
-                selected_buses.append(bus_id)
-                sum_cost = sum_cost + num_passengers*bus_cost
+    # Función de control de selección de buses diferenciada por dirección:
+    def handle_bus_selection(bus_id, button, bus_cost, direction):
+        global selected_departure, selected_return, sum_cost, num_passengers
+        if direction == "departure":
+            if selected_departure is None:
+                selected_departure = bus_id
                 button.configure(text="Seleccionado", fg_color="gray", hover_color="gray")
+                sum_cost =sum_cost + (num_passengers * bus_cost)
+            elif selected_departure == bus_id:
+                selected_departure = None
+                button.configure(text="Seleccionar", fg_color="#7732FF", hover_color="#5A23CC")
+                sum_cost = sum_cost - (num_passengers * bus_cost)
             else:
-                messagebox.showinfo("Información", "Solo puedes seleccionar hasta 2 buses. \nUno de ida y otro de vuelta")
-        else:
-            # Si el bus ya está seleccionado, se deselecciona
-            selected_buses.remove(bus_id)
-            sum_cost = sum_cost - num_passengers*bus_cost
-            button.configure(text="Seleccionar", fg_color="#7732FF", hover_color="#5A23CC")
-        total_cost_var.set(f"El costo total a pagar es: {sum_cost}")
-    pay_button.pack(pady=(0, 30))
-    pay_button.pack(padx=(70, 0))
-    # Mostrar Buses Disponibles de Partida
+                messagebox.showinfo("Información", "Solo puedes seleccionar un Bus de Partida")
+        elif direction == "return":
+            if selected_return is None:
+                selected_return = bus_id
+                button.configure(text="Seleccionado", fg_color="gray", hover_color="gray")
+                sum_cost =sum_cost + (num_passengers * bus_cost)
+            elif selected_return == bus_id:
+                selected_return = None
+                button.configure(text="Seleccionar", fg_color="#7732FF", hover_color="#5A23CC")
+                sum_cost = sum_cost - (num_passengers * bus_cost)
+            else:
+                messagebox.showinfo("Informacion", "Solo puedes seleccionar un Bus de regreso")
+        total_cost_var.set(f"El costo total a pagar es: {globals()['sum_cost']}")
+    # Mostrar Buses Disponibles de Partida 
     if not buses:
         no_results_label = tk.Label(
             content_frame,
@@ -1212,12 +1229,8 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
             wraplength=350,
             justify="center"
         )
-        pay_button.pack(pady=(0, 30))
-        pay_button.pack(padx=(70, 0))
         no_results_label.pack(expand=True)
     else:
-        pay_button.pack(pady=(0, 30))
-        pay_button.pack(padx=(70, 0))
         title_font = font.Font(family="Canva Sans", size=15, weight="bold")
         title_label = tk.Label(
             content_frame,
@@ -1228,7 +1241,7 @@ def make_show_results(buses, buses_2, passengers, origin, destination,passenger_
             wraplength=350,
         )
         title_label.pack(side="top", anchor="center", pady=10)
-        precio=obtenerprecioporbus(origin,destination,passenger_class)
+        precio = get_price_per_bus(origin, destination, passenger_class)
         for idx, bus in enumerate(buses):
             bus_id, fecha_salida, asientos_ocupados = bus
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
@@ -1239,14 +1252,14 @@ Punto de Origen: {origin}
 Punto de Destino: {destination}
 Fecha de Salida: {fecha_salida}
 Asientos Disponibles: {60 - asientos_ocupados}
-Precio : {precio}
+Precio: {precio}
             """
             label = tk.Label(
                 block_frame,
                 text=detalles.strip(),
                 bg="#F1F2F6",
-                anchor="center",  
-                justify="center",  
+                anchor="center",
+                justify="center",
                 font=("Arial", 11)
             )
             label.pack(pady=5)
@@ -1256,16 +1269,17 @@ Precio : {precio}
                 corner_radius=32,
                 fg_color="#7732FF",
                 hover_color="#5A23CC",
-                command=lambda bid=bus_id, btn=None, cost=precio: handle_bus_selection(bid, btn, cost)
+                command=lambda bid=bus_id, btn=None, cost=precio: None
             )
             select_button.pack(pady=(10, 0))
-            select_button.configure(command=lambda bid=bus_id, btn=select_button, cost = precio: handle_bus_selection(bid, btn, cost))
+            select_button.configure(command=lambda bid=bus_id, btn=select_button, cost=precio: handle_bus_selection(bid, btn, cost, "departure"))
             if idx < len(buses) - 1:
                 separator = tk.Frame(content_frame, bg="#7732FF", height=2, width=300)
                 separator.pack(pady=(10, 10))
                 separator.pack_propagate(False)
-    # Mostrar Buses Disponibles de Regreso
-    if not buses_2 and not return_date == "Seleccionar":
+
+    # Mostrar Buses Disponibles de Regreso 
+    if not buses_2 and return_date != "Seleccionar":
         no_results_label = tk.Label(
             content_frame,
             text="No se encontraron Buses \nDisponibles para la Fecha de Regreso",
@@ -1295,7 +1309,7 @@ Precio : {precio}
             justify="center",
         )
         title_label_2.pack(pady=10)
-        precio=obtenerprecioporbus(origin,destination,passenger_class)
+        precio = get_price_per_bus(origin, destination, passenger_class)
         for idx, bus in enumerate(buses_2):
             bus_id, fecha_salida, asientos_ocupados = bus
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
@@ -1306,27 +1320,27 @@ Punto de Origen: {destination}
 Punto de Destino: {origin}
 Fecha de Salida: {fecha_salida}
 Asientos Disponibles: {60 - asientos_ocupados}
-Precio : {precio}
+Precio: {precio}
             """
             label = tk.Label(
                 block_frame,
                 text=detalles.strip(),
                 bg="#F1F2F6",
-                anchor="center",  
-                justify="center",  
+                anchor="center",
+                justify="center",
                 font=("Arial", 11)
             )
-            label.pack(pady=5) 
+            label.pack(pady=5)
             select_button = CTkButton(
                 block_frame,
                 text="Seleccionar",
                 corner_radius=32,
                 fg_color="#7732FF",
                 hover_color="#5A23CC",
-                command=lambda bid=bus_id, btn=None, cost = precio: handle_bus_selection(bid, btn, cost)
+                command=lambda bid=bus_id, btn=None, cost=precio: None
             )
             select_button.pack(pady=(10, 0))
-            select_button.configure(command=lambda bid=bus_id, btn=select_button, cost = precio: handle_bus_selection(bid, btn, cost))
+            select_button.configure(command=lambda bid=bus_id, btn=select_button, cost=precio: handle_bus_selection(bid, btn, cost, "return"))
             if idx < len(buses_2) - 1:
                 separator = tk.Frame(content_frame, bg="#7732FF", height=2, width=300)
                 separator.pack(pady=(10, 10))
@@ -1337,7 +1351,7 @@ Precio : {precio}
 
 """Funcion para Mostrar un Frame"""
 def show_frame(frame_to_show):
-    global all_frames, action_bar, back_button, current_frame
+    global all_frames, action_bar, back_button, current_frame, selected_return, selected_departure
     current_frame = frame_to_show 
     global sum_cost, num_passengers
     # Ocultar todos los frames
@@ -1352,6 +1366,8 @@ def show_frame(frame_to_show):
         hide_pay_button()
         sum_cost = 0
         num_passengers = 0
+        selected_departure = None
+        selected_return = None
     else:
         action_bar.pack(side="top", fill="x")
         hide_back_button()
@@ -1364,6 +1380,8 @@ def show_frame(frame_to_show):
                 show_history_button()
                 sum_cost = 0
                 num_passengers = 0
+                selected_departure = None
+                selected_return = None
             elif frame_to_show.name == "results":
                 show_back_button()
                 show_pay_button()
@@ -1411,15 +1429,7 @@ def hide_pay_button():
         pay_button.place_forget()
 
 """Funcion para ocultar Frame al apretar Boton de Pagar"""
-def on_pay_button():
-    global current_frame, results_frame, pay_frame, selected_buses, passengers_entry, passenger_class_input
-    if selected_buses and passengers_entry.get().isdigit() and passenger_class_input.get() != "Seleccionar":
-        if current_frame == results_frame:
-            results_frame.pack_forget()
-            hide_pay_button()
-            show_frame(pay_frame)
-    else:
-        messagebox.showerror("Error", "Por favor selecciona un bus")
+
 
 """Funcion para Mostrar el Boton para Regresar"""
 def show_back_button(target_frame=None):
@@ -1456,18 +1466,17 @@ def hide_log_out_button():
     if log_out_button:
         log_out_button.place_forget()
 
-"""Funcion para obtener el precio de un bus"""
-def obtenerprecioporbus(inicio,fin,vip):
-    conexion=make_connection()
-    if(vip=="Economico"):
-        cursor=conexion.execute(q.OBTENER_PRECIO_BUS.format(inicio,fin,1))
+"""Funcion para obtener el Precio de un Bus"""
+def get_price_per_bus(origin,destination,passenger_class):
+    connection=make_connection()
+    if(passenger_class=="Economico"):
+        cursor=connection.execute(q.OBTENER_PRECIO_BUS.format(origin,destination,1))
     else:
-         cursor=conexion.execute(q.OBTENER_PRECIO_BUS.format(inicio,fin,0))
-    resultado =cursor.fetchone()
-    print(resultado)
-    if(resultado!=None):
-        
-        return resultado[0]
+         cursor=connection.execute(q.OBTENER_PRECIO_BUS.format(origin,destination,0))
+    result =cursor.fetchone()
+    print(result)
+    if(result!=None):
+        return result[0]
     else:
         return ""
 
@@ -1520,31 +1529,41 @@ def on_return_home_button():
 
 """Confirmar seleccion de buses y conectar con la base de datos"""
 def on_paid_method_button():
-    global selected_buses, passengers_entry, passenger_class_input, sum_cost, num_passengers
-    global sum_cost, num_passengers
-    sum_cost = 0
-    num_passengers = 0
+    global selected_departure, selected_return, passengers_entry, passenger_class_input, sum_cost, num_passengers
     try:
         connection = make_connection()
         if not connection:
             print("La conexión falló!")
             return
         cursor = connection.cursor()
-        for bus in selected_buses:
-            for i in range(int(passengers_entry.get())):
-                if passenger_class_input.get() == "Economico":
-                    cursor.execute(q.INSERTAR_ECONOMICO.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
-                elif passenger_class_input.get() == "VIP":
-                    cursor.execute(q.INSERTAR_VIP.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
+        for bus in [selected_departure, selected_return]:
+            if bus is not None:
+                for i in range(int(passengers_entry.get())):
+                    if passenger_class_input.get() == "Economico":
+                        cursor.execute(q.INSERTAR_ECONOMICO.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
+                    elif passenger_class_input.get() == "VIP":
+                        cursor.execute(q.INSERTAR_VIP.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
         user_id = obtain_userid(cursor)
         connection.commit()
         connection.close()
         print(f"Insertando reserva para el usuario {user_id} en el bus {bus} con la clase {passenger_class_input.get()}")
-        messagebox.showinfo("Confirmación", "Reserva realizada con éxito!")
+        print("Reserva realizada con exito!")
         show_frame(reservation_frame)
     except Exception as e:
         print(f"Error: {e}")
         messagebox.showerror("Error", f"Error al realizar la reserva: {e}")
+
+"""Boton para ir a el frame de pago"""
+def on_pay_button(): 
+    global current_frame, results_frame, pay_frame, selected_departure, selected_return, passengers_entry, passenger_class_input, sum_cost 
+    if selected_departure and passengers_entry.get().isdigit() and passenger_class_input.get() != "Seleccionar": 
+        if current_frame == results_frame: 
+            results_frame.pack_forget()
+            hide_pay_button()
+            total_cost_var.set(f"El costo total a pagar es: {sum_cost}")
+            show_frame(pay_frame) 
+    else: 
+        messagebox.showerror("Error", "No has seleccionado correctamente los buses")
 
 # ----------------------------------------------------------------MAIN-----------------------------------------------------------------------------------------------------------------------------------------------
 
