@@ -90,8 +90,9 @@ def create_account():
         cursor = connection.cursor()
         cursor.execute(f"EXEC sp_insertar_usuario {f.obtain_pk(cursor,'usuario')},'{name}', '{last_name}', {age}, {id_card}, '{password}'")
         connection.commit()
-        # Cambiar al fetch_frame si todo sale bien
-        show_frame(fetch_frame)
+        # Cambiar al start_frame si todo sale bien
+        messagebox.showinfo("Exito", f"Usuario {id_card} creado con exito")
+        show_frame(start_frame)
     except pyodbc.Error as e:
         messagebox.showerror("Error", f"Error al registrar la cuenta: {e}")
     finally:
