@@ -2,6 +2,7 @@
 <div style="display: flex; justify-content: ">
   <h1 style="margin: 0;" > <img src="ASSETS/color_positive.png" width="40" /> PASA "Viajar nunca fue más simple" </h1>
 </div>
+
 ## Descripción
 
 La aplicación de reservas de buses es una solución diseñada para administrar las operaciones de una flota de buses mediante una interfaz de cliente y administrador. Este proyecto tiene como objetivo aplicar buenas prácticas en bases de datos y programación, así como aplicar los conocimientos adquiridos en la clase de Bases de Datos 2. Los usuarios pueden realizar reservas de buses, consultar información relacionada y administrar el sistema de transporte.
@@ -67,6 +68,15 @@ El cliente tiene acceso a las siguientes funcionalidades:
 - **Historial de Compras**:
   - Ver el historial de reservas anteriores
 
+## Requisitos Base de Datos
+
+### Indices establecidos
+
+- En la tabla Bus se anadio el indice en fecha entrada y fecha salida
+- En la tabla ruta se anadio indice en la columna costo ycostoVip
+- En la tabla usuario el indice se establecio en carnet y contrasena
+- Por ultimo en la vw_Reportes tambien se anadio un indice clusterizado en su llave primaria
+
 ### Procedimientos Almacenados (Stored Procedures)
 
 La base de datos incluye 22 procedimientos almacenados (stored procedures) que permiten controlar la concurrencia y gestionar las transacciones de manera eficiente.
@@ -91,15 +101,15 @@ La base de datos implementa diferentes roles con permisos específicos:
 
 Se ha implementado un sistema de descuento del 50% sobre el precio VIP de la ruta seleccionada, que se aplica al realizar el pago utilizando el método de pago Yolo (Banco Ganadero).
 
+## Pruebas
+
+
+
 ## 📊 Estructura de Base de Datos
 
 ### Diagramas de relación entidad
 
 ![alt text](IMAGES/entity_relationship_diagram.png)
-
-###  Diagramas de clases
-
-![alt text](IMAGES/class_diagram.png)
 
 ## 👥 Equipo y Contribuciones
 
