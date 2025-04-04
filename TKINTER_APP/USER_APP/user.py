@@ -3,6 +3,7 @@
     pip install tkcalendar
     pip install pillow
     pip install customtkinter
+    Fer: DESKTOP-T8BJL71
 """
 import tkinter as tk 
 import pyodbc
@@ -26,7 +27,7 @@ billing_payment_method = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'X'  
+server = 'DESKTOP-T8BJL71'  
 database = 'pasa'
 username = 'dba'
 password= 'dba'
