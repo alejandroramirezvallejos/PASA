@@ -6,10 +6,10 @@ from tkinter import messagebox
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'X'  
+server = 'DESKTOP-T8BJL71'  
 database = 'pasa'
-username = 'X\\user'
-
+username = 'vendedor'
+password= 'vendedor'
 """Creando Conexion con la Base de Datos"""
 def make_connection():
     try:
@@ -18,7 +18,7 @@ def make_connection():
             f"SERVER={server};"
             f"DATABASE={database};"
             f"UID={username};"
-            f"Trusted_Connection=yes;"
+            f"PWD={password};"
         )
         return connection
     except pyodbc.Error as e:
