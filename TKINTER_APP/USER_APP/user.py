@@ -28,7 +28,8 @@ billing_payment_method = None
 driver = '{ODBC Driver 17 for SQL Server}'
 server = 'X'  
 database = 'pasa'
-username = 'X\\user' 
+username = 'dba'
+password= 'dba'
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -38,7 +39,7 @@ def make_connection():
             f"SERVER={server};"
             f"DATABASE={database};"
             f"UID={username};"
-            f"Trusted_Connection=yes;"
+            f"PWD={password};"
         )
         return connection
     except pyodbc.Error as e:
