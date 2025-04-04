@@ -34,7 +34,7 @@ def get_booking(cursor):
 
 def get_reportes(cursor):
     
-    cursor.execute("SELECT *FROM vw_ReportesReservas ")
+    cursor.execute("SELECT * FROM vw_Reportes  ")
     return cursor.fetchall()
 
 def get_usuarios(cursor):
