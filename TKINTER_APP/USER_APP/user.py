@@ -12,7 +12,6 @@ from datetime import date
 from PIL import Image, ImageTk
 from customtkinter import CTkImage, CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
 window = None
-import queries as q
 id_card = None  
 all_frames = []
 sum_cost = 0
@@ -27,9 +26,9 @@ billing_payment_method = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'X'  
+server = 'DESKTOP-T8BJL71'  
 database = 'pasa'
-username = 'X\\user' 
+username = 'DESKTOP-T8BJL71\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -57,7 +56,7 @@ def make_connection():
 def validate_carnet(carnet:str)->bool:
     conexion=make_connection()
     cursor=conexion.cursor()
-    cursor.execute(q.BUSCA_CARNET.format(carnet))
+    cursor.execute(f"EXEC sp_validar_carnet_por_carnet '{carnet}'")
     valor=cursor.fetchone()
     if valor is None:
         return False
@@ -66,11 +65,11 @@ def validate_carnet(carnet:str)->bool:
 
 """Crear llave"""
 def obtain_pk(cursor,tabla:str)->str:
-    cursor.execute(q.CREAR_LLAVE.format(tabla,tabla,tabla))
+    cursor.execute(f"SELECT {tabla}_id FROM {tabla} ORDER BY {tabla}_id DESC")
     return cursor.fetchone()[0]+1
 #obtener llave
 def obtain_userid(cursor):
-    cursor.execute(q.OBTENER_LLAVE.format(id_card))
+    cursor.execute(f"EXEC sp_obtener_llave '{id_card}'")
     return cursor.fetchone()[0]
 
 """Guardar Datos al Crear una Cuenta"""
@@ -126,7 +125,7 @@ def create_account():
         return
     try:
         cursor = connection.cursor()
-        cursor.execute(q.CREAR_USUARIO.format(obtain_pk(cursor,"usuario"),name, last_name, age, id_card, password))
+        cursor.execute(f"EXEC sp_crear_usuario {obtain_pk(cursor,'usuario')},'{name}', '{last_name}', {age}, '{id_card}', '{password}'")
         connection.commit()
         # Cambiar al content_frame si todo sale bien
         show_frame(content_frame)
@@ -164,7 +163,7 @@ def login():
         return
     try:
         cursor = connection.cursor()
-        cursor.execute(q.OBTENER_USUARIO, (id_card, password))
+        cursor.execute(f"EXEC sp_obtener_usuario '{id_card}', '{password}'")
         usuario = cursor.fetchone()
         # Cambiar al content_frame si todo sale bien
         if usuario:
@@ -213,12 +212,12 @@ def search_buses():
     try:
         cursor = connection.cursor()
         # Consulta para Fecha de Partida
-        cursor.execute(q.OBTENER_DATOS_BUS.format(origin, destination, departure_date, int(passengers)))
+        cursor.execute(f"EXEC sp_obtener_datos_bus '{origin}', '{destination}', '{departure_date}', {int(passengers)}")
         buses = cursor.fetchall()
         # Consulta para Fecha de Regreso
         buses_2 = []
         if return_date != "Seleccionar":
-            cursor.execute(q.OBTENER_DATOS_BUS.format(destination, origin, return_date, int(passengers)))
+            cursor.execute(f"EXEC sp_obtener_datos_bus '{destination}', '{origin}', '{return_date}', {int(passengers)}")
             buses_2 = cursor.fetchall()
 
         # Mostrar Resultados
@@ -952,7 +951,7 @@ def make_reservation_confirmed():
     # Factura
     conexion =make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"EXEC [dbo].[sp_obtener_usuario_nombreapellido] '{id_card}'")
+    cursor.execute(f"EXEC sp_obtener_usuario_nombreapellido '{id_card}'")
     print(id_card)
     resultado=cursor.fetchone()
     if resultado is not None:
@@ -1492,9 +1491,9 @@ def hide_log_out_button():
 def get_price_per_bus(origin,destination,passenger_class):
     connection=make_connection()
     if(passenger_class=="Economico"):
-        cursor=connection.execute(q.OBTENER_PRECIO_BUS.format(origin,destination,1))
+        cursor=connection.execute(f"EXEC sp_totaldeventasporruta '{origin}','{destination}',{1}")
     else:
-         cursor=connection.execute(q.OBTENER_PRECIO_BUS.format(origin,destination,0))
+         cursor=connection.execute(f"EXEC sp_totaldeventasporruta '{origin}','{destination}',{0}")
     result =cursor.fetchone()
     print(result)
     if(result!=None):
@@ -1562,9 +1561,9 @@ def on_paid_method_button():
             if bus is not None:
                 for i in range(int(passengers_entry.get())):
                     if passenger_class_input.get() == "Economico":
-                        cursor.execute(q.INSERTAR_ECONOMICO.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
+                        cursor.execute(f"EXEC sp_insertar_reserva_economica {obtain_pk(cursor, 'reserva')}, {obtain_userid(cursor)}, {bus}")
                     elif passenger_class_input.get() == "VIP":
-                        cursor.execute(q.INSERTAR_VIP.format(obtain_pk(cursor, "reserva"), obtain_userid(cursor), bus))
+                        cursor.execute(f"EXEC sp_insertar_reserva_vip {obtain_pk(cursor, 'reserva')}, {obtain_userid(cursor)}, {bus}")
         user_id = obtain_userid(cursor)
         connection.commit()
         connection.close()
