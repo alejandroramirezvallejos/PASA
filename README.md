@@ -876,6 +876,6 @@ Fernando Terrazas
 
 MIT License 
 
-Application: Pasa v2.1
+Application: Pasa v3.0
 
 Copyright (c) 2024 Alejandro Ramírez, Josue Balbontin and Fernando Terrazas
