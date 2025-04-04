@@ -13,7 +13,7 @@ from tkcalendar import Calendar
 from datetime import date
 from PIL import Image, ImageTk
 import customtkinter as ctk
-from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
+from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme, CTkImage
 import functions_query as f
 import conection as c
 window = None
@@ -155,7 +155,6 @@ def queries_option():
         else:
             messagebox.showerror("Error", "Operación no válida o Frame desconocido.")
             return
-        
         if action == "add":
             if "Agregar Bus" in selected_option:
                 chofer_id = int(entries[0].get())
@@ -177,8 +176,6 @@ def queries_option():
                 costo_vip = float(entries[10].get())
                 f.add_route(dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta agregada correctamente")
-        
-        
         elif action == "delete":
             if "Eliminar Bus" in selected_option:
                 bus_id = int(entries[0].get())
@@ -196,8 +193,6 @@ def queries_option():
                 usuario_id=int(entries[3].get())
                 f.del_usuario(usuario_id)
                 messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
-        
-        
         elif action == "update":
             if "Actualizar Bus" in selected_option:
                 bus_id = int(entries[0].get())
@@ -239,9 +234,8 @@ def queries_option():
                 messagebox.showinfo("Éxito", "Usuario actualizado correctamente")
     except Exception as e:
         messagebox.showerror("Error",e)
+
 # ------------------------------------------------------------FRAMES---------------------------------------------------------------------------------------------
-
-
 
 """Pantalla de Carga"""
 def make_loading_screen():
@@ -371,7 +365,7 @@ def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_fra
         try:
             image = Image.open(path)
             image = image.resize(size, Image.LANCZOS)
-            return ImageTk.PhotoImage(image)
+            return CTkImage(image, size=size)
         except Exception as e:
             print(f"Error al cargar el Icono {path}: {e}")
             return None
@@ -735,7 +729,6 @@ def make_login_frame():
 
 # ------------------------------------------------------------MANEJO DE COMANDOS---------------------------------------------------------------------------------------------
 
-
 """Frame para Buscar Datos"""
 def make_fetch_frame():
     global current_frame, navigation_bar, action_bar
@@ -777,9 +770,7 @@ def make_fetch_frame():
             messagebox.showerror("Error", f"No se pudo obtener datos: {e}")
         finally:
             connection.close()
-    
-    
-     # Botón para mostrar la tabla de Usuarios
+    # Botón para mostrar la tabla de Usuarios
     usuario_button = CTkButton(
         fetch_frame,
         text="Ver Usuarios",
@@ -789,7 +780,6 @@ def make_fetch_frame():
         command=lambda: open_table_window(f.get_usuarios, "Usuarios")
     )
     usuario_button.pack(pady=10, padx=20, fill="x")
-
     # Botón para mostrar la tabla de buses
     bus_button = CTkButton(
         fetch_frame,
@@ -830,8 +820,7 @@ def make_fetch_frame():
         command=lambda: open_table_window(f.get_booking, "Reservas")
     )
     booking_button.pack(pady=10, padx=20, fill="x")
-
-        # Botón para mostrar la tabla de Reportes
+    # Botón para mostrar la tabla de Reportes
     reportes_button = CTkButton(
         fetch_frame,
         text="Ver Reportes",
@@ -841,10 +830,6 @@ def make_fetch_frame():
         command=lambda: open_table_window(f.get_reportes, "Reportes")
     )
     reportes_button.pack(pady=10, padx=20, fill="x")
-
-
-
-
     return fetch_frame
 
 def create_input_field(parent, label_text, placeholder, identifier_button):
@@ -863,15 +848,12 @@ def create_input_field(parent, label_text, placeholder, identifier_button):
         entry.pack(side="left", padx=10, fill="x", expand=True)
         if entry is not None:
             entries.append(entry)  # Agregar la entrada a la lista
-    
-    
     elif identifier_button == 2:
         frame = tk.Frame(parent, bg="#09090A")
         frame.pack(side="top", pady=20, fill="x", padx=10)
         def on_button_click():
             global selected_option
             selected_option = label_text
-
             queries_option()  # Llama a la función queries_option cuando se presione el botón
         available = CTkButton(
             frame,
@@ -883,8 +865,6 @@ def create_input_field(parent, label_text, placeholder, identifier_button):
         )
         available.pack(pady=10, fill="x")
 
-
-
 """Frame para Crear Botones Predeterminados"""
 def make_option_frame(parent, title_name):
     option_frame = ttk.Frame(parent)
@@ -892,24 +872,20 @@ def make_option_frame(parent, title_name):
     option = ttk.Entry(option_frame)
     entries = []  # Reiniciar la lista de entradas cada vez que se crea un nuevo conjunto
     option.pack(padx=10, pady=10)
-
     # Scrollbar
     canvas = tk.Canvas(option_frame, bg="#09090A", highlightthickness=0, width=350, height=1300)
     scrollbar = tk.Scrollbar(option_frame, orient="vertical", command=canvas.yview,width=18)
-
     # Crear un marco interno dentro del canvas
     scrollable_frame = tk.Frame(canvas, bg="#09090A")
     scrollable_frame.bind(
         "<Configure>",
         lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
     )
-
     # Vincular el marco interno con el canvas
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=350, height=1900)
     canvas.configure(yscrollcommand=scrollbar.set)
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
-
     # Titulo de Bus
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
@@ -995,7 +971,7 @@ def make_option_frame(parent, title_name):
         create_input_field(scrollable_frame, "Costo:", "Ingresar", 1)
         create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
-    #USUARIO
+    # USUARIO
     if title_name == "Actualizar":
         title_font = font.Font(family="Canva Sans", size=15, weight="bold")
         title_label = tk.Label(
@@ -1008,7 +984,6 @@ def make_option_frame(parent, title_name):
             justify="center",
         )
         title_label.pack(pady=20)   
-
         create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
         create_input_field(scrollable_frame, "Nombre", "Ingresar", 1)
         create_input_field(scrollable_frame, "Apellido", "Ingresar", 1)        
@@ -1031,9 +1006,6 @@ def make_option_frame(parent, title_name):
         title_label.pack(pady=20)   
         create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Usuario", "Ingresar", 2)
-
-
-
     return option_frame
 
 """Frame para Agregar Datos"""
