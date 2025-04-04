@@ -26,9 +26,9 @@ billing_payment_method = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'JOSUEPC'  
+server = 'X'  
 database = 'pasa'
-username = 'dba\\user'
+username = 'dba'
 password= 'dba'
 
 """Creando Conexion con la Base de Datos"""
@@ -40,7 +40,6 @@ def make_connection():
             f"DATABASE={database};"
             f"UID={username};"
             f"PWD={password};"
-            f"Trusted_Connection=yes;"
         )
         return connection
     except pyodbc.Error as e:
@@ -1258,8 +1257,8 @@ def make_show_results(buses, buses_2, passengers, origin, destination, passenger
             wraplength=350,
         )
         title_label.pack(side="top", anchor="center", pady=10)
-        precio = get_price_per_bus(origin, destination, passenger_class)
         for idx, bus in enumerate(buses):
+            precio = get_price_per_bus(origin, destination, passenger_class)
             bus_id, fecha_salida, asientos_ocupados = bus
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
             block_frame.pack(pady=(10, 0), fill="x")
@@ -1326,8 +1325,8 @@ Precio: {precio}
             justify="center",
         )
         title_label_2.pack(pady=10)
-        precio = get_price_per_bus(origin, destination, passenger_class)
         for idx, bus in enumerate(buses_2):
+            precio_2 = get_price_per_bus(destination, origin, passenger_class)
             bus_id, fecha_salida, asientos_ocupados = bus
             block_frame = tk.Frame(content_frame, bg="#F1F2F6", padx=10, pady=10)
             block_frame.pack(pady=(10, 0), fill="x")
@@ -1337,7 +1336,7 @@ Punto de Origen: {destination}
 Punto de Destino: {origin}
 Fecha de Salida: {fecha_salida}
 Asientos Disponibles: {60 - asientos_ocupados}
-Precio: {precio}
+Precio: {precio_2}
             """
             label = tk.Label(
                 block_frame,
@@ -1354,10 +1353,10 @@ Precio: {precio}
                 corner_radius=32,
                 fg_color="#7732FF",
                 hover_color="#5A23CC",
-                command=lambda bid=bus_id, btn=None, cost=precio: None
+                command=lambda bid=bus_id, btn=None, cost=precio_2: None
             )
             select_button.pack(pady=(10, 0))
-            select_button.configure(command=lambda bid=bus_id, btn=select_button, cost=precio: handle_bus_selection(bid, btn, cost, "return"))
+            select_button.configure(command=lambda bid=bus_id, btn=select_button, cost=precio_2: handle_bus_selection(bid, btn, cost, "return"))
             if idx < len(buses_2) - 1:
                 separator = tk.Frame(content_frame, bg="#7732FF", height=2, width=300)
                 separator.pack(pady=(10, 10))
