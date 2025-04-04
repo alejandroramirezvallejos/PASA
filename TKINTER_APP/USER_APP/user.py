@@ -26,9 +26,9 @@ billing_payment_method = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'DESKTOP-T8BJL71'  
+server = 'X'  
 database = 'pasa'
-username = 'DESKTOP-T8BJL71\\user' 
+username = 'X\\user' 
 
 """Creando Conexion con la Base de Datos"""
 def make_connection():
@@ -795,11 +795,10 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image,  
             compound="left",
-            command = on_payment_method_button
+            command = lambda: on_payment_method_button("Visa")
         )
         visa_button.image = ctk_image  
         visa_button.pack(side="left", padx=10, fill="x", expand=True)
-        billing_payment_method = "Visa"
     except Exception as e:
         print(f"Error al cargar la imagen de Visa: {e}")
     # Boton de Mastercard
@@ -824,11 +823,10 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image_mastercard,  
             compound="left",
-            command = on_payment_method_button
+            command = lambda: on_payment_method_button("Mastercard")
         )
         mastercard_button.image = ctk_image_mastercard 
         mastercard_button.pack(side="left", padx=10, fill="x", expand=True)
-        billing_payment_method = "Mastercard"
     except Exception as e:
         print(f"Error al cargar la imagen de Mastercard: {e}")
     # Boton de PayPal
@@ -853,11 +851,10 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image_paypal,  
             compound="left",
-            command = on_payment_method_button
+            command = lambda: on_payment_method_button("PayPal")
         )
         paypal_button.image = ctk_image_paypal  
         paypal_button.pack(side="left", padx=10, fill="x", expand=True)
-        billing_payment_method = "PayPal"
     except Exception as e:
         print(f"Error al cargar la imagen de PayPal: {e}")
     # Boton de Bitcoin
@@ -882,11 +879,10 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image_bitcoin,  
             compound="left",
-            command = on_payment_method_button
+            command = lambda: on_payment_method_button("Bitcoin")
         )
         bitcoin_button.image = ctk_image_bitcoin  
         bitcoin_button.pack(side="left", padx=10, fill="x", expand=True)
-        billing_payment_method = "Bitcoin"
     except Exception as e:
         print(f"Error al cargar la imagen de Bitcoin: {e}")
     # Boton de Yolo
@@ -911,18 +907,17 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image_yolo,  
             compound="left",
-            command = on_payment_method_button
+            command = lambda: on_payment_method_button("Yolo")
         )
         yolo_button.image = ctk_image_yolo 
         yolo_button.pack(side="left", padx=10, fill="x", expand=True)
-        billing_payment_method = "Yolo"
     except Exception as e:
         print(f"Error al cargar la imagen de Yolo: {e}")
     return pay_frame
 
 """Frame de Confirmacion de la Reserva"""
 def make_reservation_confirmed():
-    global num_passengers, passenger_class_user 
+    global num_passengers, passenger_class_user, billing_payment_method
     reservation_frame = tk.Frame(window, bg="#F1F2F6")
     reservation_frame.name = "reservation"
     # Agregando Logo
@@ -965,7 +960,6 @@ def make_reservation_confirmed():
             label_text = f"Lugar y Fecha: Bolivia, {today}\nNombre: {name}\nNIT: {id_card}\nID del Bus: {selected_departure}\nBoletos Comprados: {num_passengers}\nClase: {passenger_class_user}\nMetodo de Pago: {billing_payment_method}\nTotal: Bs{sum_cost}"
         else:
             label_text="No se encontraron los buses para emitir la factura"
-
     else:
         label_text = "No se encontro informacion del usuario"
     factura_text_label = tk.Label(
@@ -1523,8 +1517,9 @@ def on_log_out_button():
     show_frame(start_frame)
 
 """Funcion para ocultar Frame al apretar Boton de Metodo de Pago"""
-def on_payment_method_button():
-    global current_frame, pay_frame
+def on_payment_method_button(billing_payment_method_txt):
+    global current_frame, pay_frame, billing_payment_method
+    billing_payment_method = billing_payment_method_txt
     # Ocultar frame actual
     if current_frame == pay_frame:
         pay_frame.pack_forget()
