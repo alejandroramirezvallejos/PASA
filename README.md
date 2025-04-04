@@ -73,37 +73,49 @@ El cliente tiene acceso a las siguientes funcionalidades:
 ### Indices establecidos
 
 - En la tabla Bus se anadio el indice en fecha entrada y fecha salida
-- En la tabla ruta se anadio indice en la columna costo ycostoVip
+- En la tabla ruta se anadio indice en la columna costo y costoVip
 - En la tabla usuario el indice se establecio en carnet y contrasena
-- Por ultimo en la vw_Reportes tambien se anadio un indice clusterizado en su llave primaria
+
+![Image](https://github.com/user-attachments/assets/21cda3e1-8bbe-4f9f-8719-a59744448f3f)
+
 
 ### Procedimientos Almacenados (Stored Procedures)
 
-La base de datos incluye 22 procedimientos almacenados (stored procedures) que permiten controlar la concurrencia y gestionar las transacciones de manera eficiente.
+La base de datos incluye 22 procedimientos almacenados (stored procedures) que permiten controlar la concurrencia y gestionar las transacciones de manera eficiente. Cada uno tiene un control serializable de concurrencia.
+
+![Image](https://github.com/user-attachments/assets/1d241db8-dda4-4760-ab54-a8c2734bbc83)
 
 ### Vistas
 
-Se implementan vistas para generar reportes de gestión, los cuales pueden ser utilizados por los gerentes para evaluar el desempeño del negocio.
+Se implementan vistas para generar reportes de gestión, los cuales pueden ser utilizados por los gerentes para evaluar el desempeño del negocio. La vista Reportes accede al total de dinero generado y ventas totales, por otro lado ReportesReserva accede a las reservas totales.
+
+![Image](https://github.com/user-attachments/assets/30dce6e1-9950-4778-b7f6-5864dd74872a)
 
 ### Triggers
 
 Se han implementado triggers para asegurar que la eliminación de registros se realice de manera segura. Estos triggers también gestionan las relaciones de claves foráneas, estableciendo valores nulos para evitar errores al eliminar registros.
+
+![Image](https://github.com/user-attachments/assets/fd0756c9-4c9e-4ddb-a9dc-d6f9221bea63)
 
 ## Seguridad y Roles
 
 La base de datos implementa diferentes roles con permisos específicos:
 
 - **Gerente**: Acceso total a todas las funciones de administración.
-- **Vendedor**: Acceso restringido a funciones de reservas y pagos.
+- **Vendedor**: Acceso restringido a funciones de reservas y Reportes.
 - **DBA (Administrador de Base de Datos)**: Acceso completo a la base de datos para administración y mantenimiento.
+
+![Image](https://github.com/user-attachments/assets/e3dbd9d3-0465-476c-a75b-0760ed6e7c5c)
 
 ## Descuento Yolo
 
 Se ha implementado un sistema de descuento del 50% sobre el precio VIP de la ruta seleccionada, que se aplica al realizar el pago utilizando el método de pago Yolo (Banco Ganadero).
 
-## Pruebas
+![Image](https://github.com/user-attachments/assets/1d44b436-39aa-48a7-ae0e-6349cf85492c)
 
+![Image](https://github.com/user-attachments/assets/e9bf2e19-56d4-4926-bac8-0cdbc5344581)
 
+![Image](https://github.com/user-attachments/assets/e9daf158-9842-473c-9e38-5e6168c66934)
 
 ## 📊 Estructura de Base de Datos
 
