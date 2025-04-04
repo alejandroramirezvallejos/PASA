@@ -3,7 +3,6 @@
     pip install tkcalendar
     pip install pillow
     pip install customtkinter
-    Fer: DESKTOP-T8BJL71
 """
 import tkinter as tk 
 import pyodbc
@@ -27,9 +26,9 @@ billing_payment_method = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'DESKTOP-T8BJL71'  
+server = 'X'  
 database = 'pasa'
-username = 'dba'
+username = 'dba\\user'
 password= 'dba'
 
 """Creando Conexion con la Base de Datos"""
@@ -41,6 +40,7 @@ def make_connection():
             f"DATABASE={database};"
             f"UID={username};"
             f"PWD={password};"
+            f"Trusted_Connection=yes;"
         )
         return connection
     except pyodbc.Error as e:
@@ -1520,8 +1520,11 @@ def on_log_out_button():
 
 """Funcion para ocultar Frame al apretar Boton de Metodo de Pago"""
 def on_payment_method_button(billing_payment_method_txt):
-    global current_frame, pay_frame, billing_payment_method
+    global current_frame, pay_frame, billing_payment_method, sum_cost, total_cost_var, passenger_class_user
     billing_payment_method = billing_payment_method_txt
+    if billing_payment_method == "Yolo" and passenger_class_user == "VIP":
+        sum_cost = sum_cost / 2
+        total_cost_var.set(f"El costo total a pagar es: {float(globals()['sum_cost']):g}")
     # Ocultar frame actual
     if current_frame == pay_frame:
         pay_frame.pack_forget()
@@ -1547,7 +1550,7 @@ def on_return_home_button():
 
 """Confirmar seleccion de buses y conectar con la base de datos"""
 def on_paid_method_button():
-    global selected_departure, selected_return, passengers_entry, passenger_class_input, sum_cost, num_passengers,reservation_frame
+    global selected_departure, selected_return, passengers_entry, passenger_class_input, sum_cost, num_passengers, reservation_frame, billing_payment_method
     try:
         connection = make_connection()
         if not connection:
@@ -1560,7 +1563,10 @@ def on_paid_method_button():
                     if passenger_class_input.get() == "Economico":
                         cursor.execute(f"EXEC sp_insertar_reserva_economica {obtain_pk(cursor, 'reserva')}, {obtain_userid(cursor)}, {bus}")
                     elif passenger_class_input.get() == "VIP":
-                        cursor.execute(f"EXEC sp_insertar_reserva_vip {obtain_pk(cursor, 'reserva')}, {obtain_userid(cursor)}, {bus}")
+                        if billing_payment_method == "Yolo":
+                            cursor.execute(f"EXEC sp_insertar_reserva_descuento_yolo {obtain_pk(cursor, 'reserva')}, {obtain_userid(cursor)}, {bus}")
+                        else:
+                            cursor.execute(f"EXEC sp_insertar_reserva_vip {obtain_pk(cursor, 'reserva')}, {obtain_userid(cursor)}, {bus}")
         user_id = obtain_userid(cursor)
         connection.commit()
         connection.close()
@@ -1574,7 +1580,7 @@ def on_paid_method_button():
 
 """Boton para ir a el frame de pago"""
 def on_pay_button(): 
-    global current_frame, results_frame, pay_frame, selected_departure, selected_return, passengers_entry, passenger_class_input, sum_cost 
+    global current_frame, results_frame, pay_frame, selected_departure, selected_return, passengers_entry, passenger_class_input, sum_cost
     if selected_departure and passengers_entry.get().isdigit() and passenger_class_input.get() != "Seleccionar": 
         if current_frame == results_frame: 
             results_frame.pack_forget()
