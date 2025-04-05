@@ -97,7 +97,7 @@ Se han implementado triggers para asegurar que la eliminación de registros se r
 
 ![Image](https://github.com/user-attachments/assets/fd0756c9-4c9e-4ddb-a9dc-d6f9221bea63)
 
-### Pruebas 
+### ⚙️ Pruebas 
 
 Con la vieja base de datos haciendo un select a buses (tabla con mas datos)
 
