@@ -820,7 +820,17 @@ def make_fetch_frame():
         command=lambda: open_table_window(f.get_booking, "Reservas")
     )
     booking_button.pack(pady=10, padx=20, fill="x")
-    # Botón para mostrar la tabla de Reportes
+    # Botón para mostrar la tabla de Reportes_total
+    reportes_button_total = CTkButton(
+        fetch_frame,
+        text="Ver Reportes Total",
+        corner_radius=32,
+        fg_color="#7732FF",
+        hover_color="#5A23CC",
+        command=lambda: open_table_window(f.get_reportes_total, "Reportes_total")
+    )
+    reportes_button_total.pack(pady=10, padx=20, fill="x")
+    # Boton para mostrar la tabla reportes
     reportes_button = CTkButton(
         fetch_frame,
         text="Ver Reportes",
@@ -830,6 +840,14 @@ def make_fetch_frame():
         command=lambda: open_table_window(f.get_reportes, "Reportes")
     )
     reportes_button.pack(pady=10, padx=20, fill="x")
+
+
+
+
+
+
+
+
     return fetch_frame
 
 def create_input_field(parent, label_text, placeholder, identifier_button):
