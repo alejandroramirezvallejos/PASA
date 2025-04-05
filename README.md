@@ -123,7 +123,7 @@ FULL OUTER JOIN usuario u ON r.usuario_id = u.usuario_id
 
 ![alt text](IMAGES/fullvieja.png)
 
-Con la nueva base de datos con indices igual haciendo un full join a todo ,
+Con la nueva base de datos con indices, igual haciendo un full join a todo 
 teniendo en cuenta que la nueva base de datos tiene mas informacion
 
 ![alt text](IMAGES/fullnueva.png)
