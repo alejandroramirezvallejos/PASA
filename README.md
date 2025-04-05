@@ -97,6 +97,41 @@ Se han implementado triggers para asegurar que la eliminación de registros se r
 
 ![Image](https://github.com/user-attachments/assets/fd0756c9-4c9e-4ddb-a9dc-d6f9221bea63)
 
+### ⚙️ Pruebas 
+
+Con la vieja base de datos haciendo un select a buses (tabla con mas datos)
+
+``` USE pasaVIEJA SELECT * FROM bus b ```
+
+![alt text](IMAGES/pasavieja.png)
+
+Con la nueva base de datos
+
+![alt text](IMAGES/pasa.png)
+
+Con la vieja base de datos sin indices  haciendo un full join a todo
+
+``` 
+USE pasaVIEJA
+SELECT * FROM bus b
+FULL OUTER JOIN chofer c ON b.chofer_id = c.chofer_id
+FULL OUTER JOIN bus b1 ON c.chofer_id = b1.chofer_id
+FULL OUTER JOIN reserva r ON b.bus_id = r.bus_id
+FULL OUTER JOIN ruta r1 ON b1.ruta_id = r1.ruta_id
+FULL OUTER JOIN usuario u ON r.usuario_id = u.usuario_id
+```
+
+![alt text](IMAGES/fullvieja.png)
+
+Con la nueva base de datos con indices, igual haciendo un full join a todo 
+teniendo en cuenta que la nueva base de datos tiene mas informacion
+
+![alt text](IMAGES/fullnueva.png)
+
+
+En conclusion se puede observar una mejora en la velocidad evidente especialmente para queries pesadas
+
+
 ## 🚔​ Seguridad y Roles
 
 La base de datos implementa diferentes roles con permisos específicos:
