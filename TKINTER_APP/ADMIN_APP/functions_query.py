@@ -100,6 +100,42 @@ def del_usuario(usuario_id):
     conexion.commit()
 
 
+# eliminacion logica
+
+
+def del_bus_logic(bus_id):
+    conexion=c.make_connection()
+    cursor=conexion.cursor()
+    print("en proceso de cambio MASICPC")
+#    cursor.execute(f"DELETE FROM bus WHERE bus_id = {bus_id}")
+    conexion.commit()
+#elimina un chofer con su id
+def del_driver_logic(chofer_id):
+    conexion=c.make_connection()
+    cursor=conexion.cursor()
+    print("en proceso de cambio MASICPC")
+ #   cursor.execute(f"DELETE FROM chofer WHERE chofer_id = {chofer_id}")
+    conexion.commit()
+#elimina una ruta con su id
+def del_route_logic(route_id):
+    conexion=c.make_connection()
+    cursor=conexion.cursor()
+    print("en proceso de cambio MASICPC")
+#    cursor.execute(f"DELETE FROM ruta WHERE ruta_id = {route_id}")
+    conexion.commit()
+
+def del_usuario_logic(usuario_id):
+    conexion=c.make_connection()
+    cursor=conexion.cursor()
+    print("en proceso de cambio MASICPC")
+ #   cursor.execute(f"DELETE FROM usuario WHERE usuario_id={usuario_id}")
+    conexion.commit()
+
+
+
+
+
+
 #------------------------modificar------------------------------
 #verifica si un id de una tabla existe
 def verification_id(cursor,table,id):

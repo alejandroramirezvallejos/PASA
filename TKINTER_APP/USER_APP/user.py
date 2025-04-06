@@ -26,7 +26,7 @@ billing_payment_method = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'X'  
+server = 'JOSUEPC'  
 database = 'pasa'
 username = 'dba'
 password= 'dba'
