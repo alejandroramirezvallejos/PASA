@@ -33,6 +33,7 @@ loading_frame = None
 all_frames = []
 entries = []
 selected_option = ""
+role_input = None
 
 # ----------------------------------------------------ENTRADA Y SALIDA DE DATOS-----------------------------------------------------------------------------------------------
 
@@ -101,7 +102,7 @@ def create_account():
 """Extraer Datos para Verificar el Inicio de Sesion"""
 def login():
     # Entrada de Datos
-    global fetch_frame
+    global fetch_frame, role_input
     id_card = login_id_card_entry.get().strip()
     password = login_password_entry.get().strip()
     # Verificar la correcta Entrada de Datos
@@ -117,9 +118,22 @@ def login():
     if not all([password]):
         messagebox.showerror("Error", "Debes ingresar tu Contraseña")
         return
+    if role_input == "Seleccionar":
+        messagebox.showerror("Error", "Debes seleccionar un rol válido.")
+        return
+    if role_input.get() == "DBA":
+        c.username = 'dba'
+        c.password = 'dba'
+    if role_input.get() == "Gerente":
+        c.username = 'gerente'
+        c.password = 'gerente'
+    if role_input.get() == "Vendedor":
+        c.username = 'vendedor'
+        c.password = 'vendedor'
     # Borrar Datos en caso de Error
     login_id_card_entry.delete(0, tk.END)
     login_password_entry.delete(0, tk.END)
+    print(c.username)
     # Conexion con la Base de Datos
     connection = c.make_connection()
     if not connection:
@@ -700,7 +714,7 @@ def make_register_frame():
 
 """Frame para Iniciar Sesion"""
 def make_login_frame():
-    global login_frame, login_id_card_entry, login_password_entry
+    global login_frame, login_id_card_entry, login_password_entry, role_input
     # Creando Frame
     login_frame = tk.Frame(window, bg="#09090A")
     login_frame.name = "login"
@@ -740,6 +754,22 @@ def make_login_frame():
         corner_radius=32
     )
     login_password_entry.pack(side="left", padx=10, fill="x", expand=True)
+    # Elegir Roles
+    role_frame = tk.Frame(login_frame, bg="#09090A")
+    role_frame.pack(side="top", pady=10, fill="x", padx=10)
+    role_txt = tk.Label(role_frame, text="Clase:", bg="#09090A", fg="#C8BCF6")
+    role_input = CTkComboBox(
+        role_frame,
+        values=["DBA", "Gerente", "Vendedor"],
+        fg_color="#343638",
+        button_color="#C8BCF6",
+        border_color="#C8BCF6",
+        corner_radius=32,
+        state="readonly" 
+    )
+    role_input.set("Seleccionar")
+    role_txt.pack(side="left", padx=10)
+    role_input.pack(side="left", padx=10)
     # Boton para Iniciar Sesion
     login_button_submit = CTkButton(
         login_frame,
