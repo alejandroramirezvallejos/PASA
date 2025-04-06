@@ -177,22 +177,50 @@ def queries_option():
                 f.add_route(dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta agregada correctamente")
         elif action == "delete":
-            if "Eliminar Bus" in selected_option:
+            #------------------------------------------ Logica ---------------------------------------
+            # lo que esta en comentario no se elimina son las funciones de eliminar fisica no logica . ahi van las nuevas que tiene que hacer fer
+            if "Eliminar Bus Logica" in selected_option:
                 bus_id = int(entries[0].get())
+                print(bus_id)
+                f.del_bus_logic(bus_id)
+                messagebox.showinfo("Éxito", "Bus eliminado correctamente")
+            elif "Eliminar Chofer Logica" in selected_option:
+                chofer_id = int(entries[1].get())
+                print(chofer_id)
+                f.del_driver_logic(chofer_id)
+                messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
+            elif "Eliminar Ruta Logica" in selected_option:
+                ruta_id = int(entries[2].get())
+                print(ruta_id)
+                f.del_route_logic(ruta_id)
+                messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
+            elif "Eliminar Usuario Logica" in selected_option:
+                usuario_id=int(entries[3].get())
+                print(usuario_id)
+                f.del_usuario_logic(usuario_id)
+                messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
+            #--------------------------------------- Fisica -------------------------
+
+
+            elif "Eliminar Bus" in selected_option:
+                bus_id = int(entries[4].get())
                 f.del_bus(bus_id)
                 messagebox.showinfo("Éxito", "Bus eliminado correctamente")
             elif "Eliminar Chofer" in selected_option:
-                chofer_id = int(entries[1].get())
+                chofer_id = int(entries[5].get())
                 f.del_driver(chofer_id)
                 messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
             elif "Eliminar Ruta" in selected_option:
-                ruta_id = int(entries[2].get())
+                ruta_id = int(entries[6].get())
                 f.del_route(ruta_id)
                 messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
             elif "Eliminar Usuario" in selected_option:
-                usuario_id=int(entries[3].get())
+                usuario_id=int(entries[7].get())
                 f.del_usuario(usuario_id)
                 messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
+                
+        
+        
         elif action == "update":
             if "Actualizar Bus" in selected_option:
                 bus_id = int(entries[0].get())
@@ -904,6 +932,65 @@ def make_option_frame(parent, title_name):
     canvas.configure(yscrollcommand=scrollbar.set)
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
+    # Eliminacion logica
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} logica un Bus",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    
+    title_label.pack(pady=20)
+    if title_name == "Eliminar":
+        create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Bus Logica", "Ingresar", 2)
+    title_label = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} logica un Chofer",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    
+    title_label.pack(pady=20)
+    if title_name == "Eliminar":
+        create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Chofer Logica", "Ingresar", 2)
+    title_label = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} logica una Ruta",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    
+    title_label.pack(pady=20)
+    if title_name == "Eliminar":
+        create_input_field(scrollable_frame, "Ruta ID", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Ruta Logica", "Ingresar", 2)
+    title_label = tk.Label(
+        scrollable_frame,
+        text=f"{title_name} logica un Usuario",  
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    
+    title_label.pack(pady=20)
+    if title_name == "Eliminar":  
+        create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Usuario Logica", "Ingresar", 2)
+    
     # Titulo de Bus
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
