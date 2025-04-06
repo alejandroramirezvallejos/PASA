@@ -17,15 +17,15 @@ def validate_carnet(carnet:str)->bool:
 #---------------------------------------------QUERYS-----------------------------------------------------------------------------------------
 #obtiene tabla rutas
 def get_route(cursor):
-    cursor.execute(f"SELECT * FROM ruta;")
+    cursor.execute(f"EXEC sp_obtiene_tabla_ruta")
     return cursor.fetchall()
 #obtiene tabla bus
 def get_bus(cursor):
-    cursor.execute(f"SELECT * FROM bus;")
+    cursor.execute(f"EXEC sp_obtiene_tabla_bus")
     return cursor.fetchall()
 #obtiene tabla chofer
 def get_driver(cursor):
-    cursor.execute(f"SELECT * FROM chofer;")
+    cursor.execute(f"EXEC sp_obtiene_tabla_chofer")
     return cursor.fetchall()
 #obtiene  reservas
 def get_booking(cursor):
@@ -34,7 +34,7 @@ def get_booking(cursor):
 
 def get_reportes_total(cursor):
     
-    cursor.execute("SELECT * FROM vw_Reportes  ")
+    cursor.execute("EXEC sp_obtiene_vista_Reporte")
     return cursor.fetchall()
 
 def get_reportes(cursor):
@@ -43,13 +43,7 @@ def get_reportes(cursor):
     return cursor.fetchall()
 
 def get_usuarios(cursor):
-    cursor.execute("""SELECT u.usuario_id
-	  ,u.nombre
-	  ,u.apellido
-	  ,u.edad
-	  ,u.carnet
-	  ,u.admin
-FROM usuario u""")
+    cursor.execute("EXEC sp_obtiene_tabla_usuario")
     return cursor.fetchall()
 
 
@@ -78,25 +72,25 @@ def add_route(dep_inicio,dep_final,costo,costo_vip):
 def del_bus(bus_id):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"DELETE FROM bus WHERE bus_id = {bus_id}")
+    cursor.execute(f"EXEC sp_eliminacion_fisica_bus {bus_id}")
     conexion.commit()
 #elimina un chofer con su id
 def del_driver(chofer_id):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"DELETE FROM chofer WHERE chofer_id = {chofer_id}")
+    cursor.execute(f"EXEC sp_eliminacion_fisica_chofer {chofer_id}")
     conexion.commit()
 #elimina una ruta con su id
 def del_route(route_id):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"DELETE FROM ruta WHERE ruta_id = {route_id}")
+    cursor.execute(f"EXEC sp_eliminacion_fisica_ruta {route_id}")
     conexion.commit()
 
 def del_usuario(usuario_id):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"DELETE FROM usuario WHERE usuario_id={usuario_id}")
+    cursor.execute(f"EXEC sp_eliminacion_fisica_usuario {usuario_id}")
     conexion.commit()
 
 
