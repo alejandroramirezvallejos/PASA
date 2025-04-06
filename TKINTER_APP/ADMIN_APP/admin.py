@@ -932,62 +932,63 @@ def make_option_frame(parent, title_name):
     canvas.configure(yscrollcommand=scrollbar.set)
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
-    # Eliminacion logica
-    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
-    title_label = tk.Label(
-        scrollable_frame,
-        text=f"{title_name} logica un Bus",  
-        font=title_font,
-        bg="#09090A",
-        fg="#7732FF",
-        wraplength=350,
-        justify="center",
-    )
-    
-    title_label.pack(pady=20)
     if title_name == "Eliminar":
+        # Eliminacion logica
+        title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} logica un Bus",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        
+        title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Bus Logica", "Ingresar", 2)
-    title_label = tk.Label(
-        scrollable_frame,
-        text=f"{title_name} logica un Chofer",  
-        font=title_font,
-        bg="#09090A",
-        fg="#7732FF",
-        wraplength=350,
-        justify="center",
-    )
-    
-    title_label.pack(pady=20)
-    if title_name == "Eliminar":
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} logica un Chofer",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        
+        title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Chofer Logica", "Ingresar", 2)
-    title_label = tk.Label(
-        scrollable_frame,
-        text=f"{title_name} logica una Ruta",  
-        font=title_font,
-        bg="#09090A",
-        fg="#7732FF",
-        wraplength=350,
-        justify="center",
-    )
-    
-    title_label.pack(pady=20)
-    if title_name == "Eliminar":
+
+            
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} logica una Ruta",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        
+        title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Ruta ID", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Ruta Logica", "Ingresar", 2)
-    title_label = tk.Label(
-        scrollable_frame,
-        text=f"{title_name} logica un Usuario",  
-        font=title_font,
-        bg="#09090A",
-        fg="#7732FF",
-        wraplength=350,
-        justify="center",
-    )
-    
-    title_label.pack(pady=20)
-    if title_name == "Eliminar":  
+
+
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} logica un Usuario",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        
+        title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Usuario Logica", "Ingresar", 2)
     
@@ -1003,6 +1004,8 @@ def make_option_frame(parent, title_name):
         justify="center",
     )
     title_label.pack(pady=20)
+
+
     #bus
     if title_name == "Agregar":
         create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
