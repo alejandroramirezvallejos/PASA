@@ -828,13 +828,15 @@ def make_login_frame():
     show_back_button()
     return login_frame
 
-"""Frame del Historial"""
+"""Frame para el Historial de Modificaciones"""
 def make_history_frame():
-    global id_card_entry, history_frame
+    global history_frame, history_date_button, modifications_container
+    modifications_container = None
     # Creando Frame
     history_frame = tk.Frame(window, bg="#09090A")
     history_frame.name = "history"
     history_frame.pack(side="top", anchor="n", fill="x", expand=True)
+    # Título
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
         history_frame,
@@ -845,24 +847,105 @@ def make_history_frame():
         wraplength=350,
         justify="center",
     )
-    title_label.pack(side="top", anchor="center", pady=10)
-    # Scrollbar
-    results_container = tk.Frame(history_frame, bg="#09090A")
-    results_container.pack(fill="both", expand=True, padx=10, pady=10)
-    scrollbar = tk.Scrollbar(results_container)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    canvas = tk.Canvas(results_container, bg="#09090A", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0, height=500)
-    canvas.pack(side=tk.LEFT, fill="both", expand=True)
-    scrollbar.config(command=canvas.yview)
-    # Creacion del Frame de texto de las Reservas
-    inner_frame = tk.Frame(canvas, bg="#09090A")
-    canvas.create_window((0, 0), window=inner_frame, anchor="nw")
-    window_id = canvas.create_window((0, 0), window=inner_frame, anchor="nw")
-    def onFrameConfigure(event):
-        canvas.configure(scrollregion=canvas.bbox("all"))
-        canvas.itemconfig(window_id, width=canvas.winfo_width())
-    inner_frame.bind("<Configure>", onFrameConfigure)
-    # Conexion con la base de datos
+    title_label.pack(pady=10)
+    def load_modifications(selected_date):
+        global modifications_container
+        # Si ya existe un contenedor previo, se destruye para refrescar la información
+        if modifications_container is not None:
+            modifications_container.destroy()
+        modifications_container = tk.Frame(history_frame, bg="#09090A")
+        modifications_container.pack(fill="both", expand=True, padx=10, pady=10)
+        # Crear un Scrollbar
+        scrollbar = tk.Scrollbar(modifications_container)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        canvas = tk.Canvas(modifications_container, bg="#09090A", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0, height=500)
+        canvas.pack(side=tk.LEFT, fill="both", expand=True)
+        scrollbar.config(command=canvas.yview)
+        inner_frame = tk.Frame(canvas, bg="#09090A")
+        window_id = canvas.create_window((0, 0), window=inner_frame, anchor="nw")
+        def onFrameConfigure(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas.itemconfig(window_id, width=canvas.winfo_width())
+        inner_frame.bind("<Configure>", onFrameConfigure)
+        # Conexión y consulta a la base de datos
+        try:
+            connection = c.make_connection()
+            if connection:
+                cursor = connection.cursor()
+                cursor.execute(f"EXEC sp_obtener_modificaciones_por_dia_vista '{selected_date}'")
+                modifications = cursor.fetchall()
+                if modifications:
+                    for modification in modifications:
+                        texto_modification = (
+                            f"Auditoria ID: {modification[0]}\n"
+                            f"Tabla Modificada: {modification[1]}\n"
+                            f"Registro Modificado: {modification[2]}\n"
+                            f"Comando: {modification[3]}\n"
+                            f"Usuario ID: {modification[5]}\n"
+                            f"Datos Anteriores: {modification[6]}"
+                        )
+                        tk.Label(inner_frame, text=texto_modification, bg="#09090A", fg="#C8BCF6", anchor="center", justify="center").pack(fill="x", pady=2)
+                else:
+                    tk.Label(inner_frame, text="No se encontraron modificaciones", bg="#09090A", fg="#C8BCF6").pack(pady=10, side="top", anchor="center")
+                connection.close()
+            else:
+                tk.Label(inner_frame, text="Error en la conexión a la base de datos", bg="#09090A", fg="#C8BCF6").pack(pady=10, side="top", anchor="center")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al obtener modificaciones: {e}")
+    # Función para actualizar la fecha seleccionada y cargar las modificaciones
+    def update_history_date(selected_date):
+        history_date_button.configure(text=selected_date)
+        load_modifications(selected_date)
+    # Función del calendario
+    def open_calendar(min_date, max_date, callback):
+        calendar_window = tk.Toplevel(window)
+        calendar_window.title("Selecciona la Fecha")
+        calendar_window.configure(bg="#09090A")
+        calendar_window.geometry("320x250+150+85")
+        try:
+            calendar_window.iconbitmap("../../ASSETS/icon.ico")
+        except Exception:
+            print(f"Error al cargar el icono: {Exception}")
+        calendar_frame = tk.Frame(calendar_window, bg="#09090A", relief="flat", bd=1)
+        calendar_frame.pack(padx=10, pady=10, fill="both", expand=True)
+        calendar = Calendar(
+            calendar_frame,
+            mindate=min_date,
+            maxdate=max_date,
+            date_pattern="yyyy-mm-dd",
+            selectmode="day",
+            background="#09090A",
+            foreground="#7732FF",
+            headersbackground="#09090A",
+            headersforeground="#7732FF",
+            selectbackground="#7732FF",
+            selectforeground="#09090A",
+            weekendforeground="#A9A9A9",
+            bordercolor="#C7BCF6",
+        )
+        calendar.pack(padx=10, pady=10)
+        calendar.bind("<<CalendarSelected>>", lambda _: [callback(calendar.get_date()), calendar_window.destroy()])
+    # Fecha de Modificaciones
+    history_date_frame = tk.Frame(history_frame, bg="#09090A")
+    history_date_frame.pack(side="top", pady=10, fill="x", padx=10)
+    history_date_label = tk.Label(history_date_frame, text="Fecha de las Modificaciones:", bg="#09090A", fg="#C8BCF6")
+    history_date_label.pack(side="left", padx=10)
+    history_date_button = CTkButton(
+        history_date_frame,
+        text="Seleccionar",
+        corner_radius=32,
+        fg_color="#343638",
+        text_color="#C8BCF6",
+        hover_color="#5A23CC",
+        border_color="#C8BCF6",
+        border_width=2,
+        command=lambda: open_calendar(
+            date(2024, 12, 31),
+            date.today(),
+            update_history_date  
+        )
+    )
+    history_date_button.pack(side="left", padx=10, fill="x", expand=True)
     return history_frame
 
 # ------------------------------------------------------------MANEJO DE COMANDOS---------------------------------------------------------------------------------------------
@@ -887,6 +970,10 @@ def make_fetch_frame():
             table_window = tk.Toplevel(fetch_frame)
             table_window.title(f"Tabla: {title}")
             table_window.geometry("600x400")
+            try:
+                table_window.iconbitmap("../../ASSETS/icon.ico")
+            except Exception:
+                print(f"Error al cargar el icono: {Exception}")
             table_window.configure(bg="#09090A")
             # Crear un Treeview para mostrar los datos
             tree = ttk.Treeview(table_window, show="headings", selectmode="browse")
@@ -1320,7 +1407,7 @@ def hide_back_button():
 
 """Funcion para limpiar datos al  presionar el Boton de Regresar"""
 def on_back_button():
-    global current_frame, login_frame, register_frame, start_frame, role_input
+    global current_frame, login_frame, register_frame, start_frame, role_input, history_date_button, history_frame
     # Borar datos al presionar el boton de regreso
     if current_frame == login_frame:
         login_id_card_entry.delete(0, tk.END)
@@ -1332,6 +1419,8 @@ def on_back_button():
         age_entry.delete(0, tk.END)
         id_card_entry.delete(0, tk.END)
         password_entry.delete(0, tk.END)
+    elif current_frame == history_frame:
+        history_date_button.configure(text="Seleccionar") 
 
 """Funcion para mostrar el Boton para Cerrar Sesion"""
 def show_log_out_button(target_frame=None):
@@ -1345,8 +1434,9 @@ def hide_log_out_button():
 
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
-    global current_frame, start_frame
+    global current_frame, start_frame, history_date_button
     hide_log_out_button()
+    history_date_button.configure(text="Seleccionar") 
     show_frame(start_frame)
 
 """Función para Mostrar Option"""
