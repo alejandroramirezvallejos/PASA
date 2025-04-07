@@ -898,14 +898,6 @@ def make_fetch_frame():
         command=lambda: open_table_window(f.get_reportes, "Reportes")
     )
     reportes_button.pack(pady=10, padx=20, fill="x")
-
-
-
-
-
-
-
-
     return fetch_frame
 
 def create_input_field(parent, label_text, placeholder, identifier_button):
@@ -1006,8 +998,6 @@ def make_option_frame(parent, title_name):
         title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Ruta ID", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Ruta Logica", "Ingresar", 2)
-
-
         title_label = tk.Label(
             scrollable_frame,
             text=f"{title_name} logica un Usuario",  
@@ -1020,8 +1010,7 @@ def make_option_frame(parent, title_name):
         
         title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
-        create_input_field(scrollable_frame, f"{title_name} Usuario Logica", "Ingresar", 2)
-    
+        create_input_field(scrollable_frame, f"{title_name} Usuario Logica", "Ingresar", 2)    
     # Titulo de Bus
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
@@ -1034,8 +1023,6 @@ def make_option_frame(parent, title_name):
         justify="center",
     )
     title_label.pack(pady=20)
-
-
     #bus
     if title_name == "Agregar":
         create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
@@ -1109,7 +1096,7 @@ def make_option_frame(parent, title_name):
         create_input_field(scrollable_frame, "Costo:", "Ingresar", 1)
         create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
-    # USUARIO
+    # Usuario
     if title_name == "Actualizar":
         title_font = font.Font(family="Canva Sans", size=15, weight="bold")
         title_label = tk.Label(
