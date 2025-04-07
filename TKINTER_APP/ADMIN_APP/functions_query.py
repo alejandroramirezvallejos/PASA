@@ -1,6 +1,7 @@
 import conection as c
 
 #-----------------------------------------------FUNCION OBTENCION DE LLAVE NUEVA--------------------------------------------------------------------------------------------------=
+
 def obtain_pk(cursor,tabla:str)->str:
     cursor.execute(f"SELECT {tabla}_id FROM {tabla} ORDER BY {tabla}_id DESC ")
     return cursor.fetchone()[0]+1
@@ -14,23 +15,24 @@ def validate_carnet(carnet:str)->bool:
         return False
     else:
         return True
-#---------------------------------------------QUERYS-----------------------------------------------------------------------------------------
-#obtiene tabla rutas
+#-------------------------------------------------------------------QUERYS-----------------------------------------------------------------------------------------
+
+# obtiene tabla rutas
 def get_route(cursor):
     cursor.execute(f"EXEC sp_obtiene_tabla_ruta")
     return cursor.fetchall()
 
-#obtiene tabla bus
+# obtiene tabla bus
 def get_bus(cursor):
     cursor.execute(f"EXEC sp_obtiene_tabla_bus")
     return cursor.fetchall()
 
-#obtiene tabla chofer
+# obtiene tabla chofer
 def get_driver(cursor):
     cursor.execute(f"EXEC sp_obtiene_tabla_chofer")
     return cursor.fetchall()
 
-#obtiene reservas
+# obtiene reservas
 def get_booking(cursor):
     cursor.execute(f"EXEC sp_obtener_reservas")
     return cursor.fetchall()
@@ -130,7 +132,7 @@ def del_usuario_logic(usuario_id):
     # cursor.execute(f"DELETE FROM usuario WHERE usuario_id={usuario_id}")
     conexion.commit()
 
-#--------------------------------------------------modificar--------------------------------------------------
+#------------------------------------------------------------modificar--------------------------------------------------
 
 # verifica si un id de una tabla existe
 def verification_id(cursor,table,id):
