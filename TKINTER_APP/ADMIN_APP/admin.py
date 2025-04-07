@@ -881,7 +881,7 @@ def make_history_frame():
                             f"Tabla Modificada: {modification[1]}\n"
                             f"Registro Modificado: {modification[2]}\n"
                             f"Comando: {modification[3]}\n"
-                            f"Usuario ID: {modification[5]}\n"
+                            f"Rol del Modificador: {modification[5]}\n"
                             f"Datos Anteriores: {modification[6]}"
                         )
                         tk.Label(inner_frame, text=texto_modification, bg="#09090A", fg="#C8BCF6", anchor="center", justify="center").pack(fill="x", pady=2)
