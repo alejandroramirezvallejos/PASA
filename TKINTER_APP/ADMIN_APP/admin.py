@@ -16,6 +16,7 @@ import customtkinter as ctk
 from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme, CTkImage
 import functions_query as f
 import conection as c
+import json
 window = None
 current_frame = None
 add_frame = None
@@ -192,7 +193,9 @@ def queries_option():
                 f.add_route(dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta agregada correctamente")
         elif action == "delete":
+
             #------------------------------------------ Logica ---------------------------------------
+            
             # lo que esta en comentario no se elimina son las funciones de eliminar fisica no logica . ahi van las nuevas que tiene que hacer fer
             if "Eliminar Bus Logica" in selected_option:
                 bus_id = int(entries[0].get())
@@ -214,7 +217,8 @@ def queries_option():
                 print(usuario_id)
                 f.del_usuario_logic(usuario_id)
                 messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
-            #--------------------------------------- Fisica -------------------------
+
+            #-------------------------------Fisica-------------------------------
 
 
             elif "Eliminar Bus" in selected_option:
@@ -874,15 +878,39 @@ def make_history_frame():
                 cursor = connection.cursor()
                 cursor.execute(f"EXEC sp_obtener_modificaciones_por_dia_vista '{selected_date}'")
                 modifications = cursor.fetchall()
-                if modifications:
+                if modifications: 
                     for modification in modifications:
+                        # Procesar modification[6] si es un JSON válido
+                        try:
+                            datos_json = json.loads(modification[6])
+                            def format_data(data, indent=0):
+                                formatted = ""
+                                espacios = " " * indent
+                                if isinstance(data, dict):
+                                    for key, value in data.items():
+                                        if isinstance(value, (dict, list)):
+                                            formatted += f"{espacios}{key}:\n{format_data(value, indent + 4)}"
+                                        else:
+                                            formatted += f"{espacios}{key}: {value}\n"
+                                elif isinstance(data, list):
+                                    for item in data:
+                                        if isinstance(item, (dict, list)):
+                                            formatted += format_data(item, indent)
+                                        else:
+                                            formatted += f"{espacios}- {item}\n"
+                                else:
+                                    formatted += f"{espacios}{data}\n"
+                                return formatted                            
+                            pretty_data = format_data(datos_json)
+                        except Exception as e:
+                            pretty_data = modification[6]                            
                         texto_modification = (
                             f"Auditoria ID: {modification[0]}\n"
                             f"Tabla Modificada: {modification[1]}\n"
                             f"Registro Modificado: {modification[2]}\n"
                             f"Comando: {modification[3]}\n"
                             f"Rol del Modificador: {modification[5]}\n"
-                            f"Datos Anteriores: {modification[6]}"
+                            f"Datos Anteriores:\n{pretty_data}\n"
                         )
                         tk.Label(inner_frame, text=texto_modification, bg="#09090A", fg="#C8BCF6", anchor="center", justify="center").pack(fill="x", pady=2)
                 else:
@@ -1133,7 +1161,6 @@ def make_option_frame(parent, title_name):
             wraplength=350,
             justify="center",
         )
-        
         title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Bus Logica", "Ingresar", 2)
@@ -1146,12 +1173,9 @@ def make_option_frame(parent, title_name):
             wraplength=350,
             justify="center",
         )
-        
         title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
-        create_input_field(scrollable_frame, f"{title_name} Chofer Logica", "Ingresar", 2)
-
-            
+        create_input_field(scrollable_frame, f"{title_name} Chofer Logica", "Ingresar", 2) 
         title_label = tk.Label(
             scrollable_frame,
             text=f"{title_name} logica una Ruta",  
@@ -1161,7 +1185,6 @@ def make_option_frame(parent, title_name):
             wraplength=350,
             justify="center",
         )
-        
         title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Ruta ID", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Ruta Logica", "Ingresar", 2)
@@ -1174,7 +1197,6 @@ def make_option_frame(parent, title_name):
             wraplength=350,
             justify="center",
         )
-        
         title_label.pack(pady=20)
         create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Usuario Logica", "Ingresar", 2)    

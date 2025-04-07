@@ -1725,7 +1725,6 @@ def show_frame(frame_to_show):
                 show_back_button()
             elif frame_to_show.name == "reservation":
                 show_log_out_button()
-
     frame_to_show.pack(expand=True)
 
 """Funcion para Mostrar el Boton de Historial"""
@@ -1802,7 +1801,7 @@ def get_price_per_bus(origin,destination,passenger_class):
          cursor=connection.execute(f"EXEC sp_totaldeventasporruta '{origin}','{destination}',{0}")
     result =cursor.fetchone()
     print(result)
-    if(result!=None):
+    if (result!=None):
         return result[0]
     else:
         return ""
