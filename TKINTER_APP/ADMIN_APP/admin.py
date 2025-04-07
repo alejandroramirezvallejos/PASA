@@ -133,6 +133,7 @@ def login():
     # Borrar Datos en caso de Error
     login_id_card_entry.delete(0, tk.END)
     login_password_entry.delete(0, tk.END)
+    role_input.set("Seleccionar")
     print(c.username)
     # Conexion con la Base de Datos
     connection = c.make_connection()
@@ -277,6 +278,26 @@ def queries_option():
     except Exception as e:
         messagebox.showerror("Error",e)
 
+"""Funcion para Mostrar el Boton de Historial"""
+def show_history_button(target_frame=None):
+    if history_button:
+        history_button.place(x=25, y=9)  
+
+"""Funcion para ocultar el Boton de Historial"""
+def hide_history_button():
+    if history_button:
+        history_button.place_forget()
+
+"""Funcion para ocultar Frame al apretar Boton de Historial"""
+def on_history_button():
+    global current_frame, fetch_frame, history_frame
+    # Ocultar frame actual
+    if current_frame == fetch_frame:
+        fetch_frame.pack_forget()
+    hide_history_button()
+    history_frame = make_history_frame() 
+    show_frame(history_frame)
+
 # ------------------------------------------------------------FRAMES---------------------------------------------------------------------------------------------
 
 """Pantalla de Carga"""
@@ -326,7 +347,7 @@ def make_action_bar():
         back_photo = ImageTk.PhotoImage(back_image)
         global back_button
         def on_back_button():
-            global current_frame, login_frame, register_frame, start_frame, terms_frame
+            global current_frame, login_frame, register_frame, start_frame, terms_frame, history_frame
             # Verificar desde qué frame se está presionando el Boton de Regreso
             if current_frame == login_frame:
                 login_frame.pack_forget()
@@ -340,6 +361,10 @@ def make_action_bar():
                 terms_frame.pack_forget()
                 hide_back_button()
                 show_frame(start_frame)
+            elif current_frame == history_frame:
+                history_frame.pack_forget()
+                hide_back_button()
+                show_frame(fetch_frame)
         back_button = tk.Button(
             action_bar,
             image=back_photo,
@@ -394,6 +419,24 @@ def make_action_bar():
         log_out_button.place_forget()  
     except Exception as e:
         print(f"Error al cargar el Boton de Cerrar Sesion: {e}")
+    # Crear Boton de Historial pero inicialmente ocultarlo
+    try:
+        history_image_path = "../../ASSETS/history_button_admin.png"
+        history_image = Image.open(history_image_path).resize((17, 21), Image.LANCZOS)
+        history_photo = ImageTk.PhotoImage(history_image)
+        global history_button
+        history_button = tk.Button(
+            action_bar,
+            image=history_photo,
+            bg="#09090A",
+            borderwidth=0,
+            command=on_history_button
+        )
+        history_button.image = history_photo
+        history_button.place(x=25, y=9) 
+        history_button.place_forget()
+    except Exception as e:
+        print(f"Error al cargar el Boton de Historial: {e}")
     return action_bar
 
 """Frame de la Barra de Navegacion"""
@@ -757,7 +800,7 @@ def make_login_frame():
     # Elegir Roles
     role_frame = tk.Frame(login_frame, bg="#09090A")
     role_frame.pack(side="top", pady=10, fill="x", padx=10)
-    role_txt = tk.Label(role_frame, text="Clase:", bg="#09090A", fg="#C8BCF6")
+    role_txt = tk.Label(role_frame, text="Rol:", bg="#09090A", fg="#C8BCF6")
     role_input = CTkComboBox(
         role_frame,
         values=["DBA", "Gerente", "Vendedor"],
@@ -784,6 +827,43 @@ def make_login_frame():
     # Botón de Regreso
     show_back_button()
     return login_frame
+
+"""Frame del Historial"""
+def make_history_frame():
+    global id_card_entry, history_frame
+    # Creando Frame
+    history_frame = tk.Frame(window, bg="#09090A")
+    history_frame.name = "history"
+    history_frame.pack(side="top", anchor="n", fill="x", expand=True)
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(
+        history_frame,
+        text="Historial de Modificaciones",
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(side="top", anchor="center", pady=10)
+    # Scrollbar
+    results_container = tk.Frame(history_frame, bg="#09090A")
+    results_container.pack(fill="both", expand=True, padx=10, pady=10)
+    scrollbar = tk.Scrollbar(results_container)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    canvas = tk.Canvas(results_container, bg="#09090A", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0, height=500)
+    canvas.pack(side=tk.LEFT, fill="both", expand=True)
+    scrollbar.config(command=canvas.yview)
+    # Creacion del Frame de texto de las Reservas
+    inner_frame = tk.Frame(canvas, bg="#09090A")
+    canvas.create_window((0, 0), window=inner_frame, anchor="nw")
+    window_id = canvas.create_window((0, 0), window=inner_frame, anchor="nw")
+    def onFrameConfigure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+        canvas.itemconfig(window_id, width=canvas.winfo_width())
+    inner_frame.bind("<Configure>", onFrameConfigure)
+    # Conexion con la base de datos
+    return history_frame
 
 # ------------------------------------------------------------MANEJO DE COMANDOS---------------------------------------------------------------------------------------------
 
@@ -1212,11 +1292,18 @@ def show_frame(frame_to_show):
             show_back_button()
             hide_log_out_button()
             navigation_bar.pack_forget()
+        elif frame_to_show.name == "history":
+            hide_option()
+            action_bar.pack(side="top", fill="x")
+            show_back_button()
+            show_log_out_button()
+            navigation_bar.pack(side="bottom", fill="x")
         else:
             hide_option()
             action_bar.pack(side="top", fill="x")
             hide_back_button()
             show_log_out_button()
+            show_history_button()
             navigation_bar.pack(side="bottom", fill="x")
     frame_to_show.pack(expand=True)
 
@@ -1233,11 +1320,12 @@ def hide_back_button():
 
 """Funcion para limpiar datos al  presionar el Boton de Regresar"""
 def on_back_button():
-    global current_frame, login_frame, register_frame, start_frame
+    global current_frame, login_frame, register_frame, start_frame, role_input
     # Borar datos al presionar el boton de regreso
     if current_frame == login_frame:
         login_id_card_entry.delete(0, tk.END)
         login_password_entry.delete(0, tk.END)
+        role_input.set("Seleccionar")
     elif current_frame == register_frame:
         name_entry.delete(0, tk.END)
         last_name_entry.delete(0, tk.END)
@@ -1277,7 +1365,7 @@ def hide_option():
 """Funcion Principal"""
 def main():
     global window, all_frames, start_frame, register_frame, login_frame, action_bar, terms_frame
-    global current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar
+    global current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar, history_frame
     # Configuración de la ventana
     set_appearance_mode("#09090A")
     set_default_color_theme("blue")
@@ -1306,9 +1394,10 @@ def main():
     delete_frame = make_delete_frame()
     fetch_frame = make_fetch_frame()
     terms_frame = make_terms_frame()
+    history_frame = make_history_frame()
     all_frames = [
         loading_frame, start_frame, register_frame,
-        login_frame, fetch_frame, terms_frame,
+        login_frame, fetch_frame, history_frame, terms_frame,
         add_frame, update_frame, delete_frame
     ]
     # Mostrar pantalla de carga
