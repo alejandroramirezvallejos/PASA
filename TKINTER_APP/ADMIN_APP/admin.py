@@ -138,7 +138,7 @@ def login():
     login_id_card_entry.delete(0, tk.END)
     login_password_entry.delete(0, tk.END)
     role_input.set("Seleccionar")
-    print(c.username)
+    #print(c.username)
     # Conexion con la Base de Datos
     connection = c.make_connection()
     if not connection:
@@ -175,6 +175,14 @@ def queries_option():
             messagebox.showerror("Error", "Operación no válida o Frame desconocido.")
             return
         if action == "add":
+            if "Buscar Chofer" in selected_option:
+                resultado=open_table_window_obtain(f.get_chofer,"Choferes")
+                entries[0].delete(0, tk.END)
+                entries[0].insert(0, str(resultado[0]))
+            if "Buscar Ruta" in selected_option:
+                rsultadoruta=open_table_window_obtain(f.get_route,"Rutas")
+                entries[1].delete(0, tk.END)
+                entries[1].insert(0, str(rsultadoruta[0]))
             if "Agregar Bus" in selected_option:
                 chofer_id = int(entries[0].get())
                 ruta_id = int(entries[1].get())
@@ -203,14 +211,14 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     bus_id = int(entries[0].get())
-                    print(bus_id)
+                    #print(bus_id)
                     f.del_bus_logic(bus_id)
                     messagebox.showinfo("Éxito", "bus eliminado correctamente")
                 except ValueError:
                     resultadobus_id = open_table_window_obtain(f.get_bus, "buses")
                     if resultadobus_id and len(resultadobus_id) > 0:
                         bus_id = int(resultadobus_id[0])
-                        print(bus_id)
+                        #print(bus_id)
                         f.del_bus_logic(bus_id)
                         messagebox.showinfo("Éxito", "bus eliminado correctamente")
                     else:
@@ -220,14 +228,14 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     chofer_id = int(entries[1].get())
-                    print(chofer_id)
+                    #print(chofer_id)
                     f.del_driver_logic(chofer_id)
                     messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
                 except ValueError:
                     resultadoscl = open_table_window_obtain(f.get_chofer, "choferes")
                     if resultadoscl and len(resultadoscl) > 0:
                         chofer_id = int(resultadoscl[0])
-                        print(chofer_id)
+                        #print(chofer_id)
                         f.del_driver_logic(chofer_id)
                         messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
                     else:
@@ -237,14 +245,14 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     ruta_id = int(entries[2].get())
-                    print(ruta_id)
+                    #print(ruta_id)
                     f.del_route_logic(ruta_id)
                     messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
                 except ValueError:
                     resultadoruta_id = open_table_window_obtain(f.get_route, "rutas")
                     if resultadoruta_id and len(resultadoruta_id) > 0:
                         ruta_id = int(resultadoruta_id[0])
-                        print(ruta_id)
+                        #print(ruta_id)
                         f.del_route_logic(ruta_id)
                         messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
                     else:
@@ -256,14 +264,14 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     usuario_id = int(entries[3].get())
-                    print(usuario_id)
+                    #print(usuario_id)
                     f.del_usuario_logic(usuario_id)
                     messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
                 except ValueError:
                     resultadosusuario_id = open_table_window_obtain(f.get_usuarios, "usuarios")
                     if resultadosusuario_id and len(resultadosusuario_id) > 0:
                         usuario_id = int(resultadosusuario_id[0])
-                        print(usuario_id)
+                        #print(usuario_id)
                         f.del_usuario_logic(usuario_id)
                         messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
                     else:
@@ -278,14 +286,14 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     bus_id = int(entries[4].get())
-                    print(bus_id)
+                    #print(bus_id)
                     f.del_bus(bus_id)
                     messagebox.showinfo("Éxito", "Bus eliminado correctamente")
                 except ValueError:
                     resultadosbus_id2 = open_table_window_obtain(f.get_bus, "buses")   
                     if resultadosbus_id2 and len(resultadosbus_id2) > 0:
                         bus_id = int(resultadosbus_id2[0])
-                        print(bus_id)
+                        #print(bus_id)
                         f.del_bus(bus_id)
                         messagebox.showinfo("Éxito", "Bus eliminado correctamente")
                     else:
@@ -296,14 +304,14 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     chofer_id = int(entries[5].get())
-                    print(chofer_id)
+                    #print(chofer_id)
                     f.del_driver(chofer_id)
                     messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
                 except ValueError:
                     resultadochofer_id2 = open_table_window_obtain(f.get_chofer, "choferes")
                     if resultadochofer_id2 and len(resultadochofer_id2) > 0:
                         chofer_id = int(resultadochofer_id2[0])
-                        print(chofer_id)
+                        #print(chofer_id)
                         f.del_driver(chofer_id)
                         messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
                     else:
@@ -313,14 +321,14 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     ruta_id = int(entries[6].get())
-                    print(ruta_id)
+                    #print(ruta_id)
                     f.del_route(ruta_id)
                     messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
                 except ValueError:
                     resultadoruta_id2 = open_table_window_obtain(f.get_route, "rutas")
                     if resultadoruta_id2 and len(resultadoruta_id2) > 0:
                         ruta_id = int(resultadoruta_id2[0])
-                        print(ruta_id)
+                        #print(ruta_id)
                         f.del_route(ruta_id)
                         messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
                     else:
@@ -332,14 +340,14 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     usuario_id = int(entries[7].get())
-                    print(usuario_id)
+                    #print(usuario_id)
                     f.del_usuario(usuario_id)
                     messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
                 except ValueError:
                     resiltadousuario_id2 = open_table_window_obtain(f.get_usuarios, "usuarios")
                     if resiltadousuario_id2 and len(resiltadousuario_id2) > 0:
                         usuario_id = int(resiltadousuario_id2[0])
-                        print(usuario_id)
+                        #print(usuario_id)
                         f.del_usuario(usuario_id)
                         messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
                     else:
@@ -353,7 +361,7 @@ def queries_option():
                     ruta_id = int(entries[2].get())
                     fecha_sal=(entries[3].get())
                     fecha_ret=(entries[4].get())
-                    print(bus_id, chofer_id, ruta_id, fecha_sal, fecha_ret)
+                    #print(bus_id, chofer_id, ruta_id, fecha_sal, fecha_ret)
                     f.update_bus(bus_id,  chofer_id, ruta_id,fecha_sal,fecha_ret)
                     messagebox.showinfo("Éxito", "Bus actualizado correctamente")
                 except ValueError:
@@ -381,7 +389,7 @@ def queries_option():
                     edad = int(entries[7].get())
                     carnet = int(entries[8].get())
 
-                    print(nombre, chofer_id, edad, carnet)
+                    #print(nombre, chofer_id, edad, carnet)
                     f.update_driver(chofer_id, nombre, edad, carnet)
                     messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
                 except ValueError:
@@ -406,7 +414,7 @@ def queries_option():
                     dep_final = entries[11].get()
                     costo = int(entries[12].get())
                     costo_vip = int(entries[13].get())
-                    print(ruta_id, dep_inicio, dep_final, costo, costo_vip)
+                    #print(ruta_id, dep_inicio, dep_final, costo, costo_vip)
 
                     f.update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip)
                     messagebox.showinfo("Éxito", "Ruta actualizado correctamente")
@@ -447,7 +455,7 @@ def queries_option():
                     if(admin!=1 and admin!=0):
                         raise ValueError("El campo admin solo puede ser 0 (No) o 1 (Sí)")
                     
-                    print(usuario_id,nombre,apellido,edad,carnet,contraseña,admin)
+                    #print(usuario_id,nombre,apellido,edad,carnet,contraseña,admin)
                     f.update_user(usuario_id,nombre,apellido,edad,carnet,contraseña,admin)
                     messagebox.showinfo("Éxito", "Usuario actualizado correctamente")
                 except ValueError:
@@ -1477,7 +1485,7 @@ def create_input_field(parent, label_text, placeholder, identifier_button):
             entries.append(entry)  # Agregar la entrada a la lista
     elif identifier_button == 2:
         frame = tk.Frame(parent, bg="#09090A")
-        frame.pack(side="top", pady=20, fill="x", padx=10)
+        frame.pack(side="top", pady=0, fill="x", padx=10)
         def on_button_click():
             global selected_option
             selected_option = label_text
@@ -1490,7 +1498,7 @@ def create_input_field(parent, label_text, placeholder, identifier_button):
             hover_color="#5A23CC",
             command=on_button_click,
         )
-        available.pack(pady=10, fill="x")
+        available.pack(pady=0, fill="x")
 
 """Frame para Crear Botones Predeterminados"""
 def make_option_frame(parent, title_name):
@@ -1582,6 +1590,8 @@ def make_option_frame(parent, title_name):
         create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
         create_input_field(scrollable_frame, "fecha_salida:", "Ingresar", 1)
         create_input_field(scrollable_frame, "fecha_retorno","Ingresar", 1)
+        create_input_field(scrollable_frame, f"Buscar Chofer", "Ingresar", 2)
+        create_input_field(scrollable_frame, f"Buscar Ruta", "Ingresar", 2)
         create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
     elif title_name == "Eliminar":
         create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
