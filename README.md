@@ -48,6 +48,9 @@ El administrador tiene acceso completo a las siguientes funcionalidades:
 - **Reportes**:
   - Generar reportes de las operaciones del negocio
 
+- **Auditorias**:
+  - Historial de edicion de la base de datos, indicando usuario que modifico 
+
 ### 🛒​ Interfaz de Cliente
 
 El cliente tiene acceso a las siguientes funcionalidades:
@@ -68,6 +71,9 @@ El cliente tiene acceso a las siguientes funcionalidades:
 - **Historial de Compras**:
   - Ver el historial de reservas anteriores
 
+- **Modificacion de su propia cuenta**
+  - Al insertar su contrasena, se puede cambiar parte de los datos personales del usuario
+
 ## 🛢 Requisitos Base de Datos
 
 ### 🔗 Indices establecidos
@@ -75,13 +81,14 @@ El cliente tiene acceso a las siguientes funcionalidades:
 - En la tabla Bus se anadio el indice en fecha entrada y fecha salida
 - En la tabla ruta se anadio indice en la columna costo y costoVip
 - En la tabla usuario el indice se establecio en carnet y contrasena
+- En la tabla Bus, ruta, usuario, chofer y reservas en la columna de registro_eliminado se anadio un indice
 
 ![Image](https://github.com/user-attachments/assets/21cda3e1-8bbe-4f9f-8719-a59744448f3f)
 
 
 ### 🖥 Procedimientos Almacenados (Stored Procedures)
 
-La base de datos incluye 22 procedimientos almacenados (stored procedures) que permiten controlar la concurrencia y gestionar las transacciones de manera eficiente. Cada uno tiene un control serializable de concurrencia.
+La base de datos incluye 42 procedimientos almacenados (stored procedures) que permiten controlar la concurrencia y gestionar las transacciones de manera eficiente. Cada uno tiene un control serializable de concurrencia.
 
 ![Image](https://github.com/user-attachments/assets/1d241db8-dda4-4760-ab54-a8c2734bbc83)
 
@@ -93,44 +100,33 @@ Se implementan vistas para generar reportes de gestión, los cuales pueden ser u
 
 ### 🐯 Triggers
 
-Se han implementado triggers para asegurar que la eliminación de registros se realice de manera segura. Estos triggers también gestionan las relaciones de claves foráneas, estableciendo valores nulos para evitar errores al eliminar registros.
+Se han implementado triggers para asegurar que la eliminación de registros se realice de manera segura. Estos triggers también gestionan las relaciones de claves foráneas, estableciendo valores nulos para evitar errores al eliminar registros. Ademas de la actualizacion para la tabla auditoria tras cada update, insercion o delete
 
 ![Image](https://github.com/user-attachments/assets/fd0756c9-4c9e-4ddb-a9dc-d6f9221bea63)
 
 ### ⚙️ Pruebas 
 
-Con la vieja base de datos haciendo un select a buses (tabla con mas datos)
+Con la antigua base de datos haciendo un select a buses (tabla con mas datos)
 
-``` USE pasaVIEJA SELECT * FROM bus b ```
-
-![alt text](IMAGES/pasavieja.png)
-
-Con la nueva base de datos
-
-![alt text](IMAGES/pasa.png)
-
-Con la vieja base de datos sin indices  haciendo un full join a todo
-
-``` 
-USE pasaVIEJA
-SELECT * FROM bus b
+``` SELECT b1.bus_id,c.chofer_id,b.fecha_salida,b.fecha_retorno
+,r1.ruta_id,b.registro_eliminado,c.carnet,c.nombre,c.edad,sum(costo)
+FROM bus b
 FULL OUTER JOIN chofer c ON b.chofer_id = c.chofer_id
 FULL OUTER JOIN bus b1 ON c.chofer_id = b1.chofer_id
 FULL OUTER JOIN reserva r ON b.bus_id = r.bus_id
 FULL OUTER JOIN ruta r1 ON b1.ruta_id = r1.ruta_id
 FULL OUTER JOIN usuario u ON r.usuario_id = u.usuario_id
-```
+group by b1.bus_id,c.chofer_id,b.fecha_salida,b.fecha_retorno
+,r1.ruta_id,b.registro_eliminado,c.carnet,c.nombre,c.edad
+order by b.fecha_salida ```
 
-![alt text](IMAGES/fullvieja.png)
+![Image](https://github.com/user-attachments/assets/978da545-3ee4-464b-bf48-a0932d810138)
 
-Con la nueva base de datos con indices, igual haciendo un full join a todo 
-teniendo en cuenta que la nueva base de datos tiene mas informacion
+Con la nueva base de datos
 
-![alt text](IMAGES/fullnueva.png)
+![Image](https://github.com/user-attachments/assets/c4b511f5-984e-46dd-a57f-c9c0cb20382f)
 
-
-En conclusion se puede observar una mejora en la velocidad evidente especialmente para queries pesadas
-
+En conclusion se puede observar una mejora en la velocidad evidente, del mas del 100% gracias a las buenas practicas como los indices.
 
 ## 🚔​ Seguridad y Roles
 
