@@ -108,7 +108,8 @@ Se han implementado triggers para asegurar que la eliminación de registros se r
 
 Con la antigua base de datos haciendo un select a buses (tabla con mas datos)
 
-``` SELECT b1.bus_id,c.chofer_id,b.fecha_salida,b.fecha_retorno
+``` 
+SELECT b1.bus_id,c.chofer_id,b.fecha_salida,b.fecha_retorno
 ,r1.ruta_id,b.registro_eliminado,c.carnet,c.nombre,c.edad,sum(costo)
 FROM bus b
 FULL OUTER JOIN chofer c ON b.chofer_id = c.chofer_id
@@ -118,7 +119,9 @@ FULL OUTER JOIN ruta r1 ON b1.ruta_id = r1.ruta_id
 FULL OUTER JOIN usuario u ON r.usuario_id = u.usuario_id
 group by b1.bus_id,c.chofer_id,b.fecha_salida,b.fecha_retorno
 ,r1.ruta_id,b.registro_eliminado,c.carnet,c.nombre,c.edad
-order by b.fecha_salida ```
+order by b.fecha_salida 
+```
+
 
 ![Image](https://github.com/user-attachments/assets/978da545-3ee4-464b-bf48-a0932d810138)
 
