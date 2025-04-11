@@ -735,7 +735,7 @@ def make_start_frame():
         corner_radius=32,
         fg_color="#C8BCF6",
         text_color="#09090A",
-        hover_color="#C8BCF6",
+        hover_color="#A79BE2",
         command=lambda: show_frame(login_frame),
     )
     login_button.pack(pady=10)
@@ -746,7 +746,7 @@ def make_start_frame():
         corner_radius=32,
         fg_color="#C8BCF6",
         text_color="#09090A",
-        hover_color="#C8BCF6",
+        hover_color="#A79BE2",
         command=lambda: show_frame(register_frame),
     )
     signup_button.pack(pady=10)
@@ -941,7 +941,7 @@ def make_register_frame():
         corner_radius=32,
         fg_color="#C8BCF6",
         text_color="#09090A",
-        hover_color="#09090A",
+        hover_color="#A79BE2",
         command=create_account
     )
     create_account_button.pack(pady=10) 
@@ -1014,7 +1014,7 @@ def make_login_frame():
         corner_radius=32,
         fg_color="#C8BCF6",
         text_color="#09090A",
-        hover_color="#09090A",
+        hover_color="#A79BE2",
         command=login
     )
     login_button_submit.pack(pady=10)
@@ -1224,19 +1224,28 @@ def open_table_window_obtain(fetch_function, title):
             tree.insert("", "end", values=cleaned_row)
             all_data.append(row)
         # Buscador
+        logo_img = Image.open("../../ASSETS/search_logo.png")  
+        logo_img = logo_img.resize((20, 20), Image.LANCZOS)
+        ctk_logo = ctk.CTkImage(logo_img, size=(20, 20))
+        search_frame = ctk.CTkFrame(table_window, fg_color="transparent")  
+        # Crea un label que muestre el logo
+        logo_label = ctk.CTkLabel(search_frame, image=ctk_logo, text="")
+        logo_label.pack(side="left", padx=(5, 0)) 
+        # Crea el entry para el buscador
         search_var = tk.StringVar()
         search_entry = ctk.CTkEntry(
-            table_window,
+            search_frame,
             textvariable=search_var,
-            corner_radius=16,  
-            border_color="#C8BCF6", 
-            fg_color="#343638",     
-            text_color="#C8BCF6",    
+            corner_radius=16,
+            border_color="#C8BCF6",
+            fg_color="#343638",
+            text_color="#C8BCF6",
             placeholder_text="Buscar",
-            width=200
+            width=150   
         )
         search_entry.bind("<KeyRelease>", lambda event: update_treeview(tree, all_data, search_var.get()))
-        search_entry.pack(pady=5, padx=10, fill="x")
+        search_entry.pack(side="left", padx=(5, 5), fill="x", expand=True)
+        search_frame.pack(pady=5, padx=10, fill="x")
         # Función al seleccionar fila
         def on_select(event):
             nonlocal selected_data
@@ -1341,19 +1350,28 @@ def make_fetch_frame():
                 tree.insert("", "end", values=cleaned_row)
                 all_data.append(row)
             # Buscador
+            logo_img = Image.open("../../ASSETS/search_logo.png")  
+            logo_img = logo_img.resize((20, 20), Image.LANCZOS)
+            ctk_logo = ctk.CTkImage(logo_img, size=(20, 20))
+            search_frame = ctk.CTkFrame(table_window, fg_color="transparent")  
+            # Crea un label que muestre el logo
+            logo_label = ctk.CTkLabel(search_frame, image=ctk_logo, text="")
+            logo_label.pack(side="left", padx=(5, 0)) 
+            # Crea el entry para el buscador
             search_var = tk.StringVar()
             search_entry = ctk.CTkEntry(
-                table_window,
+                search_frame,
                 textvariable=search_var,
-                corner_radius=16,  
-                border_color="#C8BCF6", 
-                fg_color="#343638",     
-                text_color="#C8BCF6",    
+                corner_radius=16,
+                border_color="#C8BCF6",
+                fg_color="#343638",
+                text_color="#C8BCF6",
                 placeholder_text="Buscar",
-                width=200  
+                width=150   
             )
             search_entry.bind("<KeyRelease>", lambda event: update_treeview(tree, all_data, search_var.get()))
-            search_entry.pack(pady=5, padx=10, fill="x")
+            search_entry.pack(side="left", padx=(5, 5), fill="x", expand=True)
+            search_frame.pack(pady=5, padx=10, fill="x")
             # Botón para cerrar la ventana
             close_button = ctk.CTkButton(
                 table_window,
@@ -1849,6 +1867,8 @@ def main():
     global window, all_frames, start_frame, register_frame, login_frame, action_bar, terms_frame
     global current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar, history_frame
     # Configuración de la ventana
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme("dark-blue")
     window = tk.Tk()
     window.title("Pasa")
     window.geometry("380x650+120+10")
