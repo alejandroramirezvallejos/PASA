@@ -51,6 +51,15 @@ def get_usuarios(cursor):
     cursor.execute("EXEC sp_obtiene_tabla_usuario")
     return cursor.fetchall()
 
+def get_chofer(cursor):
+    cursor.execute("EXEC sp_obtiene_tabla_chofer")
+    return cursor.fetchall()
+
+def get_bus_elimacion(cursor):
+    cursor.execute("EXEC sp_obtiene_tabla_bus_para_eliminacion")
+    return cursor.fetchall()
+
+
 # addiciona bus
 def add_bus(chofer_id,ruta_id,fecha_sal,fecha_ret):
     conexion=c.make_connection()
@@ -143,32 +152,32 @@ def verification_id(cursor,table,id):
     else:
         return True
     
-# actualiza bus y si no existe lo crea
+# actualiza bus 
 def update_bus(bus_id,chofer_id,ruta_id,fecha_salida,fecha_retorno):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    if(verification_id(cursor,"bus",bus_id)==True):
-        cursor.execute(f"EXEC sp_update_bus {chofer_id},{ruta_id},'{fecha_salida}','{fecha_retorno}',{bus_id}")
-    else:
-        add_bus(chofer_id,ruta_id,fecha_salida,fecha_retorno)
+    cursor.execute(f"EXEC sp_update_bus {chofer_id},{ruta_id},'{fecha_salida}','{fecha_retorno}',{bus_id}")
     conexion.commit()
 
-# actualiza chofer y si no existe lo crea
+# actualiza chofer 
 def update_driver(chofer_id,nombre,edad,carnet):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    if(verification_id(cursor,"chofer",chofer_id)==True):
-        cursor.execute(f"EXEC sp_update_chofer {chofer_id},'{nombre}','{edad}','{carnet}'")
-    else:
-        add_driver(nombre,edad,carnet)
+    cursor.execute(f"EXEC sp_update_chofer {chofer_id},'{nombre}','{edad}','{carnet}'")
     conexion.commit()
 
-# actualiza ruta y si no existe lo crea 
+# actualiza ruta 
 def update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    if(verification_id(cursor,"ruta",ruta_id)==True):
-        cursor.execute(f"EXEC sp_update_ruta {ruta_id},'{dep_inicio}','{dep_final}',{costo},{costo_vip}")
-    else:
-        add_route(dep_inicio,dep_final,costo,costo_vip)
+    cursor.execute(f"EXEC sp_update_ruta {ruta_id},'{dep_inicio}','{dep_final}',{costo},{costo_vip}")
+    conexion.commit()
+
+
+
+# actualiza un usuario
+def update_user(usuario_id,nombre,apellido,edad,carnet,contraseña,admin):
+    conexion=c.make_connection()
+    cursor=conexion.cursor()
+    cursor.execute(f"EXEC sp_update_usuario {usuario_id} , '{nombre}' , '{apellido}' , {edad} , '{carnet}' , '{contraseña}' , {admin}")
     conexion.commit()
