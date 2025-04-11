@@ -31,6 +31,7 @@ billing_payment_method = None
 payment_id_card_entry = None
 payment_password_entry = None
 expiration_date_button = None
+update_user_frame = None
 
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
 
@@ -1210,7 +1211,7 @@ def make_content_frame():
         hover_color="#5A23CC",
         command=search_buses
     )
-    buses_available.pack(pady=10)
+    buses_available.pack(pady=2)
     return content_frame
 
 """Frame de los Resultados de la busqueda"""
@@ -1688,6 +1689,7 @@ def payment_confirmation():
 
 def make_update_user_frame ():
     global id_card, p_password_entry, u_name_entry, u_last_name_entry, u_age_entry, u_id_card_entry, u_password_entry
+    global update_user_frame
     # Creando el Frame
     update_user_frame = tk.Frame(window, bg="#F1F2F6")
     update_user_frame.name = "update_user"
@@ -1907,7 +1909,7 @@ def update_account():
 
 """Funcion para Mostrar un Frame"""
 def show_frame(frame_to_show):
-    global all_frames, action_bar, back_button, current_frame, selected_return, selected_departure
+    global all_frames, action_bar, back_button, current_frame, selected_return, selected_departure, update_user_frame
     current_frame = frame_to_show 
     global sum_cost, num_passengers
     # Ocultar todos los frames
@@ -2081,8 +2083,10 @@ def on_log_out_button():
         history_frame.pack_forget()
     if current_frame == payment_confirmation_frame:
         payment_confirmation_frame.pack_forget()
-    if current_frame == update_user_frame:
+    if update_user_frame is not None and current_frame == update_user_frame:
         update_user_frame.pack_forget()
+        hide_log_out_button()
+        show_frame(content_frame)
     hide_log_out_button()
     show_frame(start_frame)
 
@@ -2158,7 +2162,6 @@ def on_pay_button():
     else: 
         messagebox.showerror("Error", "No has seleccionado correctamente los buses")
 
-
 """Boton para seleccionar el metodo de pago"""
 def on_button_click(payment_method):
     global billing_payment_method, payment_confirmation_frame
@@ -2171,7 +2174,7 @@ def on_button_click(payment_method):
 
 """Funcion Principal"""
 def main():
-    global window, all_frames, update_user_frame, reservation_frame, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame, pay_frame, total_cost_var, payment_confirmation_frame
+    global window, all_frames, update_user_frame, reservation_frame, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame, pay_frame, total_cost_var, payment_confirmation_frame, update_user_frame
     # Configuración de la ventana
     set_appearance_mode("light")
     set_default_color_theme("blue")
