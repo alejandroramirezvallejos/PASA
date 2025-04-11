@@ -193,27 +193,45 @@ def queries_option():
                 f.add_route(dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta agregada correctamente")
         elif action == "delete":
-
             #------------------------------------------ Logica ---------------------------------------
             
             # lo que esta en comentario no se elimina son las funciones de eliminar fisica no logica . ahi van las nuevas que tiene que hacer fer
             if "Eliminar Bus Logica" in selected_option:
-                bus_id = int(entries[0].get())
+                try:
+                # Intentar convertir a entero
+                    bus_id = int(entries[0].get())
+                except ValueError:
+                    bus_id = int(open_table_window_obtain(f.get_bus, "buses")[0])
                 print(bus_id)
                 f.del_bus_logic(bus_id)
-                messagebox.showinfo("Éxito", "Bus eliminado correctamente")
+                messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
+           
             elif "Eliminar Chofer Logica" in selected_option:
-                chofer_id = int(entries[1].get())
+                try:
+                # Intentar convertir a entero
+                    chofer_id = int(entries[1].get())
+                except ValueError:
+                    chofer_id = int(open_table_window_obtain(f.get_chofer, "choferes")[0])
                 print(chofer_id)
                 f.del_driver_logic(chofer_id)
                 messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
             elif "Eliminar Ruta Logica" in selected_option:
-                ruta_id = int(entries[2].get())
+                try:
+                # Intentar convertir a entero
+                    ruta_id = int(entries[2].get())
+                except ValueError:
+                    ruta_id = int(open_table_window_obtain(f.get_route, "rutas")[0])
+
                 print(ruta_id)
                 f.del_route_logic(ruta_id)
                 messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
             elif "Eliminar Usuario Logica" in selected_option:
-                usuario_id=int(entries[3].get())
+                try:
+                # Intentar convertir a entero
+                    usuario_id = int(entries[3].get())
+                except ValueError:
+                    usuario_id = int(open_table_window_obtain(f.get_usuarios, "usuarios")[0])
+
                 print(usuario_id)
                 f.del_usuario_logic(usuario_id)
                 messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
@@ -222,19 +240,44 @@ def queries_option():
 
 
             elif "Eliminar Bus" in selected_option:
-                bus_id = int(entries[4].get())
+                try:
+                # Intentar convertir a entero
+                    bus_id = int(entries[4].get())
+                except ValueError:
+                    bus_id = int(open_table_window_obtain(f.get_bus, "buses")[0])                
+                print(bus_id)
                 f.del_bus(bus_id)
                 messagebox.showinfo("Éxito", "Bus eliminado correctamente")
+           
             elif "Eliminar Chofer" in selected_option:
-                chofer_id = int(entries[5].get())
+                try:
+                # Intentar convertir a entero
+                    chofer_id = int(entries[5].get())
+                except ValueError:
+                    chofer_id = int(open_table_window_obtain(f.get_chofer, "choferes")[0])
+
+                print(chofer_id)
                 f.del_driver(chofer_id)
                 messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
             elif "Eliminar Ruta" in selected_option:
-                ruta_id = int(entries[6].get())
+                try:
+                # Intentar convertir a entero
+                    ruta_id = int(entries[6].get())
+                except ValueError:
+                    ruta_id = int(open_table_window_obtain(f.get_route, "rutas")[0])
+
+
+                print(ruta_id)
                 f.del_route(ruta_id)
                 messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
             elif "Eliminar Usuario" in selected_option:
-                usuario_id=int(entries[7].get())
+                try:
+                # Intentar convertir a entero
+                    usuario_id = int(entries[7].get())
+                except ValueError:
+                    usuario_id = int(open_table_window_obtain(f.get_usuarios, "usuarios")[0])
+
+                print(usuario_id)
                 f.del_usuario(usuario_id)
                 messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
                 
@@ -977,6 +1020,97 @@ def make_history_frame():
     return history_frame
 
 # ------------------------------------------------------------MANEJO DE COMANDOS---------------------------------------------------------------------------------------------
+
+def open_table_window_obtain(fetch_function, title):
+    connection = c.make_connection()
+    if not connection:
+        return None
+    cursor = connection.cursor()
+    selected_data = None  # Almacena la fila seleccionada
+    confirmed = False  # Bandera para confirmar la selección
+
+    try:
+        data = fetch_function(cursor)
+        if not data:
+            messagebox.showinfo("Información", f"No hay datos en la tabla {title}.")
+            return None
+
+        # Crear ventana
+        table_window = tk.Toplevel(fetch_frame)
+        table_window.title(f"Tabla: {title}")
+        table_window.geometry("600x400")
+        try:
+            table_window.iconbitmap("../../ASSETS/icon.ico")
+        except Exception:
+            print(f"Error al cargar el icono: {Exception}")
+        table_window.configure(bg="#09090A")
+
+        # Treeview para mostrar datos
+        tree = ttk.Treeview(table_window, show="headings", selectmode="browse")
+        tree.pack(fill="both", expand=True)
+
+        # Configurar columnas
+        columns = [desc[0] for desc in cursor.description]
+        tree["columns"] = columns
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, anchor="center")
+
+        # Insertar datos
+        for row in data:
+            cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
+            tree.insert("", "end", values=cleaned_row)
+
+        # Función al seleccionar fila
+        def on_select(event):
+            nonlocal selected_data
+            selected_items = tree.selection()
+            if selected_items:
+                selected_item = selected_items[0]
+                selected_data = list(tree.item(selected_item, 'values'))
+
+        tree.bind('<<TreeviewSelect>>', on_select)
+
+        # Frame para botones
+        button_frame = tk.Frame(table_window, bg="#09090A")
+        button_frame.pack(pady=10)
+
+        # Botón Aceptar (confirma y cierra)
+        def confirm_selection():
+            nonlocal confirmed
+            confirmed = True
+            table_window.destroy()
+
+        accept_button = tk.Button(
+            button_frame,
+            text="Aceptar",
+            command=confirm_selection,
+            bg="#7732FF",
+            fg="white"
+        )
+        accept_button.pack(side="left", padx=5)
+
+        # Botón Cerrar (sale sin confirmar)
+        close_button = tk.Button(
+            button_frame,
+            text="Cerrar",
+            command=table_window.destroy,
+            bg="#444444",
+            fg="white"
+        )
+        close_button.pack(side="left", padx=5)
+
+        # Esperar a que la ventana se cierre
+        table_window.wait_window()
+
+        # Retornar datos solo si se confirmó con "Aceptar"
+        return selected_data if confirmed else None
+
+    except pyodbc.Error as e:
+        messagebox.showerror("Error", f"No se pudo obtener datos: {e}")
+        return None
+    finally:
+        connection.close()
 
 """Frame para Buscar Datos"""
 def make_fetch_frame():

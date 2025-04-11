@@ -51,6 +51,13 @@ def get_usuarios(cursor):
     cursor.execute("EXEC sp_obtiene_tabla_usuario")
     return cursor.fetchall()
 
+def get_chofer(cursor):
+    cursor.execute("EXEC sp_obtiene_tabla_chofer")
+    return cursor.fetchall()
+
+
+
+
 # addiciona bus
 def add_bus(chofer_id,ruta_id,fecha_sal,fecha_ret):
     conexion=c.make_connection()
