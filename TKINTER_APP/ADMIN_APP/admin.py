@@ -200,41 +200,73 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     bus_id = int(entries[0].get())
+                    print(bus_id)
+                    f.del_bus_logic(bus_id)
+                    messagebox.showinfo("Éxito", "bus eliminado correctamente")
                 except ValueError:
-                    bus_id = int(open_table_window_obtain(f.get_bus, "buses")[0])
-                print(bus_id)
-                f.del_bus_logic(bus_id)
-                messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
+                    resultadobus_id = open_table_window_obtain(f.get_bus, "buses")
+                    if resultadobus_id and len(resultadobus_id) > 0:
+                        bus_id = int(resultadobus_id[0])
+                        print(bus_id)
+                        f.del_bus_logic(bus_id)
+                        messagebox.showinfo("Éxito", "bus eliminado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun bus")
            
             elif "Eliminar Chofer Logica" in selected_option:
                 try:
                 # Intentar convertir a entero
                     chofer_id = int(entries[1].get())
+                    print(chofer_id)
+                    f.del_driver_logic(chofer_id)
+                    messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
                 except ValueError:
-                    chofer_id = int(open_table_window_obtain(f.get_chofer, "choferes")[0])
-                print(chofer_id)
-                f.del_driver_logic(chofer_id)
-                messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
+                    resultadoscl = open_table_window_obtain(f.get_chofer, "choferes")
+                    if resultadoscl and len(resultadoscl) > 0:
+                        chofer_id = int(resultadoscl[0])
+                        print(chofer_id)
+                        f.del_driver_logic(chofer_id)
+                        messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun chofer")
+                
             elif "Eliminar Ruta Logica" in selected_option:
                 try:
                 # Intentar convertir a entero
                     ruta_id = int(entries[2].get())
+                    print(ruta_id)
+                    f.del_route_logic(ruta_id)
+                    messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
                 except ValueError:
-                    ruta_id = int(open_table_window_obtain(f.get_route, "rutas")[0])
+                    resultadoruta_id = open_table_window_obtain(f.get_route, "rutas")
+                    if resultadoruta_id and len(resultadoruta_id) > 0:
+                        ruta_id = int(resultadoruta_id[0])
+                        print(ruta_id)
+                        f.del_route_logic(ruta_id)
+                        messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ninguna ruta")
 
-                print(ruta_id)
-                f.del_route_logic(ruta_id)
-                messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
+
+
             elif "Eliminar Usuario Logica" in selected_option:
                 try:
                 # Intentar convertir a entero
                     usuario_id = int(entries[3].get())
+                    print(usuario_id)
+                    f.del_usuario_logic(usuario_id)
+                    messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
                 except ValueError:
-                    usuario_id = int(open_table_window_obtain(f.get_usuarios, "usuarios")[0])
+                    resultadosusuario_id = open_table_window_obtain(f.get_usuarios, "usuarios")
+                    if resultadosusuario_id and len(resultadosusuario_id) > 0:
+                        usuario_id = int(resultadosusuario_id[0])
+                        print(usuario_id)
+                        f.del_usuario_logic(usuario_id)
+                        messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun usuario")
 
-                print(usuario_id)
-                f.del_usuario_logic(usuario_id)
-                messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
+
 
             #-------------------------------Fisica-------------------------------
 
@@ -243,46 +275,73 @@ def queries_option():
                 try:
                 # Intentar convertir a entero
                     bus_id = int(entries[4].get())
+                    print(bus_id)
+                    f.del_bus(bus_id)
+                    messagebox.showinfo("Éxito", "Bus eliminado correctamente")
                 except ValueError:
-                    bus_id = int(open_table_window_obtain(f.get_bus, "buses")[0])                
-                print(bus_id)
-                f.del_bus(bus_id)
-                messagebox.showinfo("Éxito", "Bus eliminado correctamente")
+                    resultadosbus_id2 = open_table_window_obtain(f.get_bus, "buses")   
+                    if resultadosbus_id2 and len(resultadosbus_id2) > 0:
+                        bus_id = int(resultadosbus_id2[0])
+                        print(bus_id)
+                        f.del_bus(bus_id)
+                        messagebox.showinfo("Éxito", "Bus eliminado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun bus")      
+
            
             elif "Eliminar Chofer" in selected_option:
                 try:
                 # Intentar convertir a entero
                     chofer_id = int(entries[5].get())
+                    print(chofer_id)
+                    f.del_driver(chofer_id)
+                    messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
                 except ValueError:
-                    chofer_id = int(open_table_window_obtain(f.get_chofer, "choferes")[0])
+                    resultadochofer_id2 = open_table_window_obtain(f.get_chofer, "choferes")
+                    if resultadochofer_id2 and len(resultadochofer_id2) > 0:
+                        chofer_id = int(resultadochofer_id2[0])
+                        print(chofer_id)
+                        f.del_driver(chofer_id)
+                        messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun chofer")
 
-                print(chofer_id)
-                f.del_driver(chofer_id)
-                messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
             elif "Eliminar Ruta" in selected_option:
                 try:
                 # Intentar convertir a entero
                     ruta_id = int(entries[6].get())
+                    print(ruta_id)
+                    f.del_route(ruta_id)
+                    messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
                 except ValueError:
-                    ruta_id = int(open_table_window_obtain(f.get_route, "rutas")[0])
+                    resultadoruta_id2 = open_table_window_obtain(f.get_route, "rutas")
+                    if resultadoruta_id2 and len(resultadoruta_id2) > 0:
+                        ruta_id = int(resultadoruta_id2[0])
+                        print(ruta_id)
+                        f.del_route(ruta_id)
+                        messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ninguna ruta")
 
 
-                print(ruta_id)
-                f.del_route(ruta_id)
-                messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
+
             elif "Eliminar Usuario" in selected_option:
                 try:
                 # Intentar convertir a entero
                     usuario_id = int(entries[7].get())
+                    print(usuario_id)
+                    f.del_usuario(usuario_id)
+                    messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
                 except ValueError:
-                    usuario_id = int(open_table_window_obtain(f.get_usuarios, "usuarios")[0])
+                    resiltadousuario_id2 = open_table_window_obtain(f.get_usuarios, "usuarios")
+                    if resiltadousuario_id2 and len(resiltadousuario_id2) > 0:
+                        usuario_id = int(resiltadousuario_id2[0])
+                        print(usuario_id)
+                        f.del_usuario(usuario_id)
+                        messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun usuario")
 
-                print(usuario_id)
-                f.del_usuario(usuario_id)
-                messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
-                
-        
-        
         elif action == "update":
             if "Actualizar Bus" in selected_option:
                 try:
