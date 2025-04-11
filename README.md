@@ -120,6 +120,7 @@ group by b1.bus_id,c.chofer_id,b.fecha_salida,b.fecha_retorno
 ,r1.ruta_id,b.registro_eliminado,c.carnet,c.nombre,c.edad
 order by b.fecha_salida ```
 
+
 ![Image](https://github.com/user-attachments/assets/978da545-3ee4-464b-bf48-a0932d810138)
 
 Con la nueva base de datos
