@@ -285,43 +285,128 @@ def queries_option():
         
         elif action == "update":
             if "Actualizar Bus" in selected_option:
-                bus_id = int(entries[0].get())
-                chofer_id = int(entries[1].get())
-                ruta_id = int(entries[2].get())
-                fecha_sal=(entries[3].get())
-                fecha_ret=(entries[4].get())
-                f.update_bus(bus_id,  chofer_id, ruta_id,fecha_sal,fecha_ret)
-                messagebox.showinfo("Éxito", "Bus actualizado correctamente")
+                try:
+                    bus_id = int(entries[0].get())
+                    chofer_id = int(entries[1].get())
+                    ruta_id = int(entries[2].get())
+                    fecha_sal=(entries[3].get())
+                    fecha_ret=(entries[4].get())
+                    print(bus_id, chofer_id, ruta_id, fecha_sal, fecha_ret)
+                    f.update_bus(bus_id,  chofer_id, ruta_id,fecha_sal,fecha_ret)
+                    messagebox.showinfo("Éxito", "Bus actualizado correctamente")
+                except ValueError:
+                    resultadosbus = open_table_window_obtain(f.get_bus_elimacion, "buses")
+                    if resultadosbus:
+                        entries[0].delete(0, tk.END)
+                        entries[0].insert(0, str(resultadosbus[0]))  # ID Bus
+                        entries[1].delete(0, tk.END)
+                        entries[1].insert(0, str(resultadosbus[1]))  # ID Chofer
+                        entries[2].delete(0, tk.END)
+                        entries[2].insert(0, str(resultadosbus[4]))  # ID Ruta
+                        entries[3].delete(0, tk.END)
+                        entries[3].insert(0, resultadosbus[5])       # Fecha Salida
+                        entries[4].delete(0, tk.END)
+                        entries[4].insert(0, resultadosbus[6])       # Fecha Retorno
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error al actualizar el bus: {e}")
+
+               
+            #    messagebox.showinfo("Éxito", "Bus actualizado correctamente")
             elif "Actualizar Chofer" in selected_option:
-                nombre = entries[5].get()
-                chofer_id = int(entries[6].get())
-                edad = int(entries[7].get())
-                carnet = int(entries[8].get())
-                f.update_driver(chofer_id, nombre, edad, carnet)
-                messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+                try:
+                    nombre = entries[5].get()
+                    chofer_id = int(entries[6].get())
+                    edad = int(entries[7].get())
+                    carnet = int(entries[8].get())
+
+                    print(nombre, chofer_id, edad, carnet)
+                    f.update_driver(chofer_id, nombre, edad, carnet)
+                    messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+                except ValueError:
+                    resultadoschofer = open_table_window_obtain(f.get_chofer, "choferes")
+                    if resultadoschofer:
+                        entries[5].delete(0, tk.END)
+                        entries[5].insert(0, str(resultadoschofer[1]))
+                        entries[6].delete(0, tk.END)
+                        entries[6].insert(0, str(resultadoschofer[0]))
+                        entries[7].delete(0, tk.END)
+                        entries[7].insert(0, str(resultadoschofer[3]))
+                        entries[8].delete(0, tk.END)
+                        entries[8].insert(0, str(resultadoschofer[2]))
+                   
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error al actualizar el chofer: {e}")
+            
             elif "Actualizar Ruta" in selected_option:
-                ruta_id = int(entries[9].get())
-                dep_inicio = entries[10].get()
-                dep_final = entries[11].get()
-                costo = int(entries[12].get())
-                costo_vip = int(entries[13].get())
-                f.update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip)
-                messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+                try:
+                    ruta_id = int(entries[9].get())
+                    dep_inicio = entries[10].get()
+                    dep_final = entries[11].get()
+                    costo = int(entries[12].get())
+                    costo_vip = int(entries[13].get())
+                    print(ruta_id, dep_inicio, dep_final, costo, costo_vip)
+
+                    f.update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip)
+                    messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+                except ValueError:
+                    resultadosruta = open_table_window_obtain(f.get_route, "rutas")
+                    if resultadosruta:
+                        entries[9].delete(0, tk.END)
+                        entries[9].insert(0, str(resultadosruta[0]))
+                        entries[10].delete(0, tk.END)
+                        entries[10].insert(0, str(resultadosruta[1]))
+                        entries[11].delete(0, tk.END)
+                        entries[11].insert(0, str(resultadosruta[2]))
+                        entries[12].delete(0, tk.END)
+                        entries[12].insert(0, str(resultadosruta[3]))
+                        entries[13].delete(0, tk.END)
+                        entries[13].insert(0, str(resultadosruta[4]))
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error al actualizar la ruta: {e}")
+
+                
+               
             elif "Actualizar Usuario" in selected_option:
-                usuario_id=int(entries[14].get())
-                nombre=entries[15].get()
-                apellido=entries[16].get()
-                edad=int(entries[17].get())
-                carnet=entries[18].get()
-                if(len(carnet)!=7):
-                    raise ValueError("El carnet tiene que tener 7 digitos y no existir")
-                contraseña=entries[19].get()
-                admin=int(entries[20].get())
-                if(admin!=1 and admin!=0):
-                     raise ValueError("El campo admin solo puede ser 0 (No) o 1 (Sí)")
-                cursor.execute(f"EXEC sp_update_usuario {usuario_id} , '{nombre}' , '{apellido}' , {edad} , '{carnet}' , '{contraseña}' , {admin}")
-                cursor.commit()
-                messagebox.showinfo("Éxito", "Usuario actualizado correctamente")
+                try:
+                    usuario_id=int(entries[14].get())
+                    nombre=entries[15].get()
+                    apellido=entries[16].get()
+                    edad=int(entries[17].get())
+                    carnet=entries[18].get()
+                    if(len(carnet)!=7):
+                        raise ValueError("El carnet tiene que tener 7 digitos y no existir")
+                    contraseña=entries[19].get()
+                    if(entries[20].get()=="True"):
+                        admin=1
+                    elif(entries[20].get()=="False"):
+                        admin=0
+                    else:
+                        admin=int(entries[20].get())
+                    if(admin!=1 and admin!=0):
+                        raise ValueError("El campo admin solo puede ser 0 (No) o 1 (Sí)")
+                    
+                    print(usuario_id,nombre,apellido,edad,carnet,contraseña,admin)
+                    f.update_user(usuario_id,nombre,apellido,edad,carnet,contraseña,admin)
+                    messagebox.showinfo("Éxito", "Usuario actualizado correctamente")
+                except ValueError:
+                    resultadosusuario = open_table_window_obtain(f.get_usuarios, "usuarios")
+                    if resultadosusuario:
+                        entries[14].delete(0, tk.END)
+                        entries[14].insert(0, str(resultadosusuario[0]))
+                        entries[15].delete(0, tk.END)
+                        entries[15].insert(0, str(resultadosusuario[1]))
+                        entries[16].delete(0, tk.END)
+                        entries[16].insert(0, str(resultadosusuario[2]))
+                        entries[17].delete(0, tk.END)
+                        entries[17].insert(0, str(resultadosusuario[3]))
+                        entries[18].delete(0, tk.END)
+                        entries[18].insert(0, str(resultadosusuario[4]))
+                        entries[20].delete(0, tk.END)
+                        entries[20].insert(0, str(resultadosusuario[5]))
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error al actualizar el usuario: {e}")
+
+
     except Exception as e:
         messagebox.showerror("Error",e)
 
