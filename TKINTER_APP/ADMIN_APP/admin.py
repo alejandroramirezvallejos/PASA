@@ -36,6 +36,8 @@ entries = []
 selected_option = ""
 role_input = None
 last_table_window = None
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("dark-blue")
 
 # ----------------------------------------------------ENTRADA Y SALIDA DE DATOS-----------------------------------------------------------------------------------------------
 
@@ -129,7 +131,7 @@ def login():
     if role_input.get() == "Gerente":
         c.username = 'gerente'
         c.password = 'gerente'
-    if role_input.get() == "Vendedor":
+    if role_input.get() == "Trabajador":
         c.username = 'vendedor'
         c.password = 'vendedor'
     # Borrar Datos en caso de Error
@@ -926,7 +928,7 @@ def make_register_frame():
     password_label.pack(side="left", padx=10)
     password_entry = CTkEntry(
         password_frame,
-        placeholder_text="Ingresa",
+        placeholder_text="Ingresar",
         show="*",
         border_color="#C8BCF6",
         corner_radius=32
@@ -995,7 +997,7 @@ def make_login_frame():
     role_txt = tk.Label(role_frame, text="Rol:", bg="#09090A", fg="#C8BCF6")
     role_input = CTkComboBox(
         role_frame,
-        values=["DBA", "Gerente", "Vendedor"],
+        values=["DBA", "Gerente", "Trabajador"],
         fg_color="#343638",
         button_color="#C8BCF6",
         border_color="#C8BCF6",
@@ -1010,9 +1012,9 @@ def make_login_frame():
         login_frame,
         text="Iniciar Sesion",
         corner_radius=32,
-        fg_color="#7732FF",
-        text_color="black",
-        hover_color="#5A23CC",
+        fg_color="#C8BCF6",
+        text_color="#09090A",
+        hover_color="#09090A",
         command=login
     )
     login_button_submit.pack(pady=10)
@@ -1076,6 +1078,8 @@ def make_history_frame():
                                 espacios = " " * indent
                                 if isinstance(data, dict):
                                     for key, value in data.items():
+                                        if key.lower() in ["contraseña", "password"]:
+                                            continue # No mostrar contraseña en el JSON
                                         if isinstance(value, (dict, list)):
                                             formatted += f"{espacios}{key}:\n{format_data(value, indent + 4)}"
                                         else:
@@ -1221,9 +1225,18 @@ def open_table_window_obtain(fetch_function, title):
             all_data.append(row)
         # Buscador
         search_var = tk.StringVar()
-        search_entry = tk.Entry(table_window, textvariable=search_var)
-        search_entry.pack(pady=5)
+        search_entry = ctk.CTkEntry(
+            table_window,
+            textvariable=search_var,
+            corner_radius=16,  
+            border_color="#C8BCF6", 
+            fg_color="#343638",     
+            text_color="#C8BCF6",    
+            placeholder_text="Buscar",
+            width=200
+        )
         search_entry.bind("<KeyRelease>", lambda event: update_treeview(tree, all_data, search_var.get()))
+        search_entry.pack(pady=5, padx=10, fill="x")
         # Función al seleccionar fila
         def on_select(event):
             nonlocal selected_data
@@ -1240,21 +1253,23 @@ def open_table_window_obtain(fetch_function, title):
             nonlocal confirmed
             confirmed = True
             table_window.destroy()
-        accept_button = tk.Button(
+        accept_button = ctk.CTkButton(
             button_frame,
             text="Aceptar",
-            command=confirm_selection,
-            bg="#7732FF",
-            fg="white"
+            corner_radius=16,
+            fg_color="#7732FF",  
+            text_color="white",  
+            command=confirm_selection
         )
         accept_button.pack(side="left", padx=5)
-        # Botón Cerrar (sale sin confirmar)
-        close_button = tk.Button(
+        # Boton de cerrar sin confirmar
+        close_button = ctk.CTkButton(
             button_frame,
             text="Cerrar",
-            command=table_window.destroy,
-            bg="#444444",
-            fg="white"
+            corner_radius=16,
+            fg_color="#444444",
+            text_color="white",
+            command=table_window.destroy
         )
         close_button.pack(side="left", padx=5)
         # Esperar a que la ventana se cierre
@@ -1327,11 +1342,27 @@ def make_fetch_frame():
                 all_data.append(row)
             # Buscador
             search_var = tk.StringVar()
-            search_entry = tk.Entry(table_window, textvariable=search_var)
-            search_entry.pack(pady=5)
+            search_entry = ctk.CTkEntry(
+                table_window,
+                textvariable=search_var,
+                corner_radius=16,  
+                border_color="#C8BCF6", 
+                fg_color="#343638",     
+                text_color="#C8BCF6",    
+                placeholder_text="Buscar",
+                width=200  
+            )
             search_entry.bind("<KeyRelease>", lambda event: update_treeview(tree, all_data, search_var.get()))
+            search_entry.pack(pady=5, padx=10, fill="x")
             # Botón para cerrar la ventana
-            close_button = tk.Button(table_window, text="Cerrar", command=table_window.destroy, bg="#7732FF", fg="white")
+            close_button = ctk.CTkButton(
+                table_window,
+                text="Cerrar",
+                corner_radius=16,
+                fg_color="#7732FF",
+                text_color="white",
+                command=table_window.destroy
+            )
             close_button.pack(pady=10)
         except pyodbc.Error as e:
             messagebox.showerror("Error", f"No se pudo obtener datos: {e}")
@@ -1789,11 +1820,25 @@ def hide_option():
 
 """Actualizar el TreeView al buscar"""
 def update_treeview(tree, all_data, keyword):
+    # Limpiar el Treeview
     for item in tree.get_children():
         tree.delete(item)
-    keyword = keyword.lower()
-    filtered = [row for row in all_data if keyword in " ".join(str(item).lower() for item in row)]
+    keyword = keyword.lower().strip()
+    # Si no se ingresó texto, mostramos todos los datos
+    if keyword == "":
+        filtered = all_data
+    else:
+        filtered = [
+            row for row in all_data 
+            if keyword in " ".join(str(item).lower() for item in row)
+        ]
+    # Eliminar duplicados conservando el orden
+    filtered_unique = []
     for row in filtered:
+        if row not in filtered_unique:
+            filtered_unique.append(row)
+    # Insertar los registros filtrados sin duplicados en el Treeview
+    for row in filtered_unique:
         cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
         tree.insert("", "end", values=cleaned_row)
 
@@ -1804,8 +1849,6 @@ def main():
     global window, all_frames, start_frame, register_frame, login_frame, action_bar, terms_frame
     global current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar, history_frame
     # Configuración de la ventana
-    ctk.set_appearance_mode("dark")
-    ctk.set_default_color_theme("dark-blue")
     window = tk.Tk()
     window.title("Pasa")
     window.geometry("380x650+120+10")
