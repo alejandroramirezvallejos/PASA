@@ -331,7 +331,7 @@ def make_action_bar():
             elif current_frame == update_user_frame:
                 update_user_frame.pack_forget()
                 hide_back_button()
-                show_frame(start_frame)
+                show_frame(content_frame)
         back_button = tk.Button(
             action_bar,
             image=back_photo,
@@ -1833,6 +1833,8 @@ def update_account():
         cursor = connection.cursor()
         cursor.execute(f"EXEC sp_obtiene_contrasena_por_carnet_usuario '{id_card}'") 
         password_actual = cursor.fetchone()[0]
+        cursor.execute(f"EXEC sp_obtener_admin_o_usuario_por_carnet '{id_card}'") 
+        admin = cursor.fetchone()[0]
         connection.commit()
     except pyodbc.Error as e:
         messagebox.showerror("Error", f"Error al obtener la contraseña actual de la cuenta: {e}")
@@ -1890,7 +1892,7 @@ def update_account():
         print(f"Carnet: {id_card}")
         print(f"ID: {id}")
         print(f"Nuevo Carnet: {u_id_card}")
-        cursor.execute(f"EXEC sp_update_usuario '{id}' , '{u_name}' , '{u_last_name}' , {u_age} , '{u_id_card}' , '{u_password}' , {0}")
+        cursor.execute(f"EXEC sp_update_usuario '{id}' , '{u_name}' , '{u_last_name}' , {u_age} , '{u_id_card}' , '{u_password}' , '{admin}'")
         connection.commit()
         # Cambiar al start_frame si todo sale bien
         messagebox.showinfo("Exito", f"El usuario con el carnet: {u_id_card} se ha actualizado con exito")
