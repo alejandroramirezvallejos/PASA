@@ -407,7 +407,7 @@ def queries_option():
                     print(ruta_id, dep_inicio, dep_final, costo, costo_vip)
 
                     f.update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip)
-                    messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+                    messagebox.showinfo("Éxito", "Ruta actualizado correctamente")
                 except ValueError:
                     resultadosruta = open_table_window_obtain(f.get_route, "rutas")
                     if resultadosruta:
