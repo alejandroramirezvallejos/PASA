@@ -16,6 +16,7 @@ import customtkinter as ctk
 from customtkinter import CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme, CTkImage
 import functions_query as f
 import conection as c
+import json
 window = None
 current_frame = None
 add_frame = None
@@ -33,6 +34,7 @@ loading_frame = None
 all_frames = []
 entries = []
 selected_option = ""
+role_input = None
 
 # ----------------------------------------------------ENTRADA Y SALIDA DE DATOS-----------------------------------------------------------------------------------------------
 
@@ -101,7 +103,7 @@ def create_account():
 """Extraer Datos para Verificar el Inicio de Sesion"""
 def login():
     # Entrada de Datos
-    global fetch_frame
+    global fetch_frame, role_input
     id_card = login_id_card_entry.get().strip()
     password = login_password_entry.get().strip()
     # Verificar la correcta Entrada de Datos
@@ -117,9 +119,23 @@ def login():
     if not all([password]):
         messagebox.showerror("Error", "Debes ingresar tu Contraseña")
         return
+    if role_input == "Seleccionar":
+        messagebox.showerror("Error", "Debes seleccionar un rol válido.")
+        return
+    if role_input.get() == "DBA":
+        c.username = 'dba'
+        c.password = 'dba'
+    if role_input.get() == "Gerente":
+        c.username = 'gerente'
+        c.password = 'gerente'
+    if role_input.get() == "Vendedor":
+        c.username = 'vendedor'
+        c.password = 'vendedor'
     # Borrar Datos en caso de Error
     login_id_card_entry.delete(0, tk.END)
     login_password_entry.delete(0, tk.END)
+    role_input.set("Seleccionar")
+    print(c.username)
     # Conexion con la Base de Datos
     connection = c.make_connection()
     if not connection:
@@ -177,63 +193,242 @@ def queries_option():
                 f.add_route(dep_inicio, dep_final, costo, costo_vip)
                 messagebox.showinfo("Éxito", "Ruta agregada correctamente")
         elif action == "delete":
-            if "Eliminar Bus" in selected_option:
-                bus_id = int(entries[0].get())
+            #------------------------------------------ Logica ---------------------------------------
+            
+            # lo que esta en comentario no se elimina son las funciones de eliminar fisica no logica . ahi van las nuevas que tiene que hacer fer
+            if "Eliminar Bus Logica" in selected_option:
+                try:
+                # Intentar convertir a entero
+                    bus_id = int(entries[0].get())
+                except ValueError:
+                    bus_id = int(open_table_window_obtain(f.get_bus, "buses")[0])
+                print(bus_id)
+                f.del_bus_logic(bus_id)
+                messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
+           
+            elif "Eliminar Chofer Logica" in selected_option:
+                try:
+                # Intentar convertir a entero
+                    chofer_id = int(entries[1].get())
+                except ValueError:
+                    chofer_id = int(open_table_window_obtain(f.get_chofer, "choferes")[0])
+                print(chofer_id)
+                f.del_driver_logic(chofer_id)
+                messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
+            elif "Eliminar Ruta Logica" in selected_option:
+                try:
+                # Intentar convertir a entero
+                    ruta_id = int(entries[2].get())
+                except ValueError:
+                    ruta_id = int(open_table_window_obtain(f.get_route, "rutas")[0])
+
+                print(ruta_id)
+                f.del_route_logic(ruta_id)
+                messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
+            elif "Eliminar Usuario Logica" in selected_option:
+                try:
+                # Intentar convertir a entero
+                    usuario_id = int(entries[3].get())
+                except ValueError:
+                    usuario_id = int(open_table_window_obtain(f.get_usuarios, "usuarios")[0])
+
+                print(usuario_id)
+                f.del_usuario_logic(usuario_id)
+                messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
+
+            #-------------------------------Fisica-------------------------------
+
+
+            elif "Eliminar Bus" in selected_option:
+                try:
+                # Intentar convertir a entero
+                    bus_id = int(entries[4].get())
+                except ValueError:
+                    bus_id = int(open_table_window_obtain(f.get_bus, "buses")[0])                
+                print(bus_id)
                 f.del_bus(bus_id)
                 messagebox.showinfo("Éxito", "Bus eliminado correctamente")
+           
             elif "Eliminar Chofer" in selected_option:
-                chofer_id = int(entries[1].get())
+                try:
+                # Intentar convertir a entero
+                    chofer_id = int(entries[5].get())
+                except ValueError:
+                    chofer_id = int(open_table_window_obtain(f.get_chofer, "choferes")[0])
+
+                print(chofer_id)
                 f.del_driver(chofer_id)
                 messagebox.showinfo("Éxito", "Chofer eliminado correctamente")
             elif "Eliminar Ruta" in selected_option:
-                ruta_id = int(entries[2].get())
+                try:
+                # Intentar convertir a entero
+                    ruta_id = int(entries[6].get())
+                except ValueError:
+                    ruta_id = int(open_table_window_obtain(f.get_route, "rutas")[0])
+
+
+                print(ruta_id)
                 f.del_route(ruta_id)
                 messagebox.showinfo("Éxito", "Ruta eliminada correctamente")
             elif "Eliminar Usuario" in selected_option:
-                usuario_id=int(entries[3].get())
+                try:
+                # Intentar convertir a entero
+                    usuario_id = int(entries[7].get())
+                except ValueError:
+                    usuario_id = int(open_table_window_obtain(f.get_usuarios, "usuarios")[0])
+
+                print(usuario_id)
                 f.del_usuario(usuario_id)
                 messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
+                
+        
+        
         elif action == "update":
             if "Actualizar Bus" in selected_option:
-                bus_id = int(entries[0].get())
-                chofer_id = int(entries[1].get())
-                ruta_id = int(entries[2].get())
-                fecha_sal=(entries[3].get())
-                fecha_ret=(entries[4].get())
-                f.update_bus(bus_id,  chofer_id, ruta_id,fecha_sal,fecha_ret)
-                messagebox.showinfo("Éxito", "Bus actualizado correctamente")
+                try:
+                    bus_id = int(entries[0].get())
+                    chofer_id = int(entries[1].get())
+                    ruta_id = int(entries[2].get())
+                    fecha_sal=(entries[3].get())
+                    fecha_ret=(entries[4].get())
+                    print(bus_id, chofer_id, ruta_id, fecha_sal, fecha_ret)
+                    f.update_bus(bus_id,  chofer_id, ruta_id,fecha_sal,fecha_ret)
+                    messagebox.showinfo("Éxito", "Bus actualizado correctamente")
+                except ValueError:
+                    resultadosbus = open_table_window_obtain(f.get_bus_elimacion, "buses")
+                    if resultadosbus:
+                        entries[0].delete(0, tk.END)
+                        entries[0].insert(0, str(resultadosbus[0]))  # ID Bus
+                        entries[1].delete(0, tk.END)
+                        entries[1].insert(0, str(resultadosbus[1]))  # ID Chofer
+                        entries[2].delete(0, tk.END)
+                        entries[2].insert(0, str(resultadosbus[4]))  # ID Ruta
+                        entries[3].delete(0, tk.END)
+                        entries[3].insert(0, resultadosbus[5])       # Fecha Salida
+                        entries[4].delete(0, tk.END)
+                        entries[4].insert(0, resultadosbus[6])       # Fecha Retorno
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error al actualizar el bus: {e}")
+
+               
+            #    messagebox.showinfo("Éxito", "Bus actualizado correctamente")
             elif "Actualizar Chofer" in selected_option:
-                nombre = entries[5].get()
-                chofer_id = int(entries[6].get())
-                edad = int(entries[7].get())
-                carnet = int(entries[8].get())
-                f.update_driver(chofer_id, nombre, edad, carnet)
-                messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+                try:
+                    nombre = entries[5].get()
+                    chofer_id = int(entries[6].get())
+                    edad = int(entries[7].get())
+                    carnet = int(entries[8].get())
+
+                    print(nombre, chofer_id, edad, carnet)
+                    f.update_driver(chofer_id, nombre, edad, carnet)
+                    messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+                except ValueError:
+                    resultadoschofer = open_table_window_obtain(f.get_chofer, "choferes")
+                    if resultadoschofer:
+                        entries[5].delete(0, tk.END)
+                        entries[5].insert(0, str(resultadoschofer[1]))
+                        entries[6].delete(0, tk.END)
+                        entries[6].insert(0, str(resultadoschofer[0]))
+                        entries[7].delete(0, tk.END)
+                        entries[7].insert(0, str(resultadoschofer[3]))
+                        entries[8].delete(0, tk.END)
+                        entries[8].insert(0, str(resultadoschofer[2]))
+                   
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error al actualizar el chofer: {e}")
+            
             elif "Actualizar Ruta" in selected_option:
-                ruta_id = int(entries[9].get())
-                dep_inicio = entries[10].get()
-                dep_final = entries[11].get()
-                costo = int(entries[12].get())
-                costo_vip = int(entries[13].get())
-                f.update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip)
-                messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+                try:
+                    ruta_id = int(entries[9].get())
+                    dep_inicio = entries[10].get()
+                    dep_final = entries[11].get()
+                    costo = int(entries[12].get())
+                    costo_vip = int(entries[13].get())
+                    print(ruta_id, dep_inicio, dep_final, costo, costo_vip)
+
+                    f.update_route(ruta_id,dep_inicio,dep_final,costo,costo_vip)
+                    messagebox.showinfo("Éxito", "Chofer actualizado correctamente")
+                except ValueError:
+                    resultadosruta = open_table_window_obtain(f.get_route, "rutas")
+                    if resultadosruta:
+                        entries[9].delete(0, tk.END)
+                        entries[9].insert(0, str(resultadosruta[0]))
+                        entries[10].delete(0, tk.END)
+                        entries[10].insert(0, str(resultadosruta[1]))
+                        entries[11].delete(0, tk.END)
+                        entries[11].insert(0, str(resultadosruta[2]))
+                        entries[12].delete(0, tk.END)
+                        entries[12].insert(0, str(resultadosruta[3]))
+                        entries[13].delete(0, tk.END)
+                        entries[13].insert(0, str(resultadosruta[4]))
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error al actualizar la ruta: {e}")
+
+                
+               
             elif "Actualizar Usuario" in selected_option:
-                usuario_id=int(entries[14].get())
-                nombre=entries[15].get()
-                apellido=entries[16].get()
-                edad=int(entries[17].get())
-                carnet=entries[18].get()
-                if(len(carnet)!=7):
-                    raise ValueError("El carnet tiene que tener 7 digitos y no existir")
-                contraseña=entries[19].get()
-                admin=int(entries[20].get())
-                if(admin!=1 and admin!=0):
-                     raise ValueError("El campo admin solo puede ser 0 (No) o 1 (Sí)")
-                cursor.execute(f"EXEC sp_update_usuario {usuario_id} , '{nombre}' , '{apellido}' , {edad} , '{carnet}' , '{contraseña}' , {admin}")
-                cursor.commit()
-                messagebox.showinfo("Éxito", "Usuario actualizado correctamente")
+                try:
+                    usuario_id=int(entries[14].get())
+                    nombre=entries[15].get()
+                    apellido=entries[16].get()
+                    edad=int(entries[17].get())
+                    carnet=entries[18].get()
+                    if(len(carnet)!=7):
+                        raise ValueError("El carnet tiene que tener 7 digitos y no existir")
+                    contraseña=entries[19].get()
+                    if(entries[20].get()=="True"):
+                        admin=1
+                    elif(entries[20].get()=="False"):
+                        admin=0
+                    else:
+                        admin=int(entries[20].get())
+                    if(admin!=1 and admin!=0):
+                        raise ValueError("El campo admin solo puede ser 0 (No) o 1 (Sí)")
+                    
+                    print(usuario_id,nombre,apellido,edad,carnet,contraseña,admin)
+                    f.update_user(usuario_id,nombre,apellido,edad,carnet,contraseña,admin)
+                    messagebox.showinfo("Éxito", "Usuario actualizado correctamente")
+                except ValueError:
+                    resultadosusuario = open_table_window_obtain(f.get_usuarios, "usuarios")
+                    if resultadosusuario:
+                        entries[14].delete(0, tk.END)
+                        entries[14].insert(0, str(resultadosusuario[0]))
+                        entries[15].delete(0, tk.END)
+                        entries[15].insert(0, str(resultadosusuario[1]))
+                        entries[16].delete(0, tk.END)
+                        entries[16].insert(0, str(resultadosusuario[2]))
+                        entries[17].delete(0, tk.END)
+                        entries[17].insert(0, str(resultadosusuario[3]))
+                        entries[18].delete(0, tk.END)
+                        entries[18].insert(0, str(resultadosusuario[4]))
+                        entries[20].delete(0, tk.END)
+                        entries[20].insert(0, str(resultadosusuario[5]))
+                except Exception as e:
+                    messagebox.showerror("Error", f"Error al actualizar el usuario: {e}")
+
+
     except Exception as e:
         messagebox.showerror("Error",e)
+
+"""Funcion para Mostrar el Boton de Historial"""
+def show_history_button(target_frame=None):
+    if history_button:
+        history_button.place(x=25, y=9)  
+
+"""Funcion para ocultar el Boton de Historial"""
+def hide_history_button():
+    if history_button:
+        history_button.place_forget()
+
+"""Funcion para ocultar Frame al apretar Boton de Historial"""
+def on_history_button():
+    global current_frame, fetch_frame, history_frame
+    # Ocultar frame actual
+    if current_frame == fetch_frame:
+        fetch_frame.pack_forget()
+    hide_history_button()
+    history_frame = make_history_frame() 
+    show_frame(history_frame)
 
 # ------------------------------------------------------------FRAMES---------------------------------------------------------------------------------------------
 
@@ -284,7 +479,7 @@ def make_action_bar():
         back_photo = ImageTk.PhotoImage(back_image)
         global back_button
         def on_back_button():
-            global current_frame, login_frame, register_frame, start_frame, terms_frame
+            global current_frame, login_frame, register_frame, start_frame, terms_frame, history_frame
             # Verificar desde qué frame se está presionando el Boton de Regreso
             if current_frame == login_frame:
                 login_frame.pack_forget()
@@ -298,6 +493,10 @@ def make_action_bar():
                 terms_frame.pack_forget()
                 hide_back_button()
                 show_frame(start_frame)
+            elif current_frame == history_frame:
+                history_frame.pack_forget()
+                hide_back_button()
+                show_frame(fetch_frame)
         back_button = tk.Button(
             action_bar,
             image=back_photo,
@@ -352,6 +551,24 @@ def make_action_bar():
         log_out_button.place_forget()  
     except Exception as e:
         print(f"Error al cargar el Boton de Cerrar Sesion: {e}")
+    # Crear Boton de Historial pero inicialmente ocultarlo
+    try:
+        history_image_path = "../../ASSETS/history_button_admin.png"
+        history_image = Image.open(history_image_path).resize((17, 21), Image.LANCZOS)
+        history_photo = ImageTk.PhotoImage(history_image)
+        global history_button
+        history_button = tk.Button(
+            action_bar,
+            image=history_photo,
+            bg="#09090A",
+            borderwidth=0,
+            command=on_history_button
+        )
+        history_button.image = history_photo
+        history_button.place(x=25, y=9) 
+        history_button.place_forget()
+    except Exception as e:
+        print(f"Error al cargar el Boton de Historial: {e}")
     return action_bar
 
 """Frame de la Barra de Navegacion"""
@@ -672,7 +889,7 @@ def make_register_frame():
 
 """Frame para Iniciar Sesion"""
 def make_login_frame():
-    global login_frame, login_id_card_entry, login_password_entry
+    global login_frame, login_id_card_entry, login_password_entry, role_input
     # Creando Frame
     login_frame = tk.Frame(window, bg="#09090A")
     login_frame.name = "login"
@@ -712,6 +929,22 @@ def make_login_frame():
         corner_radius=32
     )
     login_password_entry.pack(side="left", padx=10, fill="x", expand=True)
+    # Elegir Roles
+    role_frame = tk.Frame(login_frame, bg="#09090A")
+    role_frame.pack(side="top", pady=10, fill="x", padx=10)
+    role_txt = tk.Label(role_frame, text="Rol:", bg="#09090A", fg="#C8BCF6")
+    role_input = CTkComboBox(
+        role_frame,
+        values=["DBA", "Gerente", "Vendedor"],
+        fg_color="#343638",
+        button_color="#C8BCF6",
+        border_color="#C8BCF6",
+        corner_radius=32,
+        state="readonly" 
+    )
+    role_input.set("Seleccionar")
+    role_txt.pack(side="left", padx=10)
+    role_input.pack(side="left", padx=10)
     # Boton para Iniciar Sesion
     login_button_submit = CTkButton(
         login_frame,
@@ -727,7 +960,242 @@ def make_login_frame():
     show_back_button()
     return login_frame
 
+"""Frame para el Historial de Modificaciones"""
+def make_history_frame():
+    global history_frame, history_date_button, modifications_container
+    modifications_container = None
+    # Creando Frame
+    history_frame = tk.Frame(window, bg="#09090A")
+    history_frame.name = "history"
+    history_frame.pack(side="top", anchor="n", fill="x", expand=True)
+    # Título
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(
+        history_frame,
+        text="Historial de Modificaciones",
+        font=title_font,
+        bg="#09090A",
+        fg="#7732FF",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(pady=10)
+    def load_modifications(selected_date):
+        global modifications_container
+        # Si ya existe un contenedor previo, se destruye para refrescar la información
+        if modifications_container is not None:
+            modifications_container.destroy()
+        modifications_container = tk.Frame(history_frame, bg="#09090A")
+        modifications_container.pack(fill="both", expand=True, padx=10, pady=10)
+        # Crear un Scrollbar
+        scrollbar = tk.Scrollbar(modifications_container)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        canvas = tk.Canvas(modifications_container, bg="#09090A", yscrollcommand=scrollbar.set, bd=0, highlightthickness=0, height=500)
+        canvas.pack(side=tk.LEFT, fill="both", expand=True)
+        scrollbar.config(command=canvas.yview)
+        inner_frame = tk.Frame(canvas, bg="#09090A")
+        window_id = canvas.create_window((0, 0), window=inner_frame, anchor="nw")
+        def onFrameConfigure(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas.itemconfig(window_id, width=canvas.winfo_width())
+        inner_frame.bind("<Configure>", onFrameConfigure)
+        # Conexión y consulta a la base de datos
+        try:
+            connection = c.make_connection()
+            if connection:
+                cursor = connection.cursor()
+                cursor.execute(f"EXEC sp_obtener_modificaciones_por_dia_vista '{selected_date}'")
+                modifications = cursor.fetchall()
+                if modifications: 
+                    for modification in modifications:
+                        # Procesar modification[6] si es un JSON válido
+                        try:
+                            datos_json = json.loads(modification[6])
+                            def format_data(data, indent=0):
+                                formatted = ""
+                                espacios = " " * indent
+                                if isinstance(data, dict):
+                                    for key, value in data.items():
+                                        if isinstance(value, (dict, list)):
+                                            formatted += f"{espacios}{key}:\n{format_data(value, indent + 4)}"
+                                        else:
+                                            formatted += f"{espacios}{key}: {value}\n"
+                                elif isinstance(data, list):
+                                    for item in data:
+                                        if isinstance(item, (dict, list)):
+                                            formatted += format_data(item, indent)
+                                        else:
+                                            formatted += f"{espacios}- {item}\n"
+                                else:
+                                    formatted += f"{espacios}{data}\n"
+                                return formatted                            
+                            pretty_data = format_data(datos_json)
+                        except Exception as e:
+                            pretty_data = modification[6]                            
+                        texto_modification = (
+                            f"Auditoria ID: {modification[0]}\n"
+                            f"Tabla Modificada: {modification[1]}\n"
+                            f"Registro Modificado: {modification[2]}\n"
+                            f"Comando: {modification[3]}\n"
+                            f"Rol del Modificador: {modification[5]}\n"
+                            f"Datos Anteriores:\n{pretty_data}\n"
+                        )
+                        tk.Label(inner_frame, text=texto_modification, bg="#09090A", fg="#C8BCF6", anchor="center", justify="center").pack(fill="x", pady=2)
+                else:
+                    tk.Label(inner_frame, text="No se encontraron modificaciones", bg="#09090A", fg="#C8BCF6").pack(pady=10, side="top", anchor="center")
+                connection.close()
+            else:
+                tk.Label(inner_frame, text="Error en la conexión a la base de datos", bg="#09090A", fg="#C8BCF6").pack(pady=10, side="top", anchor="center")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al obtener modificaciones: {e}")
+    # Función para actualizar la fecha seleccionada y cargar las modificaciones
+    def update_history_date(selected_date):
+        history_date_button.configure(text=selected_date)
+        load_modifications(selected_date)
+    # Función del calendario
+    def open_calendar(min_date, max_date, callback):
+        calendar_window = tk.Toplevel(window)
+        calendar_window.title("Selecciona la Fecha")
+        calendar_window.configure(bg="#09090A")
+        calendar_window.geometry("320x250+150+85")
+        try:
+            calendar_window.iconbitmap("../../ASSETS/icon.ico")
+        except Exception:
+            print(f"Error al cargar el icono: {Exception}")
+        calendar_frame = tk.Frame(calendar_window, bg="#09090A", relief="flat", bd=1)
+        calendar_frame.pack(padx=10, pady=10, fill="both", expand=True)
+        calendar = Calendar(
+            calendar_frame,
+            mindate=min_date,
+            maxdate=max_date,
+            date_pattern="yyyy-mm-dd",
+            selectmode="day",
+            background="#09090A",
+            foreground="#7732FF",
+            headersbackground="#09090A",
+            headersforeground="#7732FF",
+            selectbackground="#7732FF",
+            selectforeground="#09090A",
+            weekendforeground="#A9A9A9",
+            bordercolor="#C7BCF6",
+        )
+        calendar.pack(padx=10, pady=10)
+        calendar.bind("<<CalendarSelected>>", lambda _: [callback(calendar.get_date()), calendar_window.destroy()])
+    # Fecha de Modificaciones
+    history_date_frame = tk.Frame(history_frame, bg="#09090A")
+    history_date_frame.pack(side="top", pady=10, fill="x", padx=10)
+    history_date_label = tk.Label(history_date_frame, text="Fecha de las Modificaciones:", bg="#09090A", fg="#C8BCF6")
+    history_date_label.pack(side="left", padx=10)
+    history_date_button = CTkButton(
+        history_date_frame,
+        text="Seleccionar",
+        corner_radius=32,
+        fg_color="#343638",
+        text_color="#C8BCF6",
+        hover_color="#5A23CC",
+        border_color="#C8BCF6",
+        border_width=2,
+        command=lambda: open_calendar(
+            date(2024, 12, 31),
+            date.today(),
+            update_history_date  
+        )
+    )
+    history_date_button.pack(side="left", padx=10, fill="x", expand=True)
+    return history_frame
+
 # ------------------------------------------------------------MANEJO DE COMANDOS---------------------------------------------------------------------------------------------
+
+def open_table_window_obtain(fetch_function, title):
+    connection = c.make_connection()
+    if not connection:
+        return None
+    cursor = connection.cursor()
+    selected_data = None  # Almacena la fila seleccionada
+    confirmed = False  # Bandera para confirmar la selección
+
+    try:
+        data = fetch_function(cursor)
+        if not data:
+            messagebox.showinfo("Información", f"No hay datos en la tabla {title}.")
+            return None
+
+        # Crear ventana
+        table_window = tk.Toplevel(fetch_frame)
+        table_window.title(f"Tabla: {title}")
+        table_window.geometry("600x400")
+        try:
+            table_window.iconbitmap("../../ASSETS/icon.ico")
+        except Exception:
+            print(f"Error al cargar el icono: {Exception}")
+        table_window.configure(bg="#09090A")
+
+        # Treeview para mostrar datos
+        tree = ttk.Treeview(table_window, show="headings", selectmode="browse")
+        tree.pack(fill="both", expand=True)
+
+        # Configurar columnas
+        columns = [desc[0] for desc in cursor.description]
+        tree["columns"] = columns
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, anchor="center")
+
+        # Insertar datos
+        for row in data:
+            cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
+            tree.insert("", "end", values=cleaned_row)
+
+        # Función al seleccionar fila
+        def on_select(event):
+            nonlocal selected_data
+            selected_items = tree.selection()
+            if selected_items:
+                selected_item = selected_items[0]
+                selected_data = list(tree.item(selected_item, 'values'))
+
+        tree.bind('<<TreeviewSelect>>', on_select)
+
+        # Frame para botones
+        button_frame = tk.Frame(table_window, bg="#09090A")
+        button_frame.pack(pady=10)
+
+        # Botón Aceptar (confirma y cierra)
+        def confirm_selection():
+            nonlocal confirmed
+            confirmed = True
+            table_window.destroy()
+
+        accept_button = tk.Button(
+            button_frame,
+            text="Aceptar",
+            command=confirm_selection,
+            bg="#7732FF",
+            fg="white"
+        )
+        accept_button.pack(side="left", padx=5)
+
+        # Botón Cerrar (sale sin confirmar)
+        close_button = tk.Button(
+            button_frame,
+            text="Cerrar",
+            command=table_window.destroy,
+            bg="#444444",
+            fg="white"
+        )
+        close_button.pack(side="left", padx=5)
+
+        # Esperar a que la ventana se cierre
+        table_window.wait_window()
+
+        # Retornar datos solo si se confirmó con "Aceptar"
+        return selected_data if confirmed else None
+
+    except pyodbc.Error as e:
+        messagebox.showerror("Error", f"No se pudo obtener datos: {e}")
+        return None
+    finally:
+        connection.close()
 
 """Frame para Buscar Datos"""
 def make_fetch_frame():
@@ -749,6 +1217,10 @@ def make_fetch_frame():
             table_window = tk.Toplevel(fetch_frame)
             table_window.title(f"Tabla: {title}")
             table_window.geometry("600x400")
+            try:
+                table_window.iconbitmap("../../ASSETS/icon.ico")
+            except Exception:
+                print(f"Error al cargar el icono: {Exception}")
             table_window.configure(bg="#09090A")
             # Crear un Treeview para mostrar los datos
             tree = ttk.Treeview(table_window, show="headings", selectmode="browse")
@@ -820,7 +1292,17 @@ def make_fetch_frame():
         command=lambda: open_table_window(f.get_booking, "Reservas")
     )
     booking_button.pack(pady=10, padx=20, fill="x")
-    # Botón para mostrar la tabla de Reportes
+    # Botón para mostrar la tabla de Reportes_total
+    reportes_button_total = CTkButton(
+        fetch_frame,
+        text="Ver Reportes Total",
+        corner_radius=32,
+        fg_color="#7732FF",
+        hover_color="#5A23CC",
+        command=lambda: open_table_window(f.get_reportes_total, "Reportes_total")
+    )
+    reportes_button_total.pack(pady=10, padx=20, fill="x")
+    # Boton para mostrar la tabla reportes
     reportes_button = CTkButton(
         fetch_frame,
         text="Ver Reportes",
@@ -886,6 +1368,57 @@ def make_option_frame(parent, title_name):
     canvas.configure(yscrollcommand=scrollbar.set)
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
+    if title_name == "Eliminar":
+        # Eliminacion logica
+        title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} logica un Bus",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        title_label.pack(pady=20)
+        create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Bus Logica", "Ingresar", 2)
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} logica un Chofer",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        title_label.pack(pady=20)
+        create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Chofer Logica", "Ingresar", 2) 
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} logica una Ruta",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        title_label.pack(pady=20)
+        create_input_field(scrollable_frame, "Ruta ID", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Ruta Logica", "Ingresar", 2)
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} logica un Usuario",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        title_label.pack(pady=20)
+        create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Usuario Logica", "Ingresar", 2)    
     # Titulo de Bus
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
@@ -971,7 +1504,7 @@ def make_option_frame(parent, title_name):
         create_input_field(scrollable_frame, "Costo:", "Ingresar", 1)
         create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
-    # USUARIO
+    # Usuario
     if title_name == "Actualizar":
         title_font = font.Font(family="Canva Sans", size=15, weight="bold")
         title_label = tk.Label(
@@ -1087,11 +1620,18 @@ def show_frame(frame_to_show):
             show_back_button()
             hide_log_out_button()
             navigation_bar.pack_forget()
+        elif frame_to_show.name == "history":
+            hide_option()
+            action_bar.pack(side="top", fill="x")
+            show_back_button()
+            show_log_out_button()
+            navigation_bar.pack(side="bottom", fill="x")
         else:
             hide_option()
             action_bar.pack(side="top", fill="x")
             hide_back_button()
             show_log_out_button()
+            show_history_button()
             navigation_bar.pack(side="bottom", fill="x")
     frame_to_show.pack(expand=True)
 
@@ -1108,17 +1648,20 @@ def hide_back_button():
 
 """Funcion para limpiar datos al  presionar el Boton de Regresar"""
 def on_back_button():
-    global current_frame, login_frame, register_frame, start_frame
+    global current_frame, login_frame, register_frame, start_frame, role_input, history_date_button, history_frame
     # Borar datos al presionar el boton de regreso
     if current_frame == login_frame:
         login_id_card_entry.delete(0, tk.END)
         login_password_entry.delete(0, tk.END)
+        role_input.set("Seleccionar")
     elif current_frame == register_frame:
         name_entry.delete(0, tk.END)
         last_name_entry.delete(0, tk.END)
         age_entry.delete(0, tk.END)
         id_card_entry.delete(0, tk.END)
         password_entry.delete(0, tk.END)
+    elif current_frame == history_frame:
+        history_date_button.configure(text="Seleccionar") 
 
 """Funcion para mostrar el Boton para Cerrar Sesion"""
 def show_log_out_button(target_frame=None):
@@ -1132,8 +1675,9 @@ def hide_log_out_button():
 
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
-    global current_frame, start_frame
+    global current_frame, start_frame, history_date_button
     hide_log_out_button()
+    history_date_button.configure(text="Seleccionar") 
     show_frame(start_frame)
 
 """Función para Mostrar Option"""
@@ -1152,7 +1696,7 @@ def hide_option():
 """Funcion Principal"""
 def main():
     global window, all_frames, start_frame, register_frame, login_frame, action_bar, terms_frame
-    global current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar
+    global current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar, history_frame
     # Configuración de la ventana
     set_appearance_mode("#09090A")
     set_default_color_theme("blue")
@@ -1181,9 +1725,10 @@ def main():
     delete_frame = make_delete_frame()
     fetch_frame = make_fetch_frame()
     terms_frame = make_terms_frame()
+    history_frame = make_history_frame()
     all_frames = [
         loading_frame, start_frame, register_frame,
-        login_frame, fetch_frame, terms_frame,
+        login_frame, fetch_frame, history_frame, terms_frame,
         add_frame, update_frame, delete_frame
     ]
     # Mostrar pantalla de carga

@@ -11,8 +11,15 @@ from tkcalendar import Calendar
 from datetime import date
 from PIL import Image, ImageTk
 from customtkinter import CTkImage, CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
+import time
+from datetime import datetime, timedelta
 window = None
 id_card = None  
+password = None
+id_card_1 = None
+password_1 = None
+id_card_2 = None
+password_2 = None
 all_frames = []
 sum_cost = 0
 num_passengers = 0
@@ -21,6 +28,9 @@ selected_departure = None
 selected_return = None
 passenger_class_user = None
 billing_payment_method = None
+payment_id_card_entry = None
+payment_password_entry = None
+expiration_date_button = None
 
 # ---------------------------------------------------CONEXION CON BASE DE DATOS------------------------------------------------------------------------------------------------
 
@@ -57,7 +67,7 @@ def make_connection():
 def validate_carnet(carnet:str)->bool:
     conexion=make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"EXEC sp_validar_carnet_por_carnet '{carnet}'")
+    cursor.execute(f"EXEC sp_valida_carnet '{carnet}'")
     valor=cursor.fetchone()
     if valor is None:
         return False
@@ -140,20 +150,21 @@ def create_account():
 def login():
     # Entrada de Datos
     global content_frame
-    global id_card 
-    id_card=login_id_card_entry.get().strip()
-    password = login_password_entry.get().strip()
+    global id_card, id_card_1, password_1
+    id_card_1 = login_id_card_entry.get().strip()
+    id_card = id_card_1
+    password_1 = login_password_entry.get().strip()
     # Verificar la correcta Entrada de Datos
-    if not all([id_card]):
+    if not all([id_card_1]):
         messagebox.showerror("Error", "Debes ingresar tu Numero de Carnet")
         return
     if not id_card.isdigit():
         messagebox.showerror("Error", "El Numero de Carnet debe ser un numero natural")
         return
-    if not len(id_card) == 7:
+    if not len(id_card_1) == 7:
         messagebox.showerror("Error", "El Numero de Carnet debe tener 7 digitos")
         return
-    if not all([password]):
+    if not all([password_1]):
         messagebox.showerror("Error", "Debes ingresar tu Contraseña")
         return
     # Borrar Datos en caso de Error
@@ -165,7 +176,7 @@ def login():
         return
     try:
         cursor = connection.cursor()
-        cursor.execute(f"EXEC sp_obtener_usuario '{id_card}', '{password}'")
+        cursor.execute(f"EXEC sp_obtener_usuario '{id_card_1}', '{password_1}'")
         usuario = cursor.fetchone()
         # Cambiar al content_frame si todo sale bien
         if usuario:
@@ -267,9 +278,17 @@ def make_action_bar():
         pasa_logo = "../../ASSETS/logo.png"
         logo_image = Image.open(pasa_logo).resize((56, 20), Image.LANCZOS)
         logo_photo = ImageTk.PhotoImage(logo_image)
-        logo_label = tk.Label(action_bar, image=logo_photo, bg="#F1F2F6")
-        logo_label.image = logo_photo
-        logo_label.place(relx=0.5, rely=0.5, anchor="center")
+        global logo_button
+        logo_button = tk.Button(
+            action_bar,
+            image=logo_photo,
+            bg="#F1F2F6",
+            borderwidth=0,
+            command=on_logo_button
+        )
+        logo_button.image = logo_photo
+        logo_button.place(relx=0.430, rely=0.3, anchor="center") 
+        logo_button.place_forget()
     except Exception as e:
         print(f"Error al cargar el Logo: {e}")
     # Crear Boton para Regresar pero inicialmente ocultarlo
@@ -279,7 +298,7 @@ def make_action_bar():
         back_photo = ImageTk.PhotoImage(back_image)
         global back_button
         def on_back_button():
-            global current_frame, pay_frame, results_frame, history_frame, login_frame, register_frame, content_frame, start_frame, terms_frame
+            global current_frame, update_user_frame, pay_frame, results_frame, history_frame, login_frame, register_frame, content_frame, start_frame, terms_frame, payment_confirmation_frame
             # Verificar desde qué frame se está presionando el Boton de Regreso
             if current_frame == results_frame:
                 results_frame.pack_forget()
@@ -305,6 +324,14 @@ def make_action_bar():
                 pay_frame.pack_forget()
                 hide_back_button()
                 show_frame(results_frame)
+            elif current_frame == payment_confirmation_frame:
+                payment_confirmation_frame.pack_forget()
+                hide_back_button()
+                show_frame(pay_frame)
+            elif current_frame == update_user_frame:
+                update_user_frame.pack_forget()
+                hide_back_button()
+                show_frame(start_frame)
         back_button = tk.Button(
             action_bar,
             image=back_photo,
@@ -797,7 +824,7 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image,  
             compound="left",
-            command = lambda: on_payment_method_button("Visa")
+            command = lambda: on_button_click("Visa")
         )
         visa_button.image = ctk_image  
         visa_button.pack(side="left", padx=10, fill="x", expand=True)
@@ -825,7 +852,7 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image_mastercard,  
             compound="left",
-            command = lambda: on_payment_method_button("Mastercard")
+            command = lambda: on_button_click("Mastercard")
         )
         mastercard_button.image = ctk_image_mastercard 
         mastercard_button.pack(side="left", padx=10, fill="x", expand=True)
@@ -853,7 +880,7 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image_paypal,  
             compound="left",
-            command = lambda: on_payment_method_button("PayPal")
+            command = lambda: on_button_click("PayPal")
         )
         paypal_button.image = ctk_image_paypal  
         paypal_button.pack(side="left", padx=10, fill="x", expand=True)
@@ -881,7 +908,7 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image_bitcoin,  
             compound="left",
-            command = lambda: on_payment_method_button("Bitcoin")
+            command = lambda: on_button_click("Bitcoin")
         )
         bitcoin_button.image = ctk_image_bitcoin  
         bitcoin_button.pack(side="left", padx=10, fill="x", expand=True)
@@ -909,7 +936,7 @@ def make_pay_frame():
             corner_radius=32,
             image=ctk_image_yolo,  
             compound="left",
-            command = lambda: on_payment_method_button("Yolo")
+            command = lambda: on_button_click("Yolo")
         )
         yolo_button.image = ctk_image_yolo 
         yolo_button.pack(side="left", padx=10, fill="x", expand=True)
@@ -1235,7 +1262,7 @@ def make_show_results(buses, buses_2, passengers, origin, destination, passenger
                 sum_cost = sum_cost - (num_passengers * bus_cost)
             else:
                 messagebox.showinfo("Informacion", "Solo puedes seleccionar un Bus de regreso")
-        total_cost_var.set(f"El costo total a pagar es: {globals()['sum_cost']}")
+        total_cost_var.set(f"El costo total a pagar es: Bs{globals()['sum_cost']}")
     # Mostrar Buses Disponibles de Partida 
     if not buses:
         no_results_label = tk.Label(
@@ -1269,7 +1296,7 @@ Punto de Origen: {origin}
 Punto de Destino: {destination}
 Fecha de Salida: {fecha_salida}
 Asientos Disponibles: {60 - asientos_ocupados}
-Precio: {precio}
+Precio: Bs{precio}
             """
             label = tk.Label(
                 block_frame,
@@ -1337,7 +1364,7 @@ Punto de Origen: {destination}
 Punto de Destino: {origin}
 Fecha de Salida: {fecha_salida}
 Asientos Disponibles: {60 - asientos_ocupados}
-Precio: {precio_2}
+Precio: Bs{precio_2}
             """
             label = tk.Label(
                 block_frame,
@@ -1364,6 +1391,516 @@ Precio: {precio_2}
                 separator.pack_propagate(False)
     return results_frame
 
+"""Frame de confirmacion de Pago"""
+def make_payment_confirmation_frame():
+    global payment_id_card_entry, payment_password_entry, billing_payment_method, expiration_date_button
+    # Creando Frame
+    payment_confirmation_frame = tk.Frame(window, bg="#F1F2F6")
+    payment_confirmation_frame.name = "payment_confirmation"
+    if billing_payment_method == "Visa":
+        # Agregando Logo de Visa
+        try:
+            payment_logo = f"../../ASSETS/visa_button.png"
+            image = Image.open(payment_logo)
+            image = image.resize((130, 48), Image.LANCZOS)
+            photo = ImageTk.PhotoImage(image)
+            iso_label = tk.Label(payment_confirmation_frame, image=photo, bg="#F1F2F6")  
+            iso_label.image = photo  
+            iso_label.pack(expand=True)
+        except Exception as e:
+            print(f"Error al cargar el Logo de Visa: {e}")
+    elif billing_payment_method == "Mastercard":
+        # Agregando Logo de Mastercard
+        try:
+            payment_logo = f"../../ASSETS/mastercard_button.png"
+            image = Image.open(payment_logo)
+            image = image.resize((150, 92), Image.LANCZOS)
+            photo = ImageTk.PhotoImage(image)
+            iso_label = tk.Label(payment_confirmation_frame, image=photo, bg="#F1F2F6")  
+            iso_label.image = photo  
+            iso_label.pack(expand=True)
+        except Exception as e:
+            print(f"Error al cargar el Logo de Mastercard: {e}")
+    elif billing_payment_method == "PayPal":
+        # Agregando Logo de PayPal
+        try:
+            payment_logo = f"../../ASSETS/paypal_logo.png"
+            image = Image.open(payment_logo)
+            image = image.resize((204, 54), Image.LANCZOS)
+            photo = ImageTk.PhotoImage(image)
+            iso_label = tk.Label(payment_confirmation_frame, image=photo, bg="#F1F2F6")  
+            iso_label.image = photo  
+            iso_label.pack(expand=True)
+        except Exception as e:
+            print(f"Error al cargar el Logo de PayPal: {e}")
+    elif billing_payment_method == "Bitcoin":
+        # Agregando Logo de Bitcoin
+        try:
+            payment_logo = f"../../ASSETS/bitcoin_button.png"
+            image = Image.open(payment_logo)
+            image = image.resize((120, 120), Image.LANCZOS)
+            photo = ImageTk.PhotoImage(image)
+            iso_label = tk.Label(payment_confirmation_frame, image=photo, bg="#F1F2F6")  
+            iso_label.image = photo  
+            iso_label.pack(expand=True)
+        except Exception as e:
+            print(f"Error al cargar el Logo de Bitcoin: {e}")
+    elif billing_payment_method == "Yolo":
+        # Agregando Logo de Yolo
+        try:
+            payment_logo = f"../../ASSETS/yolo_logo.png"
+            image = Image.open(payment_logo)
+            image = image.resize((204, 101), Image.LANCZOS)
+            photo = ImageTk.PhotoImage(image)
+            iso_label = tk.Label(payment_confirmation_frame, image=photo, bg="#F1F2F6")  
+            iso_label.image = photo  
+            iso_label.pack(expand=True)
+        except Exception as e:
+            print(f"Error al cargar el Logo de Yolo: {e}")
+    # Titulo
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(
+        payment_confirmation_frame,
+        text=f"Pagar con {billing_payment_method}",
+        font=title_font,
+        bg="#F1F2F6",
+        fg="black",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(pady=50)
+    # Ingreso de datos
+    if billing_payment_method == "Visa" or billing_payment_method == "Mastercard":
+        # Ingresando el Carnet
+        payment_confirmation_id_card_frame = tk.Frame(payment_confirmation_frame, bg="#F1F2F6")
+        payment_confirmation_id_card_frame.pack(side="top", pady=10, fill="x", padx=10)
+        payment_confirmation_id_card_label = tk.Label(payment_confirmation_id_card_frame, text="N° de Tarjeta: ", bg="#F1F2F6")
+        payment_confirmation_id_card_label.pack(side="left", padx=10)
+        payment_id_card_entry = CTkEntry(
+            payment_confirmation_id_card_frame,
+            placeholder_text="Ingresar",
+            border_color="#7732FF",
+            corner_radius=32
+        )
+        payment_id_card_entry.pack(side="left", padx=10, fill="x", expand=True)
+        # Ingresando la Contraseña
+        payment_confirmation_password_frame = tk.Frame(payment_confirmation_frame, bg="#F1F2F6")
+        payment_confirmation_password_frame.pack(side="top", pady=10, fill="x", padx=10)
+        payment_confirmation_password_label = tk.Label(payment_confirmation_password_frame, text="CVC:", bg="#F1F2F6")
+        payment_confirmation_password_label.pack(side="left", padx=10)
+        payment_password_entry = CTkEntry(
+            payment_confirmation_password_frame,
+            placeholder_text="Ingresar",
+            show="*",
+            border_color="#7732FF",
+            corner_radius=32
+        )
+        payment_password_entry.pack(side="left", padx=10, fill="x", expand=True)
+        # Calendario
+        def open_calendar(min_date, max_date, callback):
+            calendar_window = tk.Toplevel(window)
+            calendar_window.title("Selecciona la Fecha")
+            calendar_window.configure(bg="#F1F2F6")
+            calendar_window.geometry("320x250+150+85")
+            try:
+                calendar_window.iconbitmap("../../ASSETS/icon.ico")
+            except Exception:
+                print(f"Error al cargar el icono: {Exception}")
+            calendar_frame = tk.Frame(calendar_window, bg="#F1F2F6", relief="flat", bd=1)
+            calendar_frame.pack(padx=10, pady=10, fill="both", expand=True)
+            calendar = Calendar(
+                calendar_frame,
+                mindate=min_date,
+                maxdate=max_date,
+                date_pattern="yyyy-mm-dd",
+                selectmode="day",
+                background="#FFFFFF",
+                foreground="#7732FF",
+                headersbackground="#F1F2F6",
+                headersforeground="#7732FF",
+                selectbackground="#7732FF",
+                selectforeground="#FFFFFF",
+                weekendforeground="#A9A9A9",
+                bordercolor="#F1F2F6"
+            )
+            calendar.pack(padx=10, pady=10)
+            calendar.bind("<<CalendarSelected>>", lambda _: [callback(calendar.get_date()), calendar_window.destroy()])
+        # Fecha de Expiracion
+        expiration_date_frame = tk.Frame(payment_confirmation_frame, bg="#F1F2F6")
+        expiration_date_frame.pack(side="top", pady=10, fill="x", padx=10)
+        expiration_date_label = tk.Label(expiration_date_frame, text="Fecha de Expiracion:", bg="#F1F2F6")
+        expiration_date_label.pack(side="left", padx=10)
+        expiration_date_button = CTkButton(
+            expiration_date_frame,
+            text="Seleccionar",
+            corner_radius=32,
+            fg_color="#F1F2F6",
+            text_color="#000000",
+            hover_color="#E1E1E1",
+            border_color="#7732FF",
+            border_width=2,
+            command=lambda: open_calendar(
+                date.today(),
+                date(2025, 12, 31),
+                lambda d: expiration_date_button.configure(text=d)
+            )
+        )
+        expiration_date_button.pack(side="left", padx=10, fill="x", expand=True)
+    elif billing_payment_method == "PayPal" or billing_payment_method == "Yolo":
+        # Ingresando el Carnet
+        payment_confirmation_id_card_frame = tk.Frame(payment_confirmation_frame, bg="#F1F2F6")
+        payment_confirmation_id_card_frame.pack(side="top", pady=10, fill="x", padx=10)
+        payment_confirmation_id_card_label = tk.Label(payment_confirmation_id_card_frame, text="Carnet: ", bg="#F1F2F6")
+        payment_confirmation_id_card_label.pack(side="left", padx=10)
+        payment_id_card_entry = CTkEntry(
+            payment_confirmation_id_card_frame,
+            placeholder_text="Ingresar",
+            border_color="#7732FF",
+            corner_radius=32
+        )
+        payment_id_card_entry.pack(side="left", padx=10, fill="x", expand=True)
+        # Ingresando la Contraseña
+        payment_confirmation_password_frame = tk.Frame(payment_confirmation_frame, bg="#F1F2F6")
+        payment_confirmation_password_frame.pack(side="top", pady=10, fill="x", padx=10)
+        payment_confirmation_password_label = tk.Label(payment_confirmation_password_frame, text="Contraseña:", bg="#F1F2F6")
+        payment_confirmation_password_label.pack(side="left", padx=10)
+        payment_password_entry = CTkEntry(
+            payment_confirmation_password_frame,
+            placeholder_text="Ingresar",
+            show="*",
+            border_color="#7732FF",
+            corner_radius=32
+        )
+        payment_password_entry.pack(side="left", padx=10, fill="x", expand=True)
+    elif billing_payment_method == "Bitcoin":
+        # Direccion de la billetera
+        address_label = tk.Label(
+            payment_confirmation_frame,
+            text=f"Direccion:\n 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+            font=("Arial", 10),
+            bg="#F1F2F6",
+            fg="black",
+            justify="center",
+        )
+        address_label.pack(pady=(10, 5), side="top", anchor="center")
+        # Ingresando el Carnet
+        payment_confirmation_id_card_frame = tk.Frame(payment_confirmation_frame, bg="#F1F2F6")
+        payment_confirmation_id_card_frame.pack(side="top", pady=10, fill="x", padx=10)
+        payment_confirmation_id_card_label = tk.Label(payment_confirmation_id_card_frame, text="Carnet: ", bg="#F1F2F6")
+        payment_confirmation_id_card_label.pack(side="left", padx=10)
+        payment_id_card_entry = CTkEntry(
+            payment_confirmation_id_card_frame,
+            placeholder_text="Ingresar",
+            border_color="#7732FF",
+            corner_radius=32
+        )
+        payment_id_card_entry.pack(side="left", padx=10, fill="x", expand=True)
+        # Ingresando la Contraseña
+        payment_confirmation_password_frame = tk.Frame(payment_confirmation_frame, bg="#F1F2F6")
+        payment_confirmation_password_frame.pack(side="top", pady=10, fill="x", padx=10)
+        payment_confirmation_password_label = tk.Label(payment_confirmation_password_frame, text="Contraseña:", bg="#F1F2F6")
+        payment_confirmation_password_label.pack(side="left", padx=10)
+        payment_password_entry = CTkEntry(
+            payment_confirmation_password_frame,
+            placeholder_text="Ingresar",
+            show="*",
+            border_color="#7732FF",
+            corner_radius=32
+        )
+        payment_password_entry.pack(side="left", padx=10, fill="x", expand=True)
+    # Boton para Confirmar Pago
+    payment_confirmation_button_submit = CTkButton(
+        payment_confirmation_frame,
+        text="Confirmar Pago",
+        corner_radius=32,
+        fg_color="#7732FF",
+        text_color="white",
+        hover_color="#5A23CC",
+        command=payment_confirmation
+    )
+    payment_confirmation_button_submit.pack(pady=10)
+    # Botón de Regreso
+    show_back_button()
+    return payment_confirmation_frame
+
+"""Confirmacion de Pago"""
+def payment_confirmation():
+    # Entrada de Datos
+    global reservation_frame, payment_id_card_entry, payment_password_entry, id_card_2, password_2, id_card, password, billing_payment_method, id_card_1, password_1, expiration_date_button
+    id_card_2 = payment_id_card_entry.get()
+    password_2 = payment_password_entry.get()
+    if billing_payment_method == "Visa" or billing_payment_method == "Mastercard":
+        expiration_date = expiration_date_button.cget("text")
+        # Verificar la correcta Entrada de Datos
+        if not all([id_card_2]):
+            messagebox.showerror("Error", "Debes ingresar tu Numero de Carnet")
+            return
+        if not id_card_2.isdigit():
+            messagebox.showerror("Error", "El Numero de Carnet debe ser un numero natural")
+            return
+        if not len(id_card_2) == 7:
+            messagebox.showerror("Error", "El Numero de la Tarjeta debe tener 7 digitos")
+            return
+        if not all([password_2]):
+            messagebox.showerror("Error", "Debes ingresar tu Contraseña")
+            return
+        if expiration_date == "Seleccionar":
+            messagebox.showerror("Error", "Debes seleccionar la Fecha de Expiracion de tu tarjeta")
+            return
+        if id_card_2 != id_card_1 or password_2 != password_1:
+            messagebox.showerror("Error", f"Pago rechazado por {billing_payment_method}. Verifique la información de su tarjeta")
+            payment_id_card_entry.delete(0, tk.END)
+            payment_password_entry.delete(0, tk.END)
+            expiration_date_button.configure(text="Seleccionar")
+            return
+    elif billing_payment_method == "PayPal" or billing_payment_method == "Yolo" or billing_payment_method == "Bitcoin":
+        # Verificar la correcta Entrada de Datos
+        if not all([id_card_2]):
+            messagebox.showerror("Error", "Debes ingresar tu Numero de Carnet")
+            return
+        if not id_card_2.isdigit():
+            messagebox.showerror("Error", "El Numero de Carnet debe ser un numero natural")
+            return
+        if not len(id_card_2) == 7:
+            messagebox.showerror("Error", "El Numero de Carnet debe tener 7 digitos")
+            return
+        if not all([password_2]):
+            messagebox.showerror("Error", "Debes ingresar tu Contraseña")
+            return
+        if id_card_2 != id_card_1 or password_2 != password_1:
+            if billing_payment_method == "Bitcoin":
+                messagebox.showerror("Error", f"Pago rechazado por Sparrow Wallet. Verifique la información ingresada")
+                payment_id_card_entry.delete(0, tk.END)
+                payment_password_entry.delete(0, tk.END)
+                return
+            else:
+                messagebox.showerror("Error", f"Pago rechazado por {billing_payment_method}. Verifique la información ingresada")
+                payment_id_card_entry.delete(0, tk.END)
+                payment_password_entry.delete(0, tk.END)
+                return
+    payment_id_card_entry.delete(0, tk.END)
+    payment_password_entry.delete(0, tk.END)
+    if billing_payment_method == "Visa" or billing_payment_method == "Mastercard":
+        expiration_date_button.configure(text="Seleccionar")
+    # Cambiar a reservation_frame si todo sale bien
+    on_payment_method_button(billing_payment_method)
+    return
+
+def make_update_user_frame ():
+    global id_card, p_password_entry, u_name_entry, u_last_name_entry, u_age_entry, u_id_card_entry, u_password_entry
+    # Creando el Frame
+    update_user_frame = tk.Frame(window, bg="#F1F2F6")
+    update_user_frame.name = "update_user"
+    title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+    title_label = tk.Label(
+        update_user_frame,
+        text="Actualizar Cuenta",
+        font=title_font,
+        bg="#F1F2F6",
+        fg="black",
+        wraplength=350,
+        justify="center",
+    )
+    title_label.pack(pady=50)
+    # Conexion con la Base de Datos
+    connection = make_connection()
+    if not connection:
+        return
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"EXEC sp_obtiene_nombre_por_carnet_usuario '{id_card}'") 
+        name = cursor.fetchone()[0]
+        cursor.execute(f"EXEC sp_obtiene_apellido_por_carnet_usuario '{id_card}'") 
+        lastname = cursor.fetchone()[0]
+        cursor.execute(f"EXEC sp_obtiene_edad_por_carnet_usuario '{id_card}'") 
+        age = cursor.fetchone()[0]
+        connection.commit()
+    except pyodbc.Error as e:
+        messagebox.showerror("Error", f"Error al obtener datos de la cuenta: {e}")
+    finally:
+        connection.close()
+    # Ingresando el Nombre
+    name_frame = tk.Frame(update_user_frame, bg="#F1F2F6")
+    name_frame.pack(side="top", pady=10, fill="x", padx=10)
+    name_label = tk.Label(name_frame, text="Nombre:", bg="#F1F2F6")
+    name_label.pack(side="left", padx=10)
+    u_name_entry = CTkEntry(
+        name_frame,
+        placeholder_text="Ingresar",
+        border_color="#7732FF",
+        corner_radius=32
+    )
+    u_name_entry.pack(side="left", padx=10, fill="x", expand=True)
+    u_name_entry.delete(0, tk.END)
+    u_name_entry.insert(0, name)
+    # Ingresando los Apellidos
+    last_name_frame = tk.Frame(update_user_frame, bg="#F1F2F6")
+    last_name_frame.pack(side="top", pady=10, fill="x", padx=10)
+    last_name_label = tk.Label(last_name_frame, text="Apellidos:", bg="#F1F2F6")
+    last_name_label.pack(side="left", padx=10)
+    u_last_name_entry = CTkEntry(
+        last_name_frame,
+        placeholder_text="Ingresar",
+        border_color="#7732FF",
+        corner_radius=32
+    )
+    u_last_name_entry.pack(side="left", padx=10, fill="x", expand=True)
+    u_last_name_entry.delete(0, tk.END)
+    u_last_name_entry.insert(0, lastname)
+    # Ingresando la Edad
+    age_frame = tk.Frame(update_user_frame, bg="#F1F2F6")
+    age_frame.pack(side="top", pady=10, fill="x", padx=10)
+    age_label = tk.Label(age_frame, text="Edad:", bg="#F1F2F6")
+    age_label.pack(side="left", padx=10)
+    u_age_entry = CTkEntry(
+        age_frame,
+        placeholder_text="Ingresar",
+        border_color="#7732FF",
+        corner_radius=32
+    )
+    u_age_entry.pack(side="left", padx=10, fill="x", expand=True)
+    u_age_entry.delete(0, tk.END)
+    u_age_entry.insert(0, age)  
+    # Ingresando el Carnet
+    id_card_frame = tk.Frame(update_user_frame, bg="#F1F2F6")
+    id_card_frame.pack(side="top", pady=10, fill="x", padx=10)
+    id_card_label = tk.Label(id_card_frame, text="Carnet:", bg="#F1F2F6")
+    id_card_label.pack(side="left", padx=10)
+    u_id_card_entry = CTkEntry(
+        id_card_frame,
+        placeholder_text="Ingresar",
+        border_color="#7732FF",
+        corner_radius=32
+    )
+    u_id_card_entry.pack(side="left", padx=10, fill="x", expand=True)
+    u_id_card_entry.delete(0, tk.END)
+    u_id_card_entry.insert(0, id_card)
+    # Ingresando la Nueva Contraseña
+    password_frame = tk.Frame(update_user_frame, bg="#F1F2F6")
+    password_frame.pack(side="top", pady=10, fill="x", padx=10)
+    password_label = tk.Label(password_frame, text="Nueva Contraseña:", bg="#F1F2F6")
+    password_label.pack(side="left", padx=10)
+    u_password_entry = CTkEntry(
+        password_frame,
+        placeholder_text="Ingresar",
+        show="*",
+        border_color="#7732FF",
+        corner_radius=32
+    )
+    u_password_entry.pack(side="left", padx=10, fill="x", expand=True)
+    # Ingresando la Antigua Contraseña
+    p_password_frame = tk.Frame(update_user_frame, bg="#F1F2F6")
+    p_password_frame.pack(side="top", pady=10, fill="x", padx=10)
+    p_password_label = tk.Label(p_password_frame, text="Contraseña Acual:", bg="#F1F2F6")
+    p_password_label.pack(side="left", padx=10)
+    p_password_entry = CTkEntry(
+        p_password_frame,
+        placeholder_text="Ingresar",
+        show="*",
+        border_color="#7732FF",
+        corner_radius=32
+    )
+    p_password_entry.pack(side="left", padx=10, fill="x", expand=True)
+    # Boton para Actualizar Cuenta
+    update_account_button = CTkButton(
+        update_user_frame,
+        text="Actualizar cuenta",
+        corner_radius=32,
+        fg_color="#7732FF",
+        text_color="white",
+        hover_color="#5A23CC",
+        command=update_account
+    )
+    update_account_button.pack(pady=10) 
+    # Botón de Regreso
+    show_back_button()
+    return update_user_frame
+    
+def update_account():
+    # Entrada de Datos
+    global content_frame, u_name_entry, u_last_name_entry, u_age_entry, u_id_card_entry, u_password_entry, p_password_entry
+    u_name = u_name_entry.get().strip()
+    u_last_name = u_last_name_entry.get().strip()
+    u_age = u_age_entry.get().strip()
+    u_id_card = u_id_card_entry.get().strip()
+    u_password = u_password_entry.get().strip()
+    p_password = p_password_entry.get().strip()
+    # Conexion con la Base de Datos para encontrar la contraseña
+    connection = make_connection()
+    if not connection:
+        return
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"EXEC sp_obtiene_contrasena_por_carnet_usuario '{id_card}'") 
+        password_actual = cursor.fetchone()[0]
+        connection.commit()
+    except pyodbc.Error as e:
+        messagebox.showerror("Error", f"Error al obtener la contraseña actual de la cuenta: {e}")
+    finally:
+        connection.close()
+    # Manejo de Errores
+    if not all([u_name]):
+        messagebox.showerror("Error", "Debes ingresar tu Nombre")
+        return
+    if not all([u_last_name]):
+        messagebox.showerror("Error", "Debes ingresar tus Apellidos")
+        return
+    if not all([u_age]):
+        messagebox.showerror("Error", "Debes ingresar tu Edad")
+        return
+    if not u_age.isdigit():
+        messagebox.showerror("Error", "Tu Edad debe ser un numero natural")
+        return
+    if not int(u_age) >= 18:
+        messagebox.showerror("Error", "No puedes Actualizar una Cuenta si eres menor de edad")
+        return
+    if not all([u_id_card]):
+        messagebox.showerror("Error", "Debes ingresar tu Numero de Carnet")
+        return
+    if not u_id_card.isdigit():
+        messagebox.showerror("Error", "El Numero de Carnet debe ser un numero natural")
+        return
+    if not len(u_id_card) == 7:
+        messagebox.showerror("Error", "El Numero de Carnet debe tener 7 digitos")
+        return
+    if u_id_card != id_card and validate_carnet(u_id_card)==True:
+        messagebox.showerror("Error", "Carnet ya existente")
+        return
+    if not all([u_password]):
+        u_password = password_actual
+    if not all([p_password]):
+        messagebox.showerror("Error", "Debes ingresar la Contraseña Actual para confirmar los cambios")
+        return
+    # Borrar Datos en caso de Error
+    u_name_entry.delete(0, tk.END)
+    u_last_name_entry.delete(0, tk.END)
+    u_age_entry.delete(0, tk.END)
+    u_id_card_entry.delete(0, tk.END)
+    u_password_entry.delete(0, tk.END)
+    u_id_card_entry.delete(0, tk.END)
+    p_password_entry.delete(0, tk.END)
+    # Conexion con la Base de Datos
+    connection = make_connection()
+    if not connection:
+        return
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"EXEC sp_obtener_id_por_carnet_usuario '{id_card}'") 
+        id = cursor.fetchone()[0]
+        print(f"Carnet: {id_card}")
+        print(f"ID: {id}")
+        print(f"Nuevo Carnet: {u_id_card}")
+        cursor.execute(f"EXEC sp_update_usuario '{id}' , '{u_name}' , '{u_last_name}' , {u_age} , '{u_id_card}' , '{u_password}' , {0}")
+        connection.commit()
+        # Cambiar al start_frame si todo sale bien
+        messagebox.showinfo("Exito", f"El usuario con el carnet: {u_id_card} se ha actualizado con exito")
+        update_user_frame.pack_forget()  
+        show_frame(start_frame)
+    except pyodbc.Error as e:
+        messagebox.showerror("Error", f"Error al registrar la cuenta: {e}")
+    finally:
+        connection.close()
+
 # ----------------------------------------------------------MOSTRAR Y OCULTAR FRAMES-----------------------------------------------------------------------------------------------
 
 """Funcion para Mostrar un Frame"""
@@ -1381,6 +1918,7 @@ def show_frame(frame_to_show):
         hide_history_button()
         hide_log_out_button()
         hide_pay_button()
+        hide_logo_button()
         sum_cost = 0
         num_passengers = 0
         selected_departure = None
@@ -1391,6 +1929,7 @@ def show_frame(frame_to_show):
         hide_history_button()
         hide_log_out_button()
         hide_pay_button()
+        show_logo_button()
         if hasattr(frame_to_show, "name"):
             if frame_to_show.name == "content":
                 show_log_out_button()
@@ -1402,7 +1941,13 @@ def show_frame(frame_to_show):
             elif frame_to_show.name == "results":
                 show_back_button()
                 show_pay_button()
+            elif frame_to_show.name == "update_user":
+                show_back_button()
+                show_log_out_button()
             elif (frame_to_show.name == "pay"):
+                show_back_button()
+                show_log_out_button()
+            elif (frame_to_show.name == "payment_confirmation"):
                 show_back_button()
                 show_log_out_button()
             elif frame_to_show.name == "history":
@@ -1412,7 +1957,6 @@ def show_frame(frame_to_show):
                 show_back_button()
             elif frame_to_show.name == "reservation":
                 show_log_out_button()
-
     frame_to_show.pack(expand=True)
 
 """Funcion para Mostrar el Boton de Historial"""
@@ -1435,6 +1979,27 @@ def on_history_button():
     history_frame = make_history_frame() 
     show_frame(history_frame)
 
+"""Funcion para Mostrar el Boton de Logo"""
+def show_logo_button(target_frame=None):
+    if logo_button:
+        logo_button.place(relx=0.430, rely=0.3)  
+
+"""Funcion para ocultar el Boton de Logo"""
+def hide_logo_button():
+    if logo_button:
+        logo_button.place_forget()
+
+"""Funcion para ocultar Frame al apretar Boton de Logo"""
+def on_logo_button():
+    global current_frame, content_frame, update_user_frame
+    # Ocultar frame actual
+    if current_frame == content_frame:
+        content_frame.pack_forget()
+        update_user_frame = make_update_user_frame()
+        show_frame(update_user_frame)
+    else:
+        return
+
 """Funcion para Mostrar el Boton de Pagar"""
 def show_pay_button(target_frame=None):
     if pay_button:
@@ -1444,9 +2009,6 @@ def show_pay_button(target_frame=None):
 def hide_pay_button():
     if pay_button:
         pay_button.place_forget()
-
-"""Funcion para ocultar Frame al apretar Boton de Pagar"""
-
 
 """Funcion para Mostrar el Boton para Regresar"""
 def show_back_button(target_frame=None):
@@ -1492,14 +2054,14 @@ def get_price_per_bus(origin,destination,passenger_class):
          cursor=connection.execute(f"EXEC sp_totaldeventasporruta '{origin}','{destination}',{0}")
     result =cursor.fetchone()
     print(result)
-    if(result!=None):
+    if (result!=None):
         return result[0]
     else:
         return ""
 
 """Funcion para limpiar datos al presionar el Boton Cerrar Sesion"""
 def on_log_out_button():
-    global current_frame, reservation_frame, history_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input
+    global current_frame, update_user_frame, reservation_frame, history_frame, start_frame, content_frame, point_origin_input, point_destination_input, departure_date_button, return_date_button, passengers_entry, passenger_class_input, payment_confirmation_frame
     # Borrar datos al cerrar sesión
     if current_frame == content_frame or current_frame == results_frame:
         point_origin_input.set("Seleccionar")  
@@ -1515,19 +2077,23 @@ def on_log_out_button():
         reservation_frame.pack_forget()
     if current_frame == history_frame:
         history_frame.pack_forget()
+    if current_frame == payment_confirmation_frame:
+        payment_confirmation_frame.pack_forget()
+    if current_frame == update_user_frame:
+        update_user_frame.pack_forget()
     hide_log_out_button()
     show_frame(start_frame)
 
 """Funcion para ocultar Frame al apretar Boton de Metodo de Pago"""
 def on_payment_method_button(billing_payment_method_txt):
-    global current_frame, pay_frame, billing_payment_method, sum_cost, total_cost_var, passenger_class_user
+    global current_frame, pay_frame, billing_payment_method, sum_cost, total_cost_var, passenger_class_user, payment_confirmation_frame
     billing_payment_method = billing_payment_method_txt
     if billing_payment_method == "Yolo" and passenger_class_user == "VIP":
         sum_cost = sum_cost / 2
-        total_cost_var.set(f"El costo total a pagar es: {float(globals()['sum_cost']):g}")
+        total_cost_var.set(f"El costo total a pagar es: Bs{float(globals()['sum_cost']):g}")
     # Ocultar frame actual
-    if current_frame == pay_frame:
-        pay_frame.pack_forget()
+    if current_frame == payment_confirmation_frame:
+        payment_confirmation_frame.pack_forget()
     on_paid_method_button()
     hide_history_button()
     show_frame(reservation_frame)
@@ -1585,21 +2151,30 @@ def on_pay_button():
         if current_frame == results_frame: 
             results_frame.pack_forget()
             hide_pay_button()
-            total_cost_var.set(f"El costo total a pagar es: {sum_cost}")
+            total_cost_var.set(f"El costo total a pagar es: Bs{sum_cost}")
             show_frame(pay_frame) 
     else: 
         messagebox.showerror("Error", "No has seleccionado correctamente los buses")
+
+
+"""Boton para seleccionar el metodo de pago"""
+def on_button_click(payment_method):
+    global billing_payment_method, payment_confirmation_frame
+    billing_payment_method = payment_method
+    print(f"billing_payment_method actualizado a: {billing_payment_method}")
+    payment_confirmation_frame = make_payment_confirmation_frame()
+    show_frame(payment_confirmation_frame)
 
 # ----------------------------------------------------------------MAIN-----------------------------------------------------------------------------------------------------------------------------------------------
 
 """Funcion Principal"""
 def main():
-    global window, all_frames, reservation_frame, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame, pay_frame, total_cost_var
+    global window, all_frames, update_user_frame, reservation_frame, start_frame, register_frame, login_frame, action_bar, content_frame, results_frame, terms_frame, current_frame, loading_frame, history_frame, pay_frame, total_cost_var, payment_confirmation_frame
     # Configuración de la ventana
     set_appearance_mode("light")
     set_default_color_theme("blue")
     window = tk.Tk()
-    total_cost_var = tk.StringVar(window, value="El costo total a pagar es: 0")
+    total_cost_var = tk.StringVar(window, value="El costo total a pagar es: Bs0")
     window.title("Pasa")
     window.geometry("380x650+120+10")
     window.resizable(False, False)
@@ -1623,11 +2198,12 @@ def main():
     results_frame.name = "results"
     terms_frame = make_terms_frame()
     history_frame = make_history_frame()
+    payment_confirmation_frame = make_payment_confirmation_frame()
     # Lista de Frames
     all_frames = [
         loading_frame, start_frame, register_frame,
         login_frame, content_frame, results_frame, terms_frame,
-        history_frame, pay_frame, reservation_frame
+        history_frame, pay_frame, payment_confirmation_frame, reservation_frame
     ]
     # Iniciar el programa
     show_frame(loading_frame)
