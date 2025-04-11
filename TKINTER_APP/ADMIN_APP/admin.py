@@ -1214,9 +1214,16 @@ def open_table_window_obtain(fetch_function, title):
             tree.heading(col, text=col)
             tree.column(col, anchor="center")
         # Insertar datos
+        all_data = []
         for row in data:
             cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
             tree.insert("", "end", values=cleaned_row)
+            all_data.append(row)
+        # Buscador
+        search_var = tk.StringVar()
+        search_entry = tk.Entry(table_window, textvariable=search_var)
+        search_entry.pack(pady=5)
+        search_entry.bind("<KeyRelease>", lambda event: update_treeview(tree, all_data, search_var.get()))
         # Función al seleccionar fila
         def on_select(event):
             nonlocal selected_data
@@ -1313,9 +1320,16 @@ def make_fetch_frame():
                 tree.heading(col, text=col)
                 tree.column(col, anchor="center")
             # Insertar datos en el Treeview
+            all_data = []
             for row in data:
                 cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
                 tree.insert("", "end", values=cleaned_row)
+                all_data.append(row)
+            # Buscador
+            search_var = tk.StringVar()
+            search_entry = tk.Entry(table_window, textvariable=search_var)
+            search_entry.pack(pady=5)
+            search_entry.bind("<KeyRelease>", lambda event: update_treeview(tree, all_data, search_var.get()))
             # Botón para cerrar la ventana
             close_button = tk.Button(table_window, text="Cerrar", command=table_window.destroy, bg="#7732FF", fg="white")
             close_button.pack(pady=10)
@@ -1772,6 +1786,16 @@ def show_option(target_frame=None):
 def hide_option():
     if option:
         option.place_forget()
+
+"""Actualizar el TreeView al buscar"""
+def update_treeview(tree, all_data, keyword):
+    for item in tree.get_children():
+        tree.delete(item)
+    keyword = keyword.lower()
+    filtered = [row for row in all_data if keyword in " ".join(str(item).lower() for item in row)]
+    for row in filtered:
+        cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
+        tree.insert("", "end", values=cleaned_row)
 
 # ----------------------------------------------------------------MAIN--------------------------------------------------------------------------------------------
 
