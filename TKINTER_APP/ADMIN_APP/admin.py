@@ -35,6 +35,7 @@ all_frames = []
 entries = []
 selected_option = ""
 role_input = None
+last_table_window = None
 
 # ----------------------------------------------------ENTRADA Y SALIDA DE DATOS-----------------------------------------------------------------------------------------------
 
@@ -1166,45 +1167,56 @@ def make_history_frame():
 # ------------------------------------------------------------MANEJO DE COMANDOS---------------------------------------------------------------------------------------------
 
 def open_table_window_obtain(fetch_function, title):
+    global last_table_window
+    # Si hay una ventana abierta, destruirla antes de abrir una nueva
+    if last_table_window is not None and last_table_window.winfo_exists():
+        last_table_window.destroy()
     connection = c.make_connection()
     if not connection:
         return None
     cursor = connection.cursor()
     selected_data = None  # Almacena la fila seleccionada
     confirmed = False  # Bandera para confirmar la selección
-
     try:
         data = fetch_function(cursor)
         if not data:
             messagebox.showinfo("Información", f"No hay datos en la tabla {title}.")
             return None
-
         # Crear ventana
         table_window = tk.Toplevel(fetch_frame)
+        last_table_window = table_window
         table_window.title(f"Tabla: {title}")
-        table_window.geometry("600x400")
+        # Asegurarse de que la ventana principal tenga los datos actualizados
+        window.update_idletasks()
+        main_width = window.winfo_width()
+        main_height = window.winfo_height()
+        main_x = window.winfo_x()
+        main_y = window.winfo_y()
+        # Definir un ancho mayor para la ventana secundaria 
+        new_width = main_width + 200
+        new_height = main_height
+        new_x = main_x + main_width  
+        new_y = main_y
+        table_window.geometry(f"{new_width}x{new_height}+{new_x}+{new_y}")
+        table_window.configure(bg="#09090A")
         try:
             table_window.iconbitmap("../../ASSETS/icon.ico")
         except Exception:
             print(f"Error al cargar el icono: {Exception}")
         table_window.configure(bg="#09090A")
-
         # Treeview para mostrar datos
         tree = ttk.Treeview(table_window, show="headings", selectmode="browse")
         tree.pack(fill="both", expand=True)
-
-        # Configurar columnas
+        # Configurar columnas 
         columns = [desc[0] for desc in cursor.description]
         tree["columns"] = columns
         for col in columns:
             tree.heading(col, text=col)
             tree.column(col, anchor="center")
-
         # Insertar datos
         for row in data:
             cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
             tree.insert("", "end", values=cleaned_row)
-
         # Función al seleccionar fila
         def on_select(event):
             nonlocal selected_data
@@ -1212,19 +1224,15 @@ def open_table_window_obtain(fetch_function, title):
             if selected_items:
                 selected_item = selected_items[0]
                 selected_data = list(tree.item(selected_item, 'values'))
-
         tree.bind('<<TreeviewSelect>>', on_select)
-
         # Frame para botones
         button_frame = tk.Frame(table_window, bg="#09090A")
         button_frame.pack(pady=10)
-
         # Botón Aceptar (confirma y cierra)
         def confirm_selection():
             nonlocal confirmed
             confirmed = True
             table_window.destroy()
-
         accept_button = tk.Button(
             button_frame,
             text="Aceptar",
@@ -1233,7 +1241,6 @@ def open_table_window_obtain(fetch_function, title):
             fg="white"
         )
         accept_button.pack(side="left", padx=5)
-
         # Botón Cerrar (sale sin confirmar)
         close_button = tk.Button(
             button_frame,
@@ -1243,13 +1250,10 @@ def open_table_window_obtain(fetch_function, title):
             fg="white"
         )
         close_button.pack(side="left", padx=5)
-
         # Esperar a que la ventana se cierre
         table_window.wait_window()
-
         # Retornar datos solo si se confirmó con "Aceptar"
         return selected_data if confirmed else None
-
     except pyodbc.Error as e:
         messagebox.showerror("Error", f"No se pudo obtener datos: {e}")
         return None
@@ -1263,6 +1267,10 @@ def make_fetch_frame():
     fetch_frame.name = "fetch"
     # Función para abrir una ventana con datos de una tabla
     def open_table_window(fetch_function, title):
+        global last_table_window
+        # Si hay una ventana abierta, destruirla antes de abrir una nueva
+        if last_table_window is not None and last_table_window.winfo_exists():
+            last_table_window.destroy()
         connection = c.make_connection()
         if not connection:
             return
@@ -1274,8 +1282,22 @@ def make_fetch_frame():
                 return
             # Crear una nueva ventana
             table_window = tk.Toplevel(fetch_frame)
+            last_table_window = table_window
             table_window.title(f"Tabla: {title}")
-            table_window.geometry("600x400")
+            # Asegurarse de que la ventana principal tenga los datos actualizados
+            window.update_idletasks()
+            main_width = window.winfo_width()
+            main_height = window.winfo_height()
+            main_x = window.winfo_x()
+            main_y = window.winfo_y()
+            # Definir un ancho mayor para la ventana secundaria 
+            new_width = main_width + 200
+            new_height = main_height
+            new_x = main_x + main_width  
+            new_y = main_y
+            table_window.geometry(f"{new_width}x{new_height}+{new_x}+{new_y}")
+            table_window.configure(bg="#09090A")
+            # Logo
             try:
                 table_window.iconbitmap("../../ASSETS/icon.ico")
             except Exception:
@@ -1284,14 +1306,14 @@ def make_fetch_frame():
             # Crear un Treeview para mostrar los datos
             tree = ttk.Treeview(table_window, show="headings", selectmode="browse")
             tree.pack(fill="both", expand=True)
-            # Crear encabezados basados en las columnas
+            # Configurar columnas según cursor.description
             columns = [desc[0] for desc in cursor.description]
             tree["columns"] = columns
             for col in columns:
                 tree.heading(col, text=col)
                 tree.column(col, anchor="center")
             # Insertar datos en el Treeview
-            for row in data :
+            for row in data:
                 cleaned_row = [item.strip() if isinstance(item, str) else item for item in row]
                 tree.insert("", "end", values=cleaned_row)
             # Botón para cerrar la ventana
@@ -1301,6 +1323,7 @@ def make_fetch_frame():
             messagebox.showerror("Error", f"No se pudo obtener datos: {e}")
         finally:
             connection.close()
+
     # Botón para mostrar la tabla de Usuarios
     usuario_button = CTkButton(
         fetch_frame,
@@ -1757,8 +1780,8 @@ def main():
     global window, all_frames, start_frame, register_frame, login_frame, action_bar, terms_frame
     global current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar, history_frame
     # Configuración de la ventana
-    set_appearance_mode("#09090A")
-    set_default_color_theme("blue")
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme("dark-blue")
     window = tk.Tk()
     window.title("Pasa")
     window.geometry("380x650+120+10")
