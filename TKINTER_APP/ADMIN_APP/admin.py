@@ -1086,7 +1086,7 @@ def make_history_frame():
                                 espacios = " " * indent
                                 if isinstance(data, dict):
                                     for key, value in data.items():
-                                        if key.lower() in ["contraseña", "password"]:
+                                        if key.lower() in ["contraseña", "password", "registro_eliminado"]:
                                             continue # No mostrar contraseña en el JSON
                                         if isinstance(value, (dict, list)):
                                             formatted += f"{espacios}{key}:\n{format_data(value, indent + 4)}"
@@ -1276,6 +1276,7 @@ def open_table_window_obtain(fetch_function, title):
             corner_radius=16,
             fg_color="#7732FF",  
             text_color="white",  
+            hover_color="#5A23CC",
             command=confirm_selection
         )
         accept_button.pack(side="left", padx=5)
@@ -1286,6 +1287,7 @@ def open_table_window_obtain(fetch_function, title):
             corner_radius=16,
             fg_color="#444444",
             text_color="white",
+            hover_color="#333333",
             command=table_window.destroy
         )
         close_button.pack(side="left", padx=5)
@@ -1386,7 +1388,8 @@ def make_fetch_frame():
                 text="Cerrar",
                 corner_radius=16,
                 fg_color="#7732FF",
-                text_color="white",
+                text_color="#C7BCF6",
+                hover_color="#5A23CC",
                 command=table_window.destroy
             )
             close_button.pack(pady=10)
@@ -1490,12 +1493,20 @@ def create_input_field(parent, label_text, placeholder, identifier_button):
             global selected_option
             selected_option = label_text
             queries_option()  # Llama a la función queries_option cuando se presione el botón
+        btn_color = "#7732FF"
+        h_color = "#5A23CC"
+        tx_color = "white"
+        if label_text in ["Buscar Chofer", "Buscar Ruta"]:
+            btn_color = "#444444"
+            h_color = "#333333"
+            tx_color = "#C7BCF6"
         available = CTkButton(
             frame,
             text=label_text,
             corner_radius=32,
-            fg_color="#7732FF",
-            hover_color="#5A23CC",
+            fg_color=btn_color,
+            hover_color=h_color,
+            text_color=tx_color,
             command=on_button_click,
         )
         available.pack(pady=0, fill="x")
