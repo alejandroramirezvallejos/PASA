@@ -1758,12 +1758,14 @@ def show_frame(frame_to_show):
         action_bar.pack_forget()
         hide_back_button()
         hide_log_out_button()
+        hide_history_button()
         navigation_bar.pack_forget()
     else:
         if frame_to_show.name in ["login", "register", "terms"]:
             action_bar.pack(side="top", fill="x")
             show_back_button()
             hide_log_out_button()
+            hide_history_button()
             navigation_bar.pack_forget()
         elif frame_to_show.name == "history":
             hide_option()
