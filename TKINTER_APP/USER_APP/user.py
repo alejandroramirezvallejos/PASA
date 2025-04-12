@@ -39,7 +39,7 @@ update_user_frame = None
 
 """Configurando la Conexion con la Base de Datos"""
 driver = '{ODBC Driver 17 for SQL Server}'
-server = 'X'  
+server = 'DESKTOP-T8BJL71'
 database = 'pasa'
 username = 'dba'
 password= 'dba'
