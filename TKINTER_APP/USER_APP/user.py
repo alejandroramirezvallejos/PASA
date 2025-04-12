@@ -3,16 +3,18 @@
     pip install tkcalendar
     pip install pillow
     pip install customtkinter
+    pip install fpdf
 """
 import tkinter as tk 
 import pyodbc
-from tkinter import messagebox, font
+from tkinter import messagebox, font, filedialog
 from tkcalendar import Calendar
 from datetime import date
 from PIL import Image, ImageTk
 from customtkinter import CTkImage, CTkComboBox, CTkButton, CTkEntry, set_appearance_mode, set_default_color_theme
 import time
 from datetime import datetime, timedelta
+from fpdf import FPDF
 window = None
 id_card = None  
 password = None
@@ -1000,6 +1002,27 @@ def make_reservation_confirmed():
         fg="black"
     )
     factura_text_label.pack(pady=10, side="top", anchor="center")
+    # Factura Decarga
+    download_button = CTkButton(
+        reservation_frame,
+        text="Descargar Factura",
+        corner_radius=32,
+        fg_color="#7732FF",
+        text_color="white",
+        hover_color="#5A23CC",
+        command=lambda: descargar_factura(
+            today,
+            name,
+            id_card,
+            selected_departure,
+            selected_return,
+            num_passengers,
+            passenger_class_user,
+            billing_payment_method,
+            sum_cost
+        )
+    )
+    download_button.pack(pady=10)
     # Boton de Volver a Casa
     return_home_button = CTkButton(
         reservation_frame,
@@ -1817,7 +1840,47 @@ def make_update_user_frame ():
     # Botón de Regreso
     show_back_button()
     return update_user_frame
-    
+
+def descargar_factura(fecha, nombre, nit, salida, regreso, boletos, clase, metodo_pago, total):
+    # Construir el contenido de la factura con los parámetros
+    if salida and regreso:
+        ids = f"{salida}, {regreso}"
+    elif salida:
+        ids = salida
+    elif regreso:
+        ids = regreso
+    else:
+        ids = "N/A"
+
+    factura_contenido = (
+        f"Lugar y Fecha: Bolivia, {fecha}\n"
+        f"Nombre: {nombre}\n"
+        f"NIT: {nit}\n"
+        f"IDs de los Buses: {ids}\n"
+        f"Boletos Comprados: {boletos}\n"
+        f"Clase: {clase}\n"
+        f"Método de Pago: {metodo_pago}\n"
+        f"Total: Bs{total}"
+    )
+
+    # Diálogo para guardar el archivo
+    ruta_guardado = filedialog.asksaveasfilename(
+        defaultextension=".pdf",
+        filetypes=[("Archivos PDF", "*.pdf")],
+        title="Guardar factura como"
+    )
+
+    if ruta_guardado:
+        try:
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            pdf.multi_cell(0, 10, factura_contenido)
+            pdf.output(ruta_guardado)
+            messagebox.showinfo("Éxito", "La factura se ha descargado exitosamente.")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo generar el PDF: {e}")
+
 def update_account():
     # Entrada de Datos
     global content_frame, u_name_entry, u_last_name_entry, u_age_entry, u_id_card_entry, u_password_entry, p_password_entry
@@ -1894,7 +1957,7 @@ def update_account():
         print(f"Carnet: {id_card}")
         print(f"ID: {id}")
         print(f"Nuevo Carnet: {u_id_card}")
-        cursor.execute(f"EXEC sp_update_usuario '{id}' , '{u_name}' , '{u_last_name}' , {u_age} , '{u_id_card}' , '{u_password}' , '{admin}'")
+        cursor.execute(f"EXEC sp_update_usuario '{id}' , '{u_name}' , '{u_last_name}' , '{u_age}' , '{u_id_card}' , '{u_password}' , '{admin}'")
         connection.commit()
         # Cambiar al start_frame si todo sale bien
         messagebox.showinfo("Exito", f"El usuario con el carnet: {u_id_card} se ha actualizado con exito")
