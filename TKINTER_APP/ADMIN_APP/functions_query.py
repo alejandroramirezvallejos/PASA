@@ -206,36 +206,25 @@ def get_user_res(cursor):
 def res_bus_logic(bus_id):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"""UPDATE bus 
-SET registro_eliminado = 0
-WHERE bus_id = {bus_id};
-""")
+    cursor.execute(f"EXEC sp_restaurar_eliminacion_logica__bus {bus_id}")
     conexion.commit()
 
 # elimina un chofer con su id
 def res_driver_logic(chofer_id):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"""UPDATE chofer 
-SET registro_eliminado = 0
-WHERE chofer_id = {chofer_id};""")
+    cursor.execute(f"EXEC sp_restaurar_eliminacion_logica_chofer {chofer_id}")
     conexion.commit()
 
 # elimina una ruta con su id
 def res_route_logic(route_id):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"""
-UPDATE ruta 
-SET registro_eliminado = 0
-WHERE ruta_id = {route_id};
-""")
+    cursor.execute(f"EXEC sp_ver_eliminados_logicos_ruta {route_id}")
     conexion.commit()
 
 def res_usuario_logic(usuario_id):
     conexion=c.make_connection()
     cursor=conexion.cursor()
-    cursor.execute(f"""UPDATE usuario 
-SET registro_eliminado = 0
-WHERE usuario_id = {usuario_id};""")
+    cursor.execute(f"EXEC sp_restaurar_eliminacion_logica_usuario  {usuario_id}")
     conexion.commit()
