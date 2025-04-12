@@ -177,3 +177,65 @@ def update_user(usuario_id,nombre,apellido,edad,carnet,contraseña,admin):
     cursor=conexion.cursor()
     cursor.execute(f"EXEC sp_update_usuario {usuario_id} , '{nombre}' , '{apellido}' , {edad} , '{carnet}' , '{contraseña}' , {admin}")
     conexion.commit()
+
+#-------------------
+# obtiene tabla rutas
+def get_route_res(cursor):
+    cursor.execute(f"EXEC sp_ver_eliminados_logicos_ruta")
+    return cursor.fetchall()
+
+# obtiene tabla bus
+def get_bus_res(cursor):
+    cursor.execute(f"EXEC sp_ver_eliminados_logicos_bus")
+    return cursor.fetchall()
+
+# obtiene tabla chofer
+def get_driver_res(cursor):
+    cursor.execute(f"EXEC sp_ver_eliminados_logicos_chofer")
+    return cursor.fetchall()
+
+# Obtiene tabla usuario
+def get_user_res(cursor):
+    cursor.execute(f"EXEC sp_ver_eliminados_logicos_usuario")
+    return cursor.fetchall()
+
+
+
+
+# restauracion logica
+def res_bus_logic(bus_id):
+    conexion=c.make_connection()
+    cursor=conexion.cursor()
+    cursor.execute(f"""UPDATE bus 
+SET registro_eliminado = 0
+WHERE bus_id = {bus_id};
+""")
+    conexion.commit()
+
+# elimina un chofer con su id
+def res_driver_logic(chofer_id):
+    conexion=c.make_connection()
+    cursor=conexion.cursor()
+    cursor.execute(f"""UPDATE chofer 
+SET registro_eliminado = 0
+WHERE chofer_id = {chofer_id};""")
+    conexion.commit()
+
+# elimina una ruta con su id
+def res_route_logic(route_id):
+    conexion=c.make_connection()
+    cursor=conexion.cursor()
+    cursor.execute(f"""
+UPDATE ruta 
+SET registro_eliminado = 0
+WHERE ruta_id = {route_id};
+""")
+    conexion.commit()
+
+def res_usuario_logic(usuario_id):
+    conexion=c.make_connection()
+    cursor=conexion.cursor()
+    cursor.execute(f"""UPDATE usuario 
+SET registro_eliminado = 0
+WHERE usuario_id = {usuario_id};""")
+    conexion.commit()

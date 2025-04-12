@@ -23,6 +23,7 @@ add_frame = None
 option_frame = None
 update_frame = None
 delete_frame = None
+restore_frame = None
 fetch_frame = None
 navigation_bar = None
 action_bar = None
@@ -171,6 +172,8 @@ def queries_option():
             action = "delete"
         elif current_frame == update_frame:
             action = "update"
+        elif current_frame == restore_frame:
+            action = "restore"
         else:
             messagebox.showerror("Error", "Operación no válida o Frame desconocido.")
             return
@@ -476,7 +479,80 @@ def queries_option():
                 except Exception as e:
                     messagebox.showerror("Error", f"Error al actualizar el usuario: {e}")
 
+        elif action=="restore":
+            if "Restaurar Bus" in selected_option:
+                try:
+                # Intentar convertir a entero
+                    bus_id = int(entries[0].get())
+                    print(bus_id)
+                    f.res_route_logic(bus_id)
+                    messagebox.showinfo("Éxito", "Bus restaurado correctamente")
+                except ValueError:
+                    resultadobus_id3 = open_table_window_obtain(f.get_route_res, "Buses")
+                    if resultadobus_id3 and len(resultadobus_id3) > 0:
+                        bus_id = int(resultadobus_id3[0])
+                        print(bus_id)
+                        f.res_route_logic(bus_id)
+                        messagebox.showinfo("Éxito", "Bus restaurado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun Bus")
 
+            elif "Restaurar Chofer" in selected_option:
+                try:
+                # Intentar convertir a entero
+                    chofer_id = int(entries[1].get())
+                    print(chofer_id)
+                    f.res_driver_logic(chofer_id)
+                    messagebox.showinfo("Éxito", "Chofer restaurado correctamente")
+                except ValueError:
+                    resultadochofer_id3 = open_table_window_obtain(f.get_driver_res, "Choferes")
+                    if resultadochofer_id3 and len(resultadochofer_id3) > 0:
+                        chofer_id = int(resultadochofer_id3[0])
+                        print(chofer_id)
+                        f.res_driver_logic(chofer_id)
+                        messagebox.showinfo("Éxito", "Chofer restaurado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun Chofer")
+
+            elif "Restaurar Ruta" in selected_option:
+                try:
+                # Intentar convertir a entero
+                    ruta_id = int(entries[2].get())
+                    print(ruta_id)
+                    f.res_route_logic(ruta_id)
+                    messagebox.showinfo("Éxito", "Ruta restaurado correctamente")
+                except ValueError:
+                    resultadoruta_id3 = open_table_window_obtain(f.get_route_res, "rutas")
+                    if resultadoruta_id3 and len(resultadoruta_id3) > 0:
+                        ruta_id = int(resultadoruta_id3[0])
+                        print(ruta_id)
+                        f.res_route_logic(ruta_id)
+                        messagebox.showinfo("Éxito", "Ruta restaurado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun Ruta")
+
+            elif "Restaurar Usuario" in selected_option:
+                try:
+                # Intentar convertir a entero
+                    usuario_id = int(entries[3].get())
+                    print(usuario_id)
+                    f.res_usuario_logic(usuario_id)
+                    messagebox.showinfo("Éxito", "Usuario restaurado correctamente")
+                except ValueError:
+                    resultadosusuario_id3 = open_table_window_obtain(f.get_user_res, "Usuarios")
+                    if resultadosusuario_id3 and len(resultadosusuario_id3) > 0:
+                        usuario_id = int(resultadosusuario_id3[0])
+                        print(usuario_id)
+                        f.res_usuario_logic(usuario_id)
+                        messagebox.showinfo("Éxito", "Usuario restaurado correctamente")
+                    else:
+                        messagebox.showwarning("Advertencia", "No se selecciono ningun Usuario")
+
+ 
+ 
+ 
+ 
+ 
     except Exception as e:
         messagebox.showerror("Error",e)
 
@@ -642,7 +718,7 @@ def make_action_bar():
     return action_bar
 
 """Frame de la Barra de Navegacion"""
-def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_frame):
+def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_frame, restore_frame):
     # Crear Frame
     navigation_bar = tk.Frame(window, bg="#09090A", height=60, width=380)
     navigation_bar.pack(side="bottom", fill="x")
@@ -658,25 +734,26 @@ def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_fra
             return None
     # Iconos de Botones de Navegacion
     try:
-        search_icon = load_icon("../../ASSETS/search_icon.png")
+        search_icon = load_icon("../../ASSETS/search_logo.png")
         add_icon = load_icon("../../ASSETS/add_icon.png")
         delete_icon = load_icon("../../ASSETS/delete_icon.png")
         update_icon = load_icon("../../ASSETS/update_icon.png")
+        restore_icon = load_icon("../../ASSETS/restore_icon.png")
     except Exception as e:
         print(f"Error al cargar los Iconos de la Barra de Navegacion {e}")
-        add_icon = delete_icon = search_icon = update_icon = None
+        add_icon = delete_icon = search_icon = update_icon = restore_icon = None
     # Estilo de Botones de Navegacion
     button_style = {
         'width': 80, 
         'height': 60, 
         'fg_color': "#09090A", 
-        'hover_color': "#F0F0F0", 
+        'hover_color': "#09090A", 
         'text_color': "#7732FF"
     }
     # Botones de Navegacion
     fetch_button = ctk.CTkButton(
-        navigation_bar, 
-        text="Buscar", 
+        navigation_bar,
+        text="",
         image=search_icon, 
         command=lambda: show_frame(make_fetch_frame()),
         **button_style
@@ -684,7 +761,7 @@ def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_fra
     fetch_button.pack(side="left", expand=True)
     add_button = ctk.CTkButton(
         navigation_bar, 
-        text="Agregar", 
+        text="", 
         image=add_icon, 
         command=lambda: show_frame(make_add_frame()),
         **button_style
@@ -692,7 +769,7 @@ def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_fra
     add_button.pack(side="left", expand=True)
     delete_button = ctk.CTkButton(
         navigation_bar, 
-        text="Eliminar", 
+        text="", 
         image=delete_icon, 
         command=lambda: show_frame(make_delete_frame()),
         **button_style
@@ -700,12 +777,20 @@ def make_navigation_bar(window, add_frame, delete_frame, fetch_frame, update_fra
     delete_button.pack(side="left", expand=True)
     update_button = ctk.CTkButton(
         navigation_bar, 
-        text="Modificar", 
+        text="", 
         image=update_icon, 
         command=lambda: show_frame(make_update_frame()),
         **button_style
     )
     update_button.pack(side="left", expand=True)
+    restore_button = ctk.CTkButton(
+        navigation_bar, 
+        text="", 
+        image=restore_icon, 
+        command=lambda: show_frame(make_restore_frame()),
+        **button_style
+    )
+    restore_button.pack(side="left", expand=True)
     return navigation_bar
 
 """Frame Inicial"""
@@ -1614,6 +1699,9 @@ def make_option_frame(parent, title_name):
         create_input_field(scrollable_frame, "fecha_salida:", "Ingresar", 1)
         create_input_field(scrollable_frame, "fecha_retorno","Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
+    elif title_name=="Restaurar":
+        create_input_field(scrollable_frame, "Bus ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Bus", "Ingresar", 2)
     # Titulo de Chofer
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
     title_label = tk.Label(
@@ -1640,6 +1728,9 @@ def make_option_frame(parent, title_name):
         create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
         create_input_field(scrollable_frame, "Edad:", "Ingresar", 1)
         create_input_field(scrollable_frame, "Carnet:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Chofer", "Ingresar", 2)
+    elif title_name=="Restaurar":
+        create_input_field(scrollable_frame, "Chofer ID:", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Chofer", "Ingresar", 2)
     # Titulo de RUTA
     title_font = font.Font(family="Canva Sans", size=15, weight="bold")
@@ -1669,6 +1760,9 @@ def make_option_frame(parent, title_name):
         create_input_field(scrollable_frame, "Dep_final", "Ingresar", 1)        
         create_input_field(scrollable_frame, "Costo:", "Ingresar", 1)
         create_input_field(scrollable_frame, "Costo VIP:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
+    elif title_name=="Restaurar":
+        create_input_field(scrollable_frame, "Ruta ID:", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Ruta", "Ingresar", 2)
     # Usuario
     if title_name == "Actualizar":
@@ -1705,7 +1799,39 @@ def make_option_frame(parent, title_name):
         title_label.pack(pady=20)   
         create_input_field(scrollable_frame, "Usuario ID", "Ingresar", 1)
         create_input_field(scrollable_frame, f"{title_name} Usuario", "Ingresar", 2)
+    elif title_name=="Restaurar":
+        title_font = font.Font(family="Canva Sans", size=15, weight="bold")
+        title_label = tk.Label(
+            scrollable_frame,
+            text=f"{title_name} un Usuario",  
+            font=title_font,
+            bg="#09090A",
+            fg="#7732FF",
+            wraplength=350,
+            justify="center",
+        )
+        title_label.pack(pady=20)   
+        create_input_field(scrollable_frame, "Usuario ID:", "Ingresar", 1)
+        create_input_field(scrollable_frame, f"{title_name} Usuario", "Ingresar", 2)
     return option_frame
+
+"""Frame para Restaurar Datos eliminados"""
+def make_restore_frame():
+    global current_frame, restore_frame, option_frame
+    if restore_frame is None:
+        restore_frame = tk.Frame(window, bg="#09090A")
+        restore_frame.name = "restore"
+    if option_frame is None or option_frame.master != restore_frame:
+        if option_frame:
+            option_frame.pack_forget() 
+        option_frame = make_option_frame(restore_frame, "Restaurar")
+        option_frame.pack(fill="both", expand=True)
+    if current_frame:
+        current_frame.pack_forget()
+    current_frame = restore_frame
+    current_frame.pack(fill="both", expand=True)
+    show_option(target_frame=restore_frame)
+    return restore_frame
 
 """Frame para Agregar Datos"""
 def make_add_frame():
@@ -1888,7 +2014,7 @@ def update_treeview(tree, all_data, keyword):
 """Funcion Principal"""
 def main():
     global window, all_frames, start_frame, register_frame, login_frame, action_bar, terms_frame
-    global current_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar, history_frame
+    global current_frame, restore_frame, loading_frame, add_frame, update_frame, delete_frame, fetch_frame, navigation_bar, history_frame
     # Configuración de la ventana
     ctk.set_appearance_mode("dark")
     ctk.set_default_color_theme("dark-blue")
@@ -1905,7 +2031,7 @@ def main():
     # Crear barras y frames
     action_bar = make_action_bar()
     action_bar.pack_forget()
-    navigation_bar = make_navigation_bar(window, None, None, None, None)
+    navigation_bar = make_navigation_bar(window, None, None, None, None, None)
     navigation_bar.pack_forget()
     # Crear Frames
     loading_frame = make_loading_screen()
@@ -1913,6 +2039,7 @@ def main():
     register_frame = make_register_frame()
     login_frame = make_login_frame()
     add_frame = make_add_frame()
+    restore_frame = make_restore_frame()
     update_frame = make_update_frame()
     delete_frame = make_delete_frame()
     fetch_frame = make_fetch_frame()
@@ -1921,7 +2048,7 @@ def main():
     all_frames = [
         loading_frame, start_frame, register_frame,
         login_frame, fetch_frame, history_frame, terms_frame,
-        add_frame, update_frame, delete_frame
+        add_frame, update_frame, delete_frame, restore_frame
     ]
     # Mostrar pantalla de carga
     current_frame = loading_frame
